@@ -1,0 +1,20 @@
+Package: simpleRFNetwork
+Type: Package
+Title: Random Forests with emphasis on simplicity
+Version: 0.1.5
+Date: 2022-03-07
+Author: Marvin N. Wright, Johannes Tillil
+Maintainer: Johannes Tillil <tilliljohannes@gmail.com>
+Description: Uses reference classes and only plain R. Not optimized for
+    computation speed. Allows rapid prototyping of RF-type algorithms.
+    A RF algorithm is implemented for use in gene networks where module
+    information is available.
+License: GPL-3
+Imports:
+    methods,
+    ipred, 
+    coin
+Suggests: survival
+RoxygenNote: 7.2.1
+
+hi
