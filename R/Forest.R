@@ -3,6 +3,8 @@
 ##' @description Virtual class for Random forest. 
 ##' Contains all fields and methods used in all Forest subclasses.
 ##' @importFrom parallel mclapply
+##' @importFrom parallel makeCluster
+##' @importFrom parallel parLapply
 ##' @import methods
 Forest <- setRefClass("Forest", 
   fields = list(
@@ -41,10 +43,22 @@ Forest <- setRefClass("Forest",
       })
       
       ## Grow trees
-      trees <<- mclapply(trees, function(x) {
-        x$grow(replace)
-        x
-      }, mc.cores = num_threads)
+      if (Sys.info()["sysname"]=="Windows") {
+        
+        ## On Windows
+        cl <- makeCluster(num_threads)
+        trees <<- parLapply(cl, X=trees, fun=function(x) {
+          x$grow(replace)
+          x
+        })
+      } else {
+        
+        ## On Unix
+        trees <<- mclapply(trees, function(x) {
+          x$grow(replace)
+          x
+        }, mc.cores = num_threads)
+      }
     }, 
     
     predict = function(newdata) {
