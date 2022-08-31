@@ -17,7 +17,7 @@
 ##' @param replace Sample with replacement. Default TRUE.
 ##' @param probability Grow a probability forest. Default FALSE.
 ##' @param splitrule Splitrule to use in trees. Default "Gini" for classification and probability forests, "Variance" for regression forests and "Logrank" for survival forests.
-##' @param splitmethod Method for node splitting. Use "single_variable" for standard procedure and "multiple_variables_linear" for a linear combination of variables in a module.
+##' @param splitmethod Method for node splitting. Use "single_variable" for standard procedure and "module_linear" for a linear combination of variables in a module.
 ##' @param varselection Variable selection in case multiple variables are used for node splitting. Default "none" uses all variables of a module.
 ##' @param varclusters List of numeric vectors that contain the IDs of the nodes in the respective module.
 ##' @param unordered_factors How to handle unordered factor variables. One of "ignore", "order_once", "order_split" and "partition" with default "ignore".
@@ -44,7 +44,7 @@
 ##' rf <- simpleRFNetwork(phenotype ~ ., 
 ##'                       data=rf_data, 
 ##'                       num_trees=2, 
-##'                       splitmethod="multiple_variables_linear",
+##'                       splitmethod="module_linear",
 ##'                       varclusters=modules)
 ##' 
 ##' # TODO Prediction
@@ -125,7 +125,7 @@ simpleRFNetwork <- function(formula, data, num_trees = 50, mtry = NULL,
     splitmethod <- "single_variable"
   }
   if (!(splitmethod %in% c("single_variable",
-                           "multiple_variables_linear"))) {
+                           "module_linear"))) {
     stop("Unknown value for splitmethod")
   }
   

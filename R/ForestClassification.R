@@ -12,7 +12,7 @@ ForestClassification <- setRefClass("ForestClassification",
       treetype <<- "Classification"
       
       ## Create trees
-      if (splitmethod == "multiple_variables_linear") {
+      if (splitmethod == "module_linear") {
         #print("varclustertree NEW")
         trees <<- replicate(num_trees, TreeVarClustersClassification$new())
       } else {
