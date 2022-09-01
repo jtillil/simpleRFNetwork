@@ -13,11 +13,12 @@ simpleRFNetwork(
   replace = TRUE,
   probability = FALSE,
   splitrule = NULL,
-  splitmethod = NULL,
-  varselection = NULL,
-  varclusters = NULL,
   unordered_factors = "ignore",
-  num_threads = 1
+  num_threads = 1,
+  varclusters = NULL,
+  splitobject = NULL,
+  splitmethod = NULL,
+  varselection = NULL
 )
 }
 \arguments{
@@ -37,15 +38,17 @@ simpleRFNetwork(
 
 \item{splitrule}{Splitrule to use in trees. Default "Gini" for classification and probability forests, "Variance" for regression forests and "Logrank" for survival forests.}
 
-\item{splitmethod}{Method for node splitting. Use "single_variable" for standard procedure and "multiple_variables_linear" for a linear combination of variables in a module.}
-
-\item{varselection}{Variable selection in case multiple variables are used for node splitting. Default "none" uses all variables of a module.}
-
-\item{varclusters}{List of numeric vectors that contain the IDs of the nodes in the respective module.}
-
 \item{unordered_factors}{How to handle unordered factor variables. One of "ignore", "order_once", "order_split" and "partition" with default "ignore".}
 
 \item{num_threads}{Number of threads used for mclapply, set to 1 for debugging.}
+
+\item{varclusters}{List of numeric vectors that contain the IDs of the nodes in the respective module.}
+
+\item{splitobject}{Object for node splitting. Use "single_variable" for standard procedure and "module" for use of complete modules in splitting.}
+
+\item{splitmethod}{Method for node splitting. Use "SVM_linear" for a linear SVM line separating classes.}
+
+\item{varselection}{Variable selection in case multiple variables are used for node splitting. Default "none" uses all variables of a module.}
 }
 \description{
 Implements Random Forests (Breiman 2001) with emphasis on simplicity. 
@@ -81,7 +84,7 @@ rf_data <- cbind(rf_data, data.frame(gendat$x))
 rf <- simpleRFNetwork(phenotype ~ ., 
                       data=rf_data, 
                       num_trees=2, 
-                      splitmethod="multiple_variables_linear",
+                      splitobject="module_linear",
                       varclusters=modules)
 
 # TODO Prediction
