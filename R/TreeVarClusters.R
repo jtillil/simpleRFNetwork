@@ -4,23 +4,26 @@
 ##' Contains all fields and methods used in all "VarClusters" tree subclasses.
 TreeVarClusters <- setRefClass("TreeVarClusters", 
   fields = list(
+    ## Tree-specific parameters
     mtry = "integer", 
     min_node_size = "integer",
     splitrule = "character",
-    ## NEW
-    splitmethod = "character",
-    varselection = "character",
-    varclusters = "list",
-    ##
     unordered_factors = "character",
     data = "Data", 
     sampleIDs = "list",    
     oob_sampleIDs = "integer",
-    child_nodeIDs = "list",      
-    split_clusterIDs = "integer",    
+    child_nodeIDs = "list",
+    ## Split-specific parameters
+    split_clusterIDs = "integer",
+    split_selectedVarIDs = "integer",
     split_values = "numeric", 
     split_coefficients = "list",
-    split_levels_left = "list"),  
+    split_levels_left = "list",
+    ## Module parameters
+    varclusters = "list",
+    splitobject = "character",
+    splitmethod = "character",
+    varselection = "character",),  
   methods = list(
     
     ## Initiate bootstrap
@@ -59,6 +62,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       if (!is.null(split)) {
         ## Assign split
         split_clusterIDs[[nodeID]] <<- split$clusterID
+        split_selectedVarIDs[[nodeID]] <<- split$clusterID
         split_coefficients[[nodeID]] <<- split$coefficients
         split_values[[nodeID]] <<- split$value
         
@@ -68,7 +72,11 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         child_nodeIDs[[nodeID]] <<- c(left_child, right_child)
         
         ## For each sample in node, assign to left or right child
-        idx <- as.matrix(data$subset(sampleIDs[[nodeID]], varclusters[[split$clusterID]] + 1)) %*% split$coefficients <= split$value
+        if (varselection == "none") {
+          idx <- as.matrix(data$subset(sampleIDs[[nodeID]], varclusters[[split$clusterID]] + 1)) %*% split$coefficients <= split$value
+        } else {
+          idx <- as.matrix(data$subset(sampleIDs[[nodeID]], split_selectedVarIDs[[nodeID]] + 1)) %*% split$coefficients <= split$value
+        }
         
         sampleIDs[[left_child]] <<- sampleIDs[[nodeID]][idx]
         sampleIDs[[right_child]] <<- sampleIDs[[nodeID]][!idx]
@@ -116,7 +124,11 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           }
           
           ## Move to child
-          value <- as.matrix(predict_data$subset(i, varclusters[[split_clusterIDs[nodeID]]])) %*% split_coefficients[[nodeID]]
+          if (varselection == "none") {
+            value <- as.matrix(data$subset(i, varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
+          } else {
+            value <- as.matrix(data$subset(i, split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
+          }
           if (value <= split_values[nodeID]) {
             nodeID <- child_nodeIDs[[nodeID]][1]
           } else {
@@ -149,7 +161,11 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           ## Move to child
           if (length(split_levels_left[[nodeID]]) == 0) {
             ## Ordered splitting
-            value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
+            if (varselection == "none") {
+              value <- as.matrix(data$subset(i, varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
+            } else {
+              value <- as.matrix(data$subset(i, split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
+            }
             if (value <= split_values[nodeID]) {
               nodeID <- child_nodeIDs[[nodeID]][1]
             } else {

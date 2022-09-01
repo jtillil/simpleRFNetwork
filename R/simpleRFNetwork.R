@@ -17,7 +17,8 @@
 ##' @param replace Sample with replacement. Default TRUE.
 ##' @param probability Grow a probability forest. Default FALSE.
 ##' @param splitrule Splitrule to use in trees. Default "Gini" for classification and probability forests, "Variance" for regression forests and "Logrank" for survival forests.
-##' @param splitmethod Method for node splitting. Use "single_variable" for standard procedure and "module_linear" for a linear combination of variables in a module.
+##' @param splitobject Object for node splitting. Use "single_variable" for standard procedure and "module" for use of complete modules in splitting.
+##' @param splitmethod Method for node splitting. Use "SVM_linear" for a linear SVM line separating classes.
 ##' @param varselection Variable selection in case multiple variables are used for node splitting. Default "none" uses all variables of a module.
 ##' @param varclusters List of numeric vectors that contain the IDs of the nodes in the respective module.
 ##' @param unordered_factors How to handle unordered factor variables. One of "ignore", "order_once", "order_split" and "partition" with default "ignore".
@@ -44,7 +45,7 @@
 ##' rf <- simpleRFNetwork(phenotype ~ ., 
 ##'                       data=rf_data, 
 ##'                       num_trees=2, 
-##'                       splitmethod="module_linear",
+##'                       splitobject="module_linear",
 ##'                       varclusters=modules)
 ##' 
 ##' # TODO Prediction
@@ -61,16 +62,23 @@
 ##' Breiman, L. (2001). Random forests. Mach Learn, 45(1), 5-32. \cr
 ##' @import stats
 ##' @export
-simpleRFNetwork <- function(formula, data, num_trees = 50, mtry = NULL, 
-                     min_node_size = NULL, replace = TRUE, probability = FALSE, 
-                     splitrule = NULL, 
-                     ## NEW
-                     splitmethod = NULL, 
-                     varselection = NULL,
-                     varclusters = NULL, 
-                     ##
-                     unordered_factors = "ignore",
-                     num_threads = 1) {
+simpleRFNetwork <- function(
+  ## Standard parameters
+  formula, 
+  data, 
+  num_trees = 50, 
+  mtry = NULL, 
+  min_node_size = NULL, 
+  replace = TRUE, 
+  probability = FALSE, 
+  splitrule = NULL, 
+  unordered_factors = "ignore",
+  num_threads = 1,
+  ## Module Parameters
+  varclusters = NULL,
+  splitobject = NULL,
+  splitmethod = NULL,
+  varselection = NULL) {
   
   model.data <- model.frame(formula, data)
   
@@ -120,12 +128,21 @@ simpleRFNetwork <- function(formula, data, num_trees = 50, mtry = NULL,
     }
   }
   
+  ## Splitobject
+  if (is.null(splitobject)) {
+    splitobject <- "single_variable"
+  }
+  if (!(splitobject %in% c("single_variable",
+                           "module"))) {
+    stop("Unknown value for splitobject")
+  }
+  
   ## Splitmethod
   if (is.null(splitmethod)) {
-    splitmethod <- "single_variable"
+    splitmethod <- "SVM_linear"
   }
-  if (!(splitmethod %in% c("single_variable",
-                           "module_linear"))) {
+  if (!(splitmethod %in% c("SVM_linear",
+                           "SVM_nonparametric"))) {
     stop("Unknown value for splitmethod")
   }
   
@@ -135,7 +152,8 @@ simpleRFNetwork <- function(formula, data, num_trees = 50, mtry = NULL,
       varselection <- "none"
     }
     if (!(varselection %in% c("none",
-                              "2"))) {
+                              "half_lowest_p",
+                              "signif_p"))) {
       stop("Unknown value for varselection")
     }
   }
@@ -146,7 +164,7 @@ simpleRFNetwork <- function(formula, data, num_trees = 50, mtry = NULL,
   ##    list of clusters
   ##
   ## clusters inside list:
-  ##    array of variables inside cluster
+  ##    vector of variable IDs inside cluster
   
   ## Unordered factors
   if (!(unordered_factors %in% c("ignore", "order_once", "order_split", "partition"))) {
@@ -175,18 +193,19 @@ simpleRFNetwork <- function(formula, data, num_trees = 50, mtry = NULL,
   
   ## Create forest object
   if (treetype == "Classification") {
-    forest <- ForestClassification$new(num_trees = as.integer(num_trees), mtry = as.integer(mtry), 
+    forest <- ForestClassification$new(## Standard parameters
+                                       num_trees = as.integer(num_trees), mtry = as.integer(mtry), 
                                        min_node_size = as.integer(min_node_size), 
                                        replace = replace, splitrule = splitrule,
-                                       ## NEW
-                                       splitmethod = splitmethod, 
-                                       varselection = varselection,
-                                       varclusters = varclusters,
-                                       ##
                                        data = Data$new(data = model.data), 
                                        formula = formula, unordered_factors = unordered_factors, 
                                        covariate_levels = covariate_levels,
-                                       response_levels = levels(model.data[, 1]))
+                                       response_levels = levels(model.data[, 1]),
+                                       ## Module Parameters
+                                       varclusters = varclusters,
+                                       splitobject = splitobject,
+                                       splitmethod = splitmethod,
+                                       varselection = varselection)
   } else if (treetype == "Probability") {
     forest <- ForestProbability$new(num_trees = as.integer(num_trees), mtry = as.integer(mtry), 
                                    min_node_size = as.integer(min_node_size), 

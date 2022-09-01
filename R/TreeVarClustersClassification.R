@@ -34,6 +34,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       ## Initialize
       best_split <- NULL
       best_split$clusterID <- -1
+      best_split$selectedVarIDs <- -1
       best_split$coefficients <- -1
       best_split$value <- -1
       best_split$decrease <- -1
@@ -50,8 +51,30 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         ## Read data values from samples in nodes of current 
         data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
         
+        ## Select variables
+        if (varselection!="none") {
+          ## Obtain p values from logistic regression
+          p_vals <- lapply(varclusters[[split_clusterID]] + 1,
+                           function(x) {
+                             p <- summary(glm(response ~ data_values[,x],
+                                              family=binomial(link="logit")))$coefficients[2,4] 
+                           })
+          if (varselection=="half_lowest_p") {
+            ## Get ranks of variables, sorted by p value
+            ranks <- order(p_vals)
+            ## Use only the variables with below average p value
+            best_split$selectedVarIDs <- varclusters[[split_clusterID]][ranks[1:round(length(ranks)/2)]]
+          } else if (varselection=="signif_p") {
+            ## Use only the variables with significant p value
+            best_split$selectedVarIDs <- varclusters[[split_clusterID]][p_vals < 0.15]
+          }
+          data_values <- data_values[,best_split$selectedVarIDs]
+        }
+        
         ## Find best split
-        best_split = findBestSplitValueSvm(split_clusterID, data_values, best_split, response)
+        if (splitmethod=="SVM_linear") {
+          best_split = findBestSplitValueSvm(split_clusterID, data_values, best_split, response)
+        }
         
         ## Assign split_levels_left for compatibility with cluster-less version
         if (best_split$clusterID == split_clusterID) {
@@ -66,11 +89,12 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         ## Return best split
         result <- NULL
         result$clusterID <- as.integer(best_split$clusterID)
+        result$selectedVarIDs <- best_split$selectedVarIDs
         result$coefficients <- best_split$coefficients
         result$value <- best_split$value
         return(result)
       }
-    }, 
+    },
     
     ## Find best Gini split for clusters via SVM
     findBestSplitValueSvm = function(split_clusterID, data_values, best_split, response) {
@@ -116,6 +140,8 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         best_split$coefficients <- coefficients
         best_split$value <- value
         best_split$decrease <- decrease
+      } else {
+        best_split$selectedVarIDs <- -1
       }
       
       return(best_split)

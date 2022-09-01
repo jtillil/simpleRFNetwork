@@ -8,15 +8,11 @@
 ##' @import methods
 Forest <- setRefClass("Forest", 
   fields = list(
+    ## Standard parameters
     num_trees = "integer", 
     mtry = "integer", 
     min_node_size = "integer", 
     splitrule = "character",
-    ## NEW
-    splitmethod = "character",
-    varselection = "character",
-    varclusters = "list",
-    ##
     unordered_factors = "character",
     data = "Data",
     predict_data = "Data",
@@ -24,27 +20,33 @@ Forest <- setRefClass("Forest",
     trees = "list",
     treetype = "character",
     replace = "logical", 
-    covariate_levels = "list"),
+    covariate_levels = "list",
+    ## Module parameters
+    varclusters = "list",
+    splitobject = "character",
+    splitmethod = "character",
+    varselection = "character"),
   methods = list(
     
     grow = function(num_threads) { 
       
       ## Init trees
       temp <- lapply(trees, function(x) {
+        ## Standard parameters
         x$mtry <- mtry
         x$min_node_size <- min_node_size
         x$splitrule <- splitrule
         x$unordered_factors <- unordered_factors
         x$data <- data
-        ## NEW
+        ## Module parameters
         x$varclusters <- varclusters
+        x$splitobject <- splitobject
         x$splitmethod <- splitmethod
-        ##
+        x$varselection <- varselection
       })
       
       ## Grow trees
       if (Sys.info()["sysname"]=="Windows") {
-        
         ## On Windows
         cl <- makeCluster(num_threads)
         trees <<- parLapply(cl, X=trees, fun=function(x) {
@@ -52,7 +54,6 @@ Forest <- setRefClass("Forest",
           x
         })
       } else {
-        
         ## On Unix
         trees <<- mclapply(trees, function(x) {
           x$grow(replace)
