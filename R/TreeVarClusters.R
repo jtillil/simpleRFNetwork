@@ -23,7 +23,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     varclusters = "list",
     splitobject = "character",
     splitmethod = "character",
-    varselection = "character",),  
+    varselection = "character"),  
   methods = list(
     
     ## Initiate bootstrap
