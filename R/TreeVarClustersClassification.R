@@ -48,7 +48,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         ## Set current cluster ID
         split_clusterID <- possible_split_clusterIDs[i]
         
-        ## Read data values from samples in nodes of current 
+        ## Read data values from samples in current node
         data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
         
         ## Select variables
@@ -72,7 +72,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         }
         
         ## Find best split
-        best_split = findBestSplit(split_clusterID, data_values, best_split, response)
+        best_split = findBestSplitCoefs(split_clusterID, data_values, best_split, response)
         
         ## Assign split_levels_left for compatibility with cluster-less version
         if (best_split$clusterID == split_clusterID) {
@@ -95,7 +95,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
     },
     
     ## Find best Gini split for clusters via SVM
-    findBestSplit = function(split_clusterID, data_values, best_split, response) {
+    findBestSplitCoefs = function(split_clusterID, data_values, best_split, response) {
       
       ## Coerce all but the most frequent factor level to a single one
       ## Irrelevant, if exactly two factors
