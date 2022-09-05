@@ -46,20 +46,25 @@ Forest <- setRefClass("Forest",
       })
       
       ## Grow trees
-      if (Sys.info()["sysname"]=="Windows") {
-        ## On Windows
-        cl <- makeCluster(num_threads)
-        trees <<- parLapply(cl, X=trees, fun=function(x) {
-          x$grow(replace)
-          x
-        })
-      } else {
-        ## On Unix
-        trees <<- mclapply(trees, function(x) {
-          x$grow(replace)
-          x
-        }, mc.cores = num_threads)
-      }
+      # if (Sys.info()["sysname"]=="Windows") {
+      #   ## On Windows
+      #   cl <- makeCluster(num_threads)
+      #   trees <<- parLapply(cl, X=trees, fun=function(x) {
+      #     x$grow(replace)
+      #     x
+      #   })
+      # } else {
+      #   ## On Unix
+      #   trees <<- mclapply(trees, function(x) {
+      #     x$grow(replace)
+      #     x
+      #   }, mc.cores = num_threads)
+      # }
+      
+      trees <<- lapply(trees, function(x) {
+        x$grow(replace)
+        x
+      })
     }, 
     
     predict = function(newdata) {

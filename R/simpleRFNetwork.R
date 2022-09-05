@@ -23,7 +23,7 @@
 ##' @param varclusters List of numeric vectors that contain the IDs of the nodes in the respective module.
 ##' @param unordered_factors How to handle unordered factor variables. One of "ignore", "order_once", "order_split" and "partition" with default "ignore".
 ##' @param num_threads Number of threads used for mclapply, set to 1 for debugging.
-##' @examples 
+##' @examples
 ##' \donttest{
 ##' library(simpleRFNetwork)
 ##' library(SeqNet) 
@@ -142,10 +142,11 @@ simpleRFNetwork <- function(
   
   ## Splitmethod
   if (is.null(splitmethod)) {
-    splitmethod <- "SVM_linear"
+    splitmethod <- "Gini_optimal"
   }
   if (!(splitmethod %in% c("SVM_linear",
-                           "SVM_nonparametric"))) {
+                           "SVM_nonparametric",
+                           "Gini-optimal"))) {
     stop("Unknown value for splitmethod")
   }
   

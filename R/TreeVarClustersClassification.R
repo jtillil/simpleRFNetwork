@@ -72,9 +72,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         }
         
         ## Find best split
-        if (splitmethod=="SVM_linear") {
-          best_split = findBestSplitValueSvm(split_clusterID, data_values, best_split, response)
-        }
+        best_split = findBestSplit(split_clusterID, data_values, best_split, response)
         
         ## Assign split_levels_left for compatibility with cluster-less version
         if (best_split$clusterID == split_clusterID) {
@@ -97,7 +95,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
     },
     
     ## Find best Gini split for clusters via SVM
-    findBestSplitValueSvm = function(split_clusterID, data_values, best_split, response) {
+    findBestSplit = function(split_clusterID, data_values, best_split, response) {
       
       ## Coerce all but the most frequent factor level to a single one
       ## Irrelevant, if exactly two factors
@@ -110,11 +108,34 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         bin_response[!most_freq_idx] <- response[!most_freq_idx][1]
       }
       
-      ## Calculate SVM line
-      svmfit <- svm(y=bin_response, x=data_values, kernel="linear", scale=FALSE)
-      # print("new SVM")
-      coefficients <- drop(t(svmfit$coefs)%*%as.matrix(data_values)[svmfit$index,])
-      value <- svmfit$rho
+      ## Optimize linear combination
+      if (splitmethod == "SVM_linear") {
+        ## Calculate SVM plane
+        svmfit <- svm(y=bin_response, x=data_values, kernel="linear", scale=FALSE)
+        ## Read coefficients and value
+        coefficients <- drop(t(svmfit$coefs)%*%as.matrix(data_values)[svmfit$index,])
+        value <- svmfit$rho
+      } else if (splitmethod == "Gini_optimal") {
+        ## Calculate gini-optimal plane
+        par <- optim(
+          par=runif(ncol(data_values) + 1),
+          fn=function(par) {
+            select_idx <- as.matrix(data_values) %*% par[2:length(par)] > par[1]
+            N1 <- sum(select_idx)
+            N2 <- sum(!select_idx)
+            gini <- -(
+                    (sum(response[select_idx] == "1")/N1)^2+
+                    (sum(response[select_idx] == "0")/N1)^2+
+                    (sum(response[!select_idx] == "1")/N2)^2+
+                    (sum(response[!select_idx] == "0")/N2)^2)
+            return(gini)
+          },
+          method="L-BFGS-B"
+        )$par
+        ## Read coefficients and value
+        coefficients <- par[2:length(par)]
+        value <- par[1]
+      }
       
       ## Count classes in childs
       idx <- as.matrix(data_values)%*%coefficients <= value
