@@ -146,7 +146,7 @@ simpleRFNetwork <- function(
   }
   if (!(splitmethod %in% c("SVM_linear",
                            "SVM_nonparametric",
-                           "Gini-optimal"))) {
+                           "Gini_optimal"))) {
     stop("Unknown value for splitmethod")
   }
   
