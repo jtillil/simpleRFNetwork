@@ -119,9 +119,9 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         ## Calculate gini-optimal plane
         par <- optim(
           par=runif(ncol(data_values) + 1),
-          print("par")
-          print(par)
           fn=function(par) {
+            print("par")
+            print(par)
             print("dat")
             print(head(data_values))
             select_idx <- as.matrix(data_values) %*% par[2:length(par)] > par[1]
