@@ -130,7 +130,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
                     (sum(response[!select_idx] == "0")/N2)^2)
             return(gini)
           },
-          method="L-BFGS-B"
+          method="Nelder"
         )$par
         ## Read coefficients and value
         coefficients <- par[2:length(par)]
