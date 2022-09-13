@@ -94,7 +94,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       }
     },
     
-    ## Find best Gini split for clusters via SVM
+    ## Find Gini-optimal coefficients for linear combination of variables
     findBestSplitCoefs = function(split_clusterID, data_values, best_split, response) {
       
       ## Coerce all but the most frequent factor level to a single one
@@ -118,31 +118,43 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       } else if (splitmethod == "Gini_optimal") {
         ## Calculate gini-optimal plane
         par <- optim(
-          par=runif(ncol(data_values) + 1),
+          # par=runif(ncol(data_values) + 1),
+          par=c(1, rep(1/ncol(data_values), ncol(data_values)))
           fn=function(par) {
-            print("par")
-            print(par)
-            print("dat")
-            print(head(data_values))
+            # print("par")
+            # print(par)
+            # print("dat")
+            # print(head(data_values$data))
             select_idx <- as.matrix(data_values) %*% par[2:length(par)] > par[1]
-            print("idx")
-            print(select_idx)
+            # print("idx")
+            # print(select_idx)
             N1 <- sum(select_idx)
             N2 <- sum(!select_idx)
-            print("N")
-            print(N1)
-            print(N2)
-            print("resp")
-            print(response)
-            gini <- -(
-                    (sum(response[select_idx] == "1")/N1)^2+
-                    (sum(response[select_idx] == "0")/N1)^2+
-                    (sum(response[!select_idx] == "1")/N2)^2+
-                    (sum(response[!select_idx] == "0")/N2)^2)
-            print("gini part 1")
-            print((sum(response[select_idx] == "1")/N1)^2)
-            print("gini")
-            print(gini)
+            # print("N")
+            # print(N1)
+            # print(N2)
+            # print("resp")
+            # print(response)
+            if (N1 != 0 & N2 != 0) {
+              gini <- -(N1/(N1+N2)*(
+                      (sum(response[select_idx] == "1")/N1)^2+
+                      (sum(response[select_idx] == "0")/N1)^2)+
+                        N2/(N1+N2)*(
+                      (sum(response[!select_idx] == "1")/N2)^2+
+                      (sum(response[!select_idx] == "0")/N2)^2))
+            } else if (N1 == 0) {
+              gini <- -(
+                      (sum(response[!select_idx] == "1")/N2)^2+
+                      (sum(response[!select_idx] == "0")/N2)^2)
+            } else if (N2 == 0) {
+              gini <- -(
+                      (sum(response[select_idx] == "1")/N1)^2+
+                      (sum(response[select_idx] == "0")/N1)^2)
+            }
+            # print("gini part 1")
+            # print((sum(response[select_idx] == "1")/N1)^2)
+            # print("gini")
+            # print(gini)
             return(gini)
           },
           method="Nelder"
