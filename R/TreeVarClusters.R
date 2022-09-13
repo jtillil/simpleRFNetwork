@@ -54,9 +54,13 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     splitNode = function(nodeID) {
       
       ## Possible split clusters, maximum mtry
-      possible_split_clusterIDs <- sample(x = 1:length(varclusters),
-                                          size = mtry,
-                                          replace = FALSE)
+      if (length(varclusters) <= mtry) {
+        possible_split_clusterIDs <- 1:length(varclusters)
+      } else {
+        possible_split_clusterIDs <- sample(x = 1:length(varclusters),
+                                            size = mtry,
+                                            replace = FALSE)
+      }
       
       ## Split node
       split <- splitNodeInternal(nodeID, possible_split_clusterIDs)
