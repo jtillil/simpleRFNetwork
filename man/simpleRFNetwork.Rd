@@ -81,10 +81,13 @@ rf_data <- data.frame(phenotype=as.factor(rbinom(N, 1, 0.5)))
 rf_data <- cbind(rf_data, data.frame(gendat$x))
 
 # Classification
-rf <- simpleRFNetwork(phenotype ~ ., 
-                      data=rf_data, 
-                      num_trees=2, 
-                      splitobject="module_linear",
+rf <- simpleRFNetwork(phenotype ~ .,
+                      data=rf_data,
+                      num_trees=2,
+                      num_threads=2,
+                      splitobject="module",
+                      splitmethod="SVM_linear",
+                      varselection="none",
                       varclusters=modules)
 
 # TODO Prediction
