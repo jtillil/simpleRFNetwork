@@ -15,6 +15,7 @@ Forest <- setRefClass("Forest",
     splitrule = "character",
     unordered_factors = "character",
     data = "Data",
+    IQR_data = "Data",
     predict_data = "Data",
     formula = "formula",
     trees = "list",
@@ -38,6 +39,7 @@ Forest <- setRefClass("Forest",
         x$splitrule <- splitrule
         x$unordered_factors <- unordered_factors
         x$data <- data
+        x$IQR_data <- data
         ## Module parameters
         x$varclusters <- varclusters
         x$splitobject <- splitobject

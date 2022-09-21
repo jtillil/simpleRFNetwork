@@ -2,6 +2,7 @@
 
 export(genGeneNetworkData)
 export(simpleRFNetwork)
+import(Rfast)
 import(SeqNet)
 import(e1071)
 import(methods)

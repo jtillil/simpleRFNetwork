@@ -137,7 +137,7 @@ simpleRFNetwork <- function(
   }
   if (!(splitobject %in% c("single_variable",
                            "module"))) {
-    stop("Unknown value for splitobject")
+    stop("Unknown value for splitobject.")
   }
   
   ## Splitmethod
@@ -146,8 +146,12 @@ simpleRFNetwork <- function(
   }
   if (!(splitmethod %in% c("SVM_linear",
                            "SVM_nonparametric",
-                           "Gini_optimal"))) {
-    stop("Unknown value for splitmethod")
+                           "SVM_Gini",
+                           "LDA",
+                           "QDA",
+                           "Gini_optimal",
+                           "CART"))) {
+    stop("Unknown value for splitmethod.")
   }
   
   ## Variable Selection
@@ -158,7 +162,7 @@ simpleRFNetwork <- function(
     if (!(varselection %in% c("none",
                               "half_lowest_p",
                               "signif_p"))) {
-      stop("Unknown value for varselection")
+      stop("Unknown value for varselection.")
     }
   }
   
@@ -167,7 +171,7 @@ simpleRFNetwork <- function(
   ## varclusters: 
   ##    list of clusters
   ##
-  ## clusters inside list:
+  ## objects inside lists:
   ##    vector of variable IDs inside cluster
   
   ## Unordered factors
@@ -197,11 +201,26 @@ simpleRFNetwork <- function(
   
   ## Create forest object
   if (treetype == "Classification") {
+    ## Create data object
+    dat <- Data$new(data = model.data)
+    ## Create interquartile range normalized data object
+    if (splitmethod == "CART") {
+      IQR_dat <- data.frame(V1 = (dat$column(2) - mean(dat$column(2)))/IQR(dat$column(2)))
+      sapply(3:dat$ncol,
+             function(i) {
+               IQR_data[,i-1] <<- (dat$column(i) - mean(dat$column(i)))/IQR(dat$column(i))
+             })
+      IQR_dat <- Data$new(data = IQR_dat)
+    } else {
+      IQR_dat <- Data$new(data = data.frame())
+    }
+    ## Create forest
     forest <- ForestClassification$new(## Standard parameters
                                        num_trees = as.integer(num_trees), mtry = as.integer(mtry), 
                                        min_node_size = as.integer(min_node_size), 
                                        replace = replace, splitrule = splitrule,
-                                       data = Data$new(data = model.data), 
+                                       data = dat,
+                                       IQR_data = IQR_dat,
                                        formula = formula, unordered_factors = unordered_factors, 
                                        covariate_levels = covariate_levels,
                                        response_levels = levels(model.data[, 1]),

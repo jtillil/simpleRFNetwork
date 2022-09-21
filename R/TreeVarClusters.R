@@ -10,6 +10,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     splitrule = "character",
     unordered_factors = "character",
     data = "Data", 
+    IQR_data ="Data",
     sampleIDs = "list",    
     oob_sampleIDs = "integer",
     child_nodeIDs = "list",
@@ -28,8 +29,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     
     ## Initiate bootstrap
     ## @splitNode recursively
-    grow = function(replace) { 
-      # print("new Tree")
+    grow = function(replace) {
       ## Bootstrap 
       num_samples <- data$nrow
       if (replace) {
@@ -186,7 +186,6 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
               nodeID <- child_nodeIDs[[nodeID]][2]
             }
           }
-          
         }
         
         ## Add to prediction
@@ -199,64 +198,69 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     ## @predictOOB
     predictionError = function(pred = NULL) {
       ## references subclass
+    },
+    
+    ## permute and predict OOB data with the tree
+    ## @getNodePrediction
+    permuteAndPredictOOB = function(permuted_varID) {
+      ## Initialize
+      num_samples_predict <- length(oob_sampleIDs)
+      predictions <- list()
+      permutations <- sample(num_samples_predict)
+
+      ## For each sample start in root and drop down tree
+      for (i in 1:num_samples_predict) {
+        nodeID <- 1
+        while(TRUE) {
+          ## Break if terminal node
+          if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
+            break
+          }
+
+          ## Move to child
+          if (split_varIDs[nodeID] == permuted_varID) {
+            value <- as.matrix(data$subset(oob_sampleIDs[permutations[i]], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
+          } else {
+            value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
+          }
+          if (value <= split_values[nodeID]) {
+            nodeID <- child_nodeIDs[[nodeID]][1]
+          } else {
+            nodeID <- child_nodeIDs[[nodeID]][2]
+          }
+        }
+
+        ## Add to prediction
+        predictions[[i]] <- getNodePrediction(nodeID)
+      }
+      return(simplify2array(predictions))
+    },
+    
+    ## calculate variable importance via prediction errors
+    ## @predictionError
+    ## @permuteAndPredictOOB
+    variableImportance = function(type = "permutation") {
+      if (type == "permutation") {
+        
+        ## Prediction error without any permutation
+        oob_error <- predictionError()
+
+        ## For each variable, prediction error after permutation
+        res <- sapply(2:data$ncol, function(varID) {
+          pred <- permuteAndPredictOOB(varID)
+          oob_error_perm <- predictionError(pred)
+          oob_error_perm - oob_error
+        })
+        names(res) <- data$names[-1]
+        res
+        
+      } else if (type == "surrogate_splits") {
+        
+        ## 
+        
+      } else {
+        stop("Only permutation variable importance implemented.")
+      }
     }
-    
-    # ## permute and predict OOB data with the tree
-    # ## @getNodePrediction
-    # permuteAndPredictOOB = function(permuted_varID) {
-    #   ## Initialize
-    #   num_samples_predict <- length(oob_sampleIDs)
-    #   predictions <- list()
-    #   permutations <- sample(num_samples_predict)
-    #   
-    #   ## For each sample start in root and drop down tree
-    #   for (i in 1:num_samples_predict) {
-    #     nodeID <- 1
-    #     while(TRUE) {
-    #       ## Break if terminal node
-    #       if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
-    #         break
-    #       }
-    #       
-    #       ## Move to child
-    #       if (split_varIDs[nodeID] == permuted_varID) {
-    #         value <- as.matrix(data$subset(oob_sampleIDs[permutations[i]], varclusters[[split_clusterIDs[nodeID]]])) %*% split_coefficients[[nodeID]]
-    #       } else {
-    #         value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]])) %*% split_coefficients[[nodeID]]
-    #       }
-    #       if (value <= split_values[nodeID]) {
-    #         nodeID <- child_nodeIDs[[nodeID]][1]
-    #       } else {
-    #         nodeID <- child_nodeIDs[[nodeID]][2]
-    #       }
-    #     }
-    #     
-    #     ## Add to prediction
-    #     predictions[[i]] <- getNodePrediction(nodeID)
-    #   }
-    #   return(simplify2array(predictions))
-    # }, 
-    
-    # ## calculate variable importance via prediction errors
-    # ## @predictionError
-    # ## @permuteAndPredictOOB
-    # variableImportance = function(type = "permutation") {
-    #   if (type == "permutation") {
-    #     # Prediction error without any permutation
-    #     oob_error <- predictionError()
-    #     
-    #     # For each variable, prediction error after permutation
-    #     res <- sapply(2:data$ncol, function(varID) {
-    #       pred <- permuteAndPredictOOB(varID)
-    #       oob_error_perm <- predictionError(pred)
-    #       oob_error_perm - oob_error
-    #     })
-    #     names(res) <- data$names[-1]
-    #     res
-    #   } else {
-    #     stop("Only permutation variable importance implemented.")
-    #   }
-    # }
-    
-    )
+  )
 )

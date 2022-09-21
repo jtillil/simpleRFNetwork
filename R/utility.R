@@ -136,4 +136,32 @@ as.bitvect <- function(x, length = 32) {
   as.logical(string)
 }
 
-
+##' Compute Gini impurity of linear split.
+##' @title Gini impurity of linear split
+##' @param dat Data frame of predictors.
+##' @param label Vector of labels.
+##' @param par Vector of coefficients of split.
+##' @return Gini impurity.
+##' @author Johannes Tillil
+gini_impurity <- function(dat, label, par) {
+  select_idx <- as.matrix(dat) %*% par[2:length(par)] > par[1]
+  N1 <- sum(select_idx)
+  N2 <- sum(!select_idx)
+  if (N1 != 0 & N2 != 0) {
+    gini <- -(N1/(N1+N2)*(
+      (sum(label[select_idx] == "1")/N1)^2+
+        (sum(label[select_idx] == "0")/N1)^2)+
+        N2/(N1+N2)*(
+          (sum(label[!select_idx] == "1")/N2)^2+
+            (sum(label[!select_idx] == "0")/N2)^2))
+  } else if (N1 == 0) {
+    gini <- -(
+      (sum(label[!select_idx] == "1")/N2)^2+
+        (sum(label[!select_idx] == "0")/N2)^2)
+  } else if (N2 == 0) {
+    gini <- -(
+      (sum(label[select_idx] == "1")/N1)^2+
+        (sum(label[select_idx] == "0")/N1)^2)
+  }
+  return(gini)
+}
