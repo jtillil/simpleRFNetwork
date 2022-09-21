@@ -142,7 +142,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         ## Calculate mean of both covariance matrices due to homoscedasticity
         coefficients <- spdinv(0.5*(cova(as.matrix(scale(data_values[response == 1,]))) +
                                     cova(as.matrix(scale(data_values[response == 0,]))))) %*% (mean1 - mean0)
-        value <- coefficients %*% (0.5*(mean1 - mean0))
+        value <- sum(coefficients * (0.5*(mean1 - mean0)))
         
       } else if (splitmethod == "QDA") {
         
@@ -219,6 +219,9 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       }
       
       ## Count classes in childs
+      # print(dim(as.matrix(data_values)))
+      # print(dim(coefficients))
+      # print(dim(value))
       idx <- as.matrix(data_values)%*%coefficients <= value
       class_counts_left <- tabulate(response[idx])
       class_counts_right <- tabulate(response[!idx])
