@@ -19,7 +19,7 @@ Data <- setRefClass("Data",
     
     column = function(col) {
       return(data[, col])   
-    }, 
+    },
     
     subset = function(row, col) {
       return(data[row, col])

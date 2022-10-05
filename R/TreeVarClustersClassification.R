@@ -4,6 +4,7 @@
 ##' Contains all fields and methods used special for classification trees.
 ##' @import e1071
 ##' @import Rfast
+##' @import keras
 TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
   contains = "TreeVarClusters",
   fields = list(),
@@ -115,10 +116,82 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       }
       
       ## Find a linear combination
-      if (splitmethod == "SVM_linear") {
+      if (splitmethod == "univariate") {
+        
+        ## Initiate
+        Gini_impurity_start <- 9999
+        best_val <- 0
+        best_varID <- 0
+        
+        ## Iterate over all variables
+        sapply(1:ncol(data_values), function(varID) {
+          ## Read value candidates
+          val_candidates <- data_values[,varID]
+          sapply(val_candidates, function(val) {
+            ## Compute new Gini impurity
+            coefficients_start <- numeric(ncol(data_values))
+            coefficients_start[varID] <- 1
+            Gini_impurity_val <- gini_impurity(data_values,
+                                               response,
+                                               c(val, coefficients_start))
+            
+            ## Compare to current best Gini impurity and set value, varID if smaller
+            if (Gini_impurity_val < Gini_impurity_start) {
+              Gini_impurity_start <<- Gini_impurity_val
+              best_val <<- val
+              best_varID <<- varID
+            }
+          })
+        })
+        
+        ## Coerce best uni-variate split into coefficients and value
+        coefficients <- numeric(ncol(data_values))
+        coefficients[best_varID] <- 1/best_val
+        value <- 1
+        
+      } else if (splitmethod == "univariate_fast") {
+        
+        ## Set fraction of subset variables
+        nu <- 0.1
+        
+        ## Initiate
+        Gini_impurity_start <- 9999
+        best_val <- 0
+        best_varID <- 0
+        
+        ## Iterate over all variables
+        sapply(1:ncol(data_values), function(varID) {
+          ## Sample value candidates
+          val_candidates <- sample(data_values[,varID], round(nu*nrow(data_values)))
+          sapply(val_candidates, function(val) {
+            ## Compute new Gini impurity
+            coefficients_start <- numeric(ncol(data_values))
+            coefficients_start[varID] <- 1
+            Gini_impurity_val <- gini_impurity(data_values,
+                                               response,
+                                               c(val, coefficients_start))
+            
+            ## Compare to current best Gini impurity and set value, varID if smaller
+            if (Gini_impurity_val < Gini_impurity_start) {
+              Gini_impurity_start <<- Gini_impurity_val
+              best_val <<- val
+              best_varID <<- varID
+            }
+          })
+        })
+        
+        ## Coerce best uni-variate split into coefficients and value
+        coefficients <- numeric(ncol(data_values))
+        coefficients[best_varID] <- 1/best_val
+        value <- 1
+        
+      } else if (splitmethod == "SVM_linear") {
         
         ## Calculate SVM plane
-        svmfit <- svm(y=bin_response, x=data_values, kernel="linear", scale=FALSE)
+        svmfit <- svm(y=bin_response,
+                      x=data_values,
+                      kernel="linear",
+                      scale=FALSE)
         
         ## Read coefficients and value
         coefficients <- drop(t(svmfit$coefs)%*%as.matrix(data_values)[svmfit$index,])
@@ -135,14 +208,14 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       } else if (splitmethod == "LDA") {
         
         ## Calculate class means
-        mean0 <- colmeans(as.matrix(scale(data_values[response == 0,])))
-        mean1 <- colmeans(as.matrix(scale(data_values[response == 1,])))
+        mean0 <- colmeans(as.matrix(data_values[response == 0,]))
+        mean1 <- colmeans(as.matrix(data_values[response == 1,]))
         
         ## Calculate coefficients and value
         ## Calculate mean of both covariance matrices due to homoscedasticity
-        coefficients <- spdinv(0.5*(cova(as.matrix(scale(data_values[response == 1,]))) +
-                                    cova(as.matrix(scale(data_values[response == 0,]))))) %*% (mean1 - mean0)
-        value <- sum(coefficients * (0.5*(mean1 - mean0)))
+        coefficients <- spdinv(0.5*(cova(as.matrix(data_values[response == 1,])) +
+                                    cova(as.matrix(data_values[response == 0,])))) %*% (mean1 - mean0)
+        value <- sum(coefficients * (0.5*(mean1 + mean0)))
         
       } else if (splitmethod == "QDA") {
         
@@ -150,9 +223,44 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
       } else if (splitmethod == "Gini_optimal") {
         
-        ## Calculate Gini-optimal plane
+        ## Find first split as best uni-variate split
+        ## Set fraction of subset variables
+        nu <- 0.1
+        
+        ## Initiate
+        Gini_impurity_start <- 9999
+        best_val <- 0
+        best_varID <- 0
+        
+        ## Iterate over all variables
+        sapply(1:ncol(data_values), function(varID) {
+          ## Sample value candidates
+          val_candidates <- sample(data_values[,varID], round(nu*nrow(data_values)))
+          sapply(val_candidates, function(val) {
+            ## Compute new Gini impurity
+            coefficients_start <- numeric(ncol(data_values))
+            coefficients_start[varID] <- 1
+            Gini_impurity_val <- gini_impurity(data_values,
+                                               response,
+                                               c(val, coefficients_start))
+            
+            ## Compare to current best Gini impurity and set value, varID if smaller
+            if (Gini_impurity_val < Gini_impurity_start) {
+              Gini_impurity_start <<- Gini_impurity_val
+              best_val <<- val
+              best_varID <<- varID
+            }
+          })
+        })
+        
+        ## Coerce best uni-variate split into parameters
+        coefficients <- numeric(ncol(data_values))
+        coefficients[best_varID] <- 1/best_val
+        param <- c(1, coefficients)
+        
+        ## Calculate Gini-optimal plane with univariate initial split
         par <- optim(
-          par = c(1, rep(1/ncol(data_values), ncol(data_values))),
+          par = param,
           fn = function(par) {
             return(gini_impurity(data_values,
                                  response,
@@ -161,12 +269,31 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
           method="Nelder"
         )$par
         
-        ## Restrict parameters to norm 1 for a unique solution
-        par <- par/norm(par, type="2")
-        
         ## Read coefficients and value
         coefficients <- par[2:length(par)]
         value <- par[1]
+        
+      } else if (splitmethod == "Gini_stoch_optimal") {
+        
+        ## Create, compile and fit Keras model
+        model <- keras_model_sequential() %>%
+          layer_dense(units = 1,
+                      activation = "sigmoid",
+                      input_shape = ncol(data_values))
+        model %>%
+          compile(optimizer = "adam",
+                  # loss = "binary_crossentropy",
+                  loss = gini_loss,
+                  run_eagerly = TRUE)
+        model %>%
+          fit(as.matrix(data_values),
+              as.numeric(response),
+              epochs = 100,
+              verbose = 0)
+        
+        ## Read coefficients and value
+        coefficients <- as.numeric(model$layers[[1]]$weights[[1]]$numpy())
+        value <- as.numeric(model$layers[[1]]$weights[[2]]$numpy())
         
       } else if (splitmethod == "CART") {
         
@@ -175,46 +302,211 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
         ## CARE FOR WHEN IQR VALS GET SUBSETTED
         
-        ## Compute first split as best univariate split
-        split <- findBestUnivariateSplit(nodeID,
-                                         varclusters[[split_clusterID]] + 1,
-                                         IQR_data_values,
-                                         response)
+        ## CARE THAT WITHOUT CONSIDERATION OF THE U SEARCH ADMISSION TO CHILDS IS EITHER LEFT OR RIGHT, NOT ALWAYS LEFT
+        
+        ## Find first split as best uni-variate split
+        ## Initiate
+        Gini_impurity_start <- 9999
+        best_val <- 0
+        best_varID <- 0
+        
+        ## Iterate over all variables
+        sapply(1:IQR_data_values$ncol, function(varID) {
+          ## Read value candidates
+          val_candidates <- IQR_data_values$column(varID)
+          sapply(val_candidates, function(val) {
+            ## Compute new Gini impurity
+            coefficients_start <- numeric(IQR_data_values$ncol)
+            coefficients_start[varID] <- 1
+            Gini_impurity_val <- gini_impurity(IQR_data_values$data,
+                                               response,
+                                               c(val, coefficients_start))
+            
+            ## Compare to current best Gini impurity and set value, varID if smaller
+            if (Gini_impurity_val < Gini_impurity_start) {
+              Gini_impurity_start <<- Gini_impurity_val
+              best_val <<- val
+              best_varID <<- varID
+            }
+          })
+        })
+        
+        ## Coerce best uni-variate split into coefficients and value
         coefficients <- numeric(IQR_data_values$ncol)
-        coefficients[split$varID] <- 1/split$value
+        coefficients[best_varID] <- 1/best_val
         value <- 1
-        Gini_impurity_nplus1 <- gini_impurity(IQR_data_values,
+        
+        ## Compute starting Gini impurity
+        Gini_impurity_nplus1 <- gini_impurity(IQR_data_values$data,
                                               response,
                                               c(value, coefficients))
-        Gini_impurity_n <- Gini_impurity_nplus1 + 1000
+        Gini_impurity_n <- 9999
         
-        ## Set threshold
-        epsilon <- 0.0001
+        ## Set convergence threshold
+        epsilon <- 0.01
         
         ## Perform updates until improvement below threshold
         while ((Gini_impurity_n - Gini_impurity_nplus1) > epsilon) {
+          ## Set Gini impurity of last cycle
+          Gini_impurity_n <- Gini_impurity_nplus1
+          
           ## Cycle through all variables and search for an improved split by varying their coefficient
-          sapply(1:ncol(data_values),
+          sapply(1:IQR_data_values$ncol,
                  function(varID) {
                    ## Compute current split values for all observations
-                   v <- 
+                   v <- as.matrix(IQR_data_values$data) %*% coefficients
+                   
                    ## For gamma equals -0.25, 0, 0.25
-                   for (gamma in c(-0.25, 0, 0.25)) {
-                     ## For delta equals ...
-                     for (delta in c(1,2)) {
-                       ## Find best
-                       print("2")
-                     }
-                   }
+                   sapply(c(-0.25, 0, 0.25), function(gamma) {
+                     ## Compute candidates
+                     u <- (v - value) / (IQR_data_values$column(varID) + gamma)
+                     
+                     ## For every candidate
+                     sapply(u, function(u_n) {
+                       ## Convert to candidate coefficients and value
+                       coefficients_u <- coefficients
+                       coefficients_u[varID] <- coefficients_u[varID] - u_n
+                       value_u <- value + u_n * gamma
+                       
+                       if (gini_impurity(IQR_data_values$data,
+                                         response,
+                                         c(value_u, coefficients_u)
+                       ) < Gini_impurity_nplus1) {
+                         
+                         ## Update coefficients, value, split values
+                         coefficients <<- coefficients_u
+                         value <<- value_u
+                         v <<- as.matrix(IQR_data_values$data) %*% coefficients
+                         
+                         ## Calculate new Gini impurity
+                         Gini_impurity_nplus1 <<- gini_impurity(IQR_data_values$data,
+                                                                response,
+                                                                c(value, coefficients))
+                       }
+                     })
+                   })
                  }
           )
-          
-          ## Calculate new Gini impurity
-          Gini_impurity_n <- Gini_impurity_nplus1
-          Gini_impurity_nplus1 <- gini_impurity(IQR_data_values,
-                                                response,
-                                                c(value, coefficients))
         }
+        
+        ## Rescale coefficients and value
+        axis_points <- value/coefficients*IQR_vals
+        translated_axis_points <- NULL
+        for (varID in 1:length(coefficients)) {
+          translated_axis_points[varID] <- axis_points[varID] + Mean_vals[varID] + sum(axis_points[varID]/axis_points[-varID] * Mean_vals[-varID])
+        }
+        coefficients <- 1/translated_axis_points
+        value <- 1
+        
+      } else if (splitmethod == "CART_fast") {
+        
+        ## Only change compared to CART splitmethod is sampling of observations during update steps
+        
+        ## Use data_values centered around 0 and divided by their interquartile range
+        ## IQR_data_values
+        
+        ## CARE FOR WHEN IQR VALS GET SUBSETTED
+        
+        ## CARE THAT WITHOUT CONSIDERATION OF THE U SEARCH ADMISSION TO CHILDS IS EITHER LEFT OR RIGHT, NOT ALWAYS LEFT
+        
+        ## Find first split as best uni-variate split
+        ## Set fraction of subset variables
+        nu <- 0.1
+        
+        ## Initiate
+        Gini_impurity_start <- 9999
+        best_val <- 0
+        best_varID <- 0
+        
+        sapply(1:IQR_data_values$ncol, function(varID) {
+          ## Read value candidates
+          val_candidates <- sample(IQR_data_values$column(varID), round(nu*IQR_data_values$nrow))
+          sapply(val_candidates, function(val) {
+            ## Compute new Gini impurity
+            coefficients_start <- numeric(IQR_data_values$ncol)
+            coefficients_start[varID] <- 1
+            Gini_impurity_val <- gini_impurity(IQR_data_values$data,
+                                               response,
+                                               c(val, coefficients_start))
+            
+            ## Compare to current best Gini impurity and set value, varID if smaller
+            if (Gini_impurity_val < Gini_impurity_start) {
+              Gini_impurity_start <<- Gini_impurity_val
+              best_val <<- val
+              best_varID <<- varID
+            }
+          })
+        })
+        
+        ## Coerce best uni-variate split into coefficients and value
+        coefficients <- numeric(IQR_data_values$ncol)
+        coefficients[best_varID] <- 1/best_val
+        value <- 1
+        
+        ## Compute starting Gini impurity
+        Gini_impurity_nplus1 <- gini_impurity(IQR_data_values$data,
+                                              response,
+                                              c(value, coefficients))
+        Gini_impurity_n <- Gini_impurity_nplus1 + 9999
+        
+        ## Set convergence threshold
+        epsilon <- 0.01
+        
+        ## Perform updates until improvement below threshold
+        while ((Gini_impurity_n - Gini_impurity_nplus1) > epsilon) {
+          ## Set Gini impurity of last cycle
+          Gini_impurity_n <- Gini_impurity_nplus1
+          
+          ## Cycle through all variables and search for an improved split by varying their coefficient
+          sapply(1:IQR_data_values$ncol,
+                 function(varID) {
+                   ## Sample subset
+                   subset_data_values <- IQR_data_values$data[sample(1:nrow(data_values), round(nu*nrow(data_values))),]
+                   
+                   ## Compute current split values for subset observations
+                   v <- as.matrix(subset_data_values) %*% coefficients
+                   
+                   ## For gamma equals -0.25, 0, 0.25
+                   sapply(c(-0.25, 0, 0.25), function(gamma) {
+                     ## Compute candidates
+                     u <- (v - value) / (subset_data_values[,varID] + gamma)
+                     
+                     ## For every candidate
+                     sapply(u, function(u_n) {
+                       ## Convert to candidate coefficients and value
+                       coefficients_u <- coefficients
+                       coefficients_u[varID] <- coefficients_u[varID] - u_n
+                       value_u <- value + u_n * gamma
+                       
+                       if (gini_impurity(IQR_data_values$data,
+                                         response,
+                                         c(value_u, coefficients_u)
+                       ) < Gini_impurity_nplus1) {
+                         
+                         ## Update coefficients, value, split values
+                         coefficients <<- coefficients_u
+                         value <<- value_u
+                         v <<- as.matrix(IQR_data_values$data) %*% coefficients
+                         
+                         ## Calculate new Gini impurity
+                         Gini_impurity_nplus1 <<- gini_impurity(IQR_data_values$data,
+                                                                response,
+                                                                c(value, coefficients))
+                       }
+                     })
+                   })
+                 }
+          )
+        }
+        
+        ## Rescale coefficients and value
+        axis_points <- value/coefficients*IQR_vals
+        translated_axis_points <- NULL
+        for (varID in 1:length(coefficients)) {
+          translated_axis_points[varID] <- axis_points[varID] + Mean_vals[varID] + sum(axis_points[varID]/axis_points[-varID] * Mean_vals[-varID])
+        }
+        coefficients <- 1/translated_axis_points
+        value <- 1
         
       }
       
@@ -272,135 +564,6 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         pred <- predictOOB()
       }
       sum(pred != as.numeric(data$subset(oob_sampleIDs, 1)), na.rm = TRUE) / length(oob_sampleIDs)
-    },
-    
-    findBestUnivariateSplit = function(nodeID, possible_split_varIDs, data_values, response) {
-      ## Initialize
-      best_split <- NULL
-      best_split$decrease <- -1
-      best_split$varID <- -1
-      best_split$value <- -1
-      
-      ## For all possible variables
-      for (i in 1:length(possible_split_varIDs)) {
-        split_varID <- possible_split_varIDs[i]
-        data_values <- data_values$subset(sampleIDs[[nodeID]], split_varID)
-        
-        ## If not ordered, use partition splitting
-        if (!is.numeric(data_values) & !is.ordered(data_values)) {
-          best_split = findBestSplitValuePartition(split_varID, data_values, best_split, response)
-          
-          ## Set split levels left
-          if (best_split$varID == split_varID) {
-            split_levels_left[[nodeID]] <<- best_split$values_left
-          }
-        } else {
-          best_split = findBestSplitValueOrdered(split_varID, data_values, best_split, response)
-          
-          ## Set split levels left (empty if ordered splitting)
-          if (unordered_factors == "order_split") {
-            if (best_split$varID == split_varID) {
-              split_levels_left[[nodeID]] <<- unique(data_values[data_values <= best_split$value])
-              
-              if (is.factor(data_values)) {
-                ## Use same splits as in partition
-                ints <- as.integer(factor(split_levels_left[[nodeID]], levels = levels(data$subset(sampleIDs[[nodeID]], split_varID))))
-                if (sum(2^(ints-1)) >= 2^(max(as.numeric(data$subset(sampleIDs[[nodeID]], split_varID))) - 1)) {
-                  split_levels_left[[nodeID]] <<- unique(data_values[data_values > best_split$value])
-                }
-              }
-            }
-          } else {
-            if (best_split$varID == split_varID) {
-              split_levels_left[[nodeID]] <<- list()
-            }
-          }
-        }
-      }
-      
-      if (best_split$varID < 0) {
-        ## Stop if no good split found
-        return(NULL)
-      } else {
-        ## Return best split
-        result <- NULL
-        result$varID <- as.integer(best_split$varID)
-        result$value <- best_split$value
-        return(result)
-      }      
-    }, 
-    
-    findBestSplitValueOrdered = function(split_varID, data_values, best_split, response) {
-      ## For all possible splits
-      possible_split_values <- unique(data_values)
-      for (j in 1:length(possible_split_values)) {
-        split_value <- possible_split_values[j]
-        
-        ## Count classes in childs
-        idx <- data_values <= split_value
-        class_counts_left <- tabulate(response[idx])
-        class_counts_right <- tabulate(response[!idx])
-        
-        ## Skip if one child empty
-        if (sum(class_counts_left) == 0 | sum(class_counts_right) == 0) {
-          next
-        }
-        
-        if (splitrule == "Gini") {
-          ## Decrease of impurity
-          decrease <- sum(class_counts_left^2)/sum(class_counts_left) + 
-            sum(class_counts_right^2)/sum(class_counts_right)
-        } else {
-          stop("Unknown splitrule.")
-        }
-        
-        ## Use this split if better than before
-        if (decrease > best_split$decrease) {
-          best_split$value <- split_value
-          best_split$varID <- split_varID
-          best_split$decrease <- decrease
-        }
-      }
-      return(best_split)
-    },
-    
-    findBestSplitValuePartition = function(split_varID, data_values, best_split, response) {
-      ## For all possible splits
-      possible_split_values <- sort(unique(data_values))
-      
-      ## For all 2^(n-1)-1 2-partitions
-      num_partitions <- 2^(length(possible_split_values) - 1) - 1
-      for (j in 1:num_partitions) {
-        ## Convert number to logic vector
-        left_idx <- as.bitvect(j, length = length(possible_split_values))
-        values_left <- possible_split_values[left_idx]
-        
-        ## Count classes in childs
-        idx <- data_values %in% values_left
-        class_counts_left <- tabulate(response[idx])
-        class_counts_right <- tabulate(response[!idx])
-        
-        ## Skip if one child empty
-        if (sum(class_counts_left) == 0 | sum(class_counts_right) == 0) {
-          next
-        }
-        
-        if (splitrule == "Gini") {
-          ## Decrease of impurity
-          decrease <- sum(class_counts_left^2)/sum(class_counts_left) + 
-            sum(class_counts_right^2)/sum(class_counts_right)
-        } else {
-          stop("Unknown splitrule.")
-        }
-        
-        ## Use this split if better than before
-        if (decrease > best_split$decrease) {
-          best_split$values_left <- values_left
-          best_split$varID <- split_varID
-          best_split$decrease <- decrease
-        }
-      }
-      return(best_split)
     }
   )
 )

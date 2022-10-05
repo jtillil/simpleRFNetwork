@@ -259,7 +259,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         ## 
         
       } else {
-        stop("Only permutation variable importance implemented.")
+        stop("Unknown variable importance type")
       }
     }
   )
