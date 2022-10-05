@@ -5,6 +5,7 @@
 ##' @import e1071
 ##' @import Rfast
 ##' @import keras
+##' @import tensorflow
 TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
   contains = "TreeVarClusters",
   fields = list(),
