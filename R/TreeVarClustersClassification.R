@@ -6,6 +6,7 @@
 ##' @import Rfast
 ##' @import keras
 ##' @import tensorflow
+##' @import tictoc
 TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
   contains = "TreeVarClusters",
   fields = list(),
@@ -37,15 +38,22 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       ## Initialize
       best_split <- NULL
       best_split$clusterID <- -1
-      best_split$selectedVarIDs <- -1
+      # best_split$selectedVarIDs <- -1
       best_split$coefficients <- -1
       best_split$value <- -1
       best_split$decrease <- -1
+      best_split$linearcomb_time <- -1
       
       ## Get response
       response <- data$subset(sampleIDs[[nodeID]], 1)
       
-      ## For all possible variable clusters (ignoring mtry)
+      ## Initialize array for individual linear combination time measurement
+      linearcomb_times <- c()
+      
+      ## Start timing for node splitting time measurement
+      tic()
+      
+      ## For all possible variable clusters
       for (i in 1:length(possible_split_clusterIDs)) {
         
         ## Set current cluster ID
@@ -55,38 +63,44 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
         
         ## Read IQR scaled data values from samples in current node if needed
-        if (splitmethod == "CART") {
-          IQR_data_values <- IQR_data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
+        if (splitmethod == "CART" | splitmethod == "CART_fast") {
+          IQR_data_values <- IQR_data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]])
         }
         
         ## Select variables
-        if (varselection=="half_lowest_p" | varselection=="signif_p") {
-          ## Obtain p values from logistic regression
-          p_vals <- lapply(varclusters[[split_clusterID]] + 1,
-                           function(x) {
-                             p <- summary(glm(response ~ data_values[,x],
-                                              family=binomial(link="logit")))$coefficients[2,4] 
-                           })
-          if (varselection=="half_lowest_p") {
-            ## Get ranks of variables, sorted by p value
-            ranks <- order(p_vals)
-            ## Use only the variables with below average p value
-            best_split$selectedVarIDs <- varclusters[[split_clusterID]][ranks[1:round(length(ranks)/2)]]
-          } else if (varselection=="signif_p") {
-            ## Use only the variables with significant p value
-            best_split$selectedVarIDs <- varclusters[[split_clusterID]][p_vals < 0.15]
-          }
-          data_values <- data_values[,best_split$selectedVarIDs]
-        }
+        # if (varselection=="half_lowest_p" | varselection=="signif_p") {
+        #   ## Obtain p values from logistic regression
+        #   p_vals <- lapply(varclusters[[split_clusterID]] + 1,
+        #                    function(x) {
+        #                      p <- summary(glm(response ~ data_values[,x],
+        #                                       family=binomial(link="logit")))$coefficients[2,4] 
+        #                    })
+        #   if (varselection=="half_lowest_p") {
+        #     ## Get ranks of variables, sorted by p value
+        #     ranks <- order(p_vals)
+        #     ## Use only the variables with below average p value
+        #     best_split$selectedVarIDs <- varclusters[[split_clusterID]][ranks[1:round(length(ranks)/2)]]
+        #   } else if (varselection=="signif_p") {
+        #     ## Use only the variables with significant p value
+        #     best_split$selectedVarIDs <- varclusters[[split_clusterID]][p_vals < 0.15]
+        #   }
+        #   data_values <- data_values[,best_split$selectedVarIDs]
+        # }
         
         ## Find best split
-        best_split = findBestSplitCoefs(split_clusterID, data_values, best_split, response)
+        best_split = findBestSplitCoefs(split_clusterID, best_split)
+        
+        ## Save time measurement for single linear combination
+        linearcomb_times <- c(linearcomb_times, best_split$linearcomb_time)
         
         ## Assign split_levels_left for compatibility with cluster-less version
         if (best_split$clusterID == split_clusterID) {
           split_levels_left[[nodeID]] <<- list()
         }
       }
+      
+      ## Stop timing for node splitting time measurement
+      node_time <- toc(quiet = TRUE)
       
       if (best_split$clusterID < 0) {
         ## Stop if no good split found
@@ -98,23 +112,28 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         result$selectedVarIDs <- best_split$selectedVarIDs
         result$coefficients <- best_split$coefficients
         result$value <- best_split$value
+        result$linearcomb_times <- linearcomb_times
+        result$node_time <- as.numeric(node_time$toc - node_time$tic)
         return(result)
       }
     },
     
     ## Find Gini-optimal coefficients for linear combination of variables
-    findBestSplitCoefs = function(split_clusterID, data_values, best_split, response) {
+    findBestSplitCoefs = function(split_clusterID, best_split) {
       
       ## Coerce all but the most frequent factor level to a single one
       ## Irrelevant, if exactly two factors
       ## Skip cluster if less than two levels in response
-      if (nlevels(droplevels(response)) < 2) {
-        return(best_split)
-      } else {
-        bin_response <- response
-        most_freq_idx <- response==names(which.max.random(summary(response)))
-        bin_response[!most_freq_idx] <- response[!most_freq_idx][1]
-      }
+      # if (nlevels(droplevels(response)) < 2) {
+      #   return(best_split)
+      # } else {
+      #   bin_response <- response
+      #   most_freq_idx <- response==names(which.max.random(summary(response)))
+      #   bin_response[!most_freq_idx] <- response[!most_freq_idx][1]
+      # }
+      
+      ## Start timing for individual linear combination time measurement
+      tic()
       
       ## Find a linear combination
       if (splitmethod == "univariate") {
@@ -147,8 +166,8 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
         ## Coerce best uni-variate split into coefficients and value
         coefficients <- numeric(ncol(data_values))
-        coefficients[best_varID] <- 1/best_val
-        value <- 1
+        coefficients[best_varID] <- 1
+        value <- best_val
         
       } else if (splitmethod == "univariate_fast") {
         
@@ -183,8 +202,8 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
         ## Coerce best uni-variate split into coefficients and value
         coefficients <- numeric(ncol(data_values))
-        coefficients[best_varID] <- 1/best_val
-        value <- 1
+        coefficients[best_varID] <- 1
+        value <- best_val
         
       } else if (splitmethod == "SVM_linear") {
         
@@ -256,8 +275,8 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
         ## Coerce best uni-variate split into parameters
         coefficients <- numeric(ncol(data_values))
-        coefficients[best_varID] <- 1/best_val
-        param <- c(1, coefficients)
+        coefficients[best_varID] <- 1
+        param <- c(best_val, coefficients)
         
         ## Calculate Gini-optimal plane with univariate initial split
         par <- optim(
@@ -401,7 +420,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
       } else if (splitmethod == "CART_fast") {
         
-        ## Only change compared to CART splitmethod is sampling of observations during update steps
+        ## Only change compared to CART splitmethod is sampling of observations during update steps to reduce search time
         
         ## Use data_values centered around 0 and divided by their interquartile range
         ## IQR_data_values
@@ -420,7 +439,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         best_varID <- 0
         
         sapply(1:IQR_data_values$ncol, function(varID) {
-          ## Read value candidates
+          ## Sample value candidates
           val_candidates <- sample(IQR_data_values$column(varID), round(nu*IQR_data_values$nrow))
           sapply(val_candidates, function(val) {
             ## Compute new Gini impurity
@@ -448,7 +467,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         Gini_impurity_nplus1 <- gini_impurity(IQR_data_values$data,
                                               response,
                                               c(value, coefficients))
-        Gini_impurity_n <- Gini_impurity_nplus1 + 9999
+        Gini_impurity_n <- 9999
         
         ## Set convergence threshold
         epsilon <- 0.01
@@ -511,16 +530,22 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
       }
       
+      ## Restrict coefficients to norm 1 for a unique solution
+      coef_norm <- Norm(as.matrix(coefficients), "F")
+      value <- value/coef_norm
+      coefficients <- coefficients/coef_norm
+      
+      ## Stop timing for individual linear combination time measurement
+      linearcomb_time <- toc(quiet = TRUE)
+      
       ## Count classes in childs
-      # print(dim(as.matrix(data_values)))
-      # print(dim(coefficients))
-      # print(dim(value))
       idx <- as.matrix(data_values)%*%coefficients <= value
       class_counts_left <- tabulate(response[idx])
       class_counts_right <- tabulate(response[!idx])
       
       ## Skip cluster if one child empty
       if (sum(class_counts_left) == 0 | sum(class_counts_right) == 0) {
+        best_split$linearcomb_time <- as.numeric(linearcomb_time$toc - linearcomb_time$tic)
         return(best_split)
       }
       
@@ -538,8 +563,9 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         best_split$coefficients <- coefficients
         best_split$value <- value
         best_split$decrease <- decrease
+        best_split$linearcomb_time <- as.numeric(linearcomb_time$toc - linearcomb_time$tic)
       } else {
-        best_split$selectedVarIDs <- -1
+        best_split$linearcomb_time <- as.numeric(linearcomb_time$toc - linearcomb_time$tic)
       }
       
       return(best_split)

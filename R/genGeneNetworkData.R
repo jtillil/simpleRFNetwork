@@ -35,16 +35,15 @@ genGeneNetworkData <- function(
   ) {
   
   ## Set seed
-  set.seed(1)
+  # set.seed(1)
   
   ## Generate networks, modules and associations between genes
   networkdat <- lapply(1:num_networks,
                        function(i) {
                          rn <- random_network(num_genes, num_modules)
                          rn <- gen_partial_correlations(rn)
-                         exprdat <- gen_rnaseq(num_observations, rn)
                          return(list(
-                           exprdat = exprdat,
+                           exprdat = gen_rnaseq(num_observations, rn)$x,
                            modules = rn$modules
                          ))
                        })
@@ -87,7 +86,7 @@ genGeneNetworkData <- function(
   ## Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
   return(lapply(1:num_networks,
                 function(i) {
-                  probs <- 1/(1 + exp(-scale(as.matrix(networkdat[[i]]$exprdat$x)) %*% networkdat[[i]]$effects))
+                  probs <- 1/(1 + exp(-scale(as.matrix(networkdat[[i]]$exprdat)) %*% networkdat[[i]]$effects))
                   res <- data.frame(pheno = as.factor(sapply(
                     1:num_observations,
                     function(i) {
@@ -96,7 +95,7 @@ genGeneNetworkData <- function(
                              prob = c(1-probs[i], probs[i]))
                     }
                   )))
-                  res <- cbind(res, data.frame(networkdat[[i]]$exprdat$x))
+                  res <- cbind(res, data.frame(networkdat[[i]]$exprdat))
                   return(res)
                 }))
   
