@@ -16,6 +16,9 @@ Imports:
     coin,
     parallel,
     e1071,
-    Rfast
+    Rfast,
+    keras,
+    tensorflow,
+    SeqNet
 Suggests: survival
 RoxygenNote: 7.2.1

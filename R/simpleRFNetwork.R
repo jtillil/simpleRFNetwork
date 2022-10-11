@@ -211,9 +211,10 @@ simpleRFNetwork <- function(
     ## Create interquartile range normalized data object
     if (splitmethod == "CART" | splitmethod == "CART_fast") {
       IQR_dat <- model.data[,-1]
+      means <- colmeans(as.matrix(IQR_dat))
       sapply(1:ncol(IQR_dat),
              function(i) {
-               IQR_data[,i] <<- (IQR_dat[,i] - mean(IQR_dat[,i]))/IQR(IQR_dat[,i])
+               IQR_dat[,i] <<- (IQR_dat[,i] - means[i])/IQR(IQR_dat[,i])
              })
       IQR_dat <- Data$new(data = IQR_dat)
     } else {

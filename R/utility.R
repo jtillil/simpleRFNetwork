@@ -65,7 +65,7 @@ pc.order <- function(y, x) {
   
   ## Create contingency table of the nominal outcome with the nominal covariate
   N <- table(droplevels(x), droplevels(y))
-
+  
   ## PCA of weighted covariance matrix of class probabilites
   P <- N/rowSums(N)
   S <- cov.wt(P, wt = rowSums(N))$cov
@@ -166,36 +166,47 @@ gini_impurity <- function(dat, label, par) {
   return(gini)
 }
 
-##' Compute Gini loss of linear split for Keras backend.
-##' @title Gini loss of linear split
-##' @param y_true Tensorflow tensor of true labels.
-##' @param y_pred Tensorflow tensor of predicted labels.
-##' @return Gini loss.
-##' @author Johannes Tillil
-gini_loss <- function(y_true, y_pred) {
-  K <- backend()
-  y_pred <- (K$sign(y_pred-0.5)+1)/2
-  y_true <- K$transpose(y_true)-1
-  N1 <- K$sum(y_pred)$numpy()
-  N2 <- K$sum(1-y_pred)$numpy()
-  if (N1 != 0 & N2 != 0) {
-    -(
-      N1/(N1+N2)*(
-        (K$dot(y_true, y_pred)/N1)^2+
-          (K$dot(y_true, 1-y_pred)/N1)^2) +
-        N2/(N1+N2)*(
-          (K$dot(1-y_true, y_pred)/N2)^2+
-            (K$dot(1-y_true, 1-y_pred)/N2)^2)
-    )
-  } else if (N1 == 0) {
-    -(
-      (K$dot(1-y_true, y_pred)/N2)^2+
-        (K$dot(1-y_true, 1-y_pred)/N2)^2
-    )
-  } else if (N2 == 0) {
-    -(
-      (K$dot(y_true, y_pred)/N1)^2+
-        (K$dot(y_true, 1-y_pred)/N1)^2
-    )
+# ##' Compute Gini loss of linear split for Keras backend.
+# ##' @title Gini loss of linear split
+# ##' @param y_true Tensorflow tensor of true labels.
+# ##' @param y_pred Tensorflow tensor of predicted labels.
+# ##' @return Gini loss.
+# ##' @author Johannes Tillil
+# gini_loss <- function(y_true, y_pred) {
+#   K <- backend()
+#   y_pred <- (K$sign(y_pred-0.5)+1)/2
+#   y_true <- K$transpose(y_true)-1
+#   N1 <- K$sum(y_pred)$numpy()
+#   N2 <- K$sum(1-y_pred)$numpy()
+#   if (N1 != 0 & N2 != 0) {
+#     -(
+#       N1/(N1+N2)*(
+#         (K$dot(y_true, y_pred)/N1)^2+
+#           (K$dot(y_true, 1-y_pred)/N1)^2) +
+#         N2/(N1+N2)*(
+#           (K$dot(1-y_true, y_pred)/N2)^2+
+#             (K$dot(1-y_true, 1-y_pred)/N2)^2)
+#     )
+#   } else if (N1 == 0) {
+#     -(
+#       (K$dot(1-y_true, y_pred)/N2)^2+
+#         (K$dot(1-y_true, 1-y_pred)/N2)^2
+#     )
+#   } else if (N2 == 0) {
+#     -(
+#       (K$dot(y_true, y_pred)/N1)^2+
+#         (K$dot(y_true, 1-y_pred)/N1)^2
+#     )
+#   }
+# }
+
+go_to_parent <- function(child_nodeIDs, nodeID) {
+  for (i in 1:length(child_nodeIDs)) {
+    if (!is.null(child_nodeIDs[[i]])) {
+      if (child_nodeIDs[[i]][1] == nodeID | child_nodeIDs[[i]][2] == nodeID) {
+        break
+      }
+    }
   }
+  return(i)
 }

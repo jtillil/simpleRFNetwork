@@ -44,7 +44,8 @@ genGeneNetworkData <- function(
                          rn <- gen_partial_correlations(rn)
                          return(list(
                            exprdat = gen_rnaseq(num_observations, rn)$x,
-                           modules = rn$modules
+                           modules = rn$modules,
+                           causal_genes = NULL
                          ))
                        })
   
@@ -75,6 +76,8 @@ genGeneNetworkData <- function(
              causal_genes <- unique(causal_genes)
              effects[causal_genes] <- effect_measure
              networkdat[[i]]$effects <<- effects
+             networkdat[[i]]$causal_modules <<- causal_modules
+             networkdat[[i]]$causal_genes <<- c(networkdat[[i]]$causal_genes, list(causal_genes))
            })
   } else {
     sapply(1:num_networks,
@@ -96,7 +99,10 @@ genGeneNetworkData <- function(
                     }
                   )))
                   res <- cbind(res, data.frame(networkdat[[i]]$exprdat))
-                  return(res)
+                  return(list(data = res, 
+                              modules = lapply(networkdat[[i]]$modules, function(x){x$nodes}),
+                              causal_modules = networkdat[[i]]$causal_modules,
+                              causal_genes = networkdat[[i]]$causal_genes))
                 }))
   
 }

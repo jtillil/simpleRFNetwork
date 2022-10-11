@@ -39,7 +39,7 @@ Forest <- setRefClass("Forest",
         x$splitrule <- splitrule
         x$unordered_factors <- unordered_factors
         x$data <- data
-        x$IQR_data <- data
+        x$IQR_data <- IQR_data
         ## Module parameters
         x$varclusters <- varclusters
         x$splitobject <- splitobject

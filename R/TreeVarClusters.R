@@ -2,29 +2,33 @@
 ##' @title Tree class
 ##' @description Virtual class for Random forest tree where split variables are clusters. 
 ##' Contains all fields and methods used in all "VarClusters" tree subclasses.
-TreeVarClusters <- setRefClass("TreeVarClusters", 
+TreeVarClusters <- setRefClass("TreeVarClusters",
   fields = list(
     ## Tree-specific parameters
     mtry = "integer", 
     min_node_size = "integer",
     splitrule = "character",
-    unordered_factors = "character",
-    data = "Data", 
+    data = "Data",
     IQR_data ="Data",
-    sampleIDs = "list",    
+    sampleIDs = "list",
     oob_sampleIDs = "integer",
     child_nodeIDs = "list",
     ## Split-specific parameters
     split_clusterIDs = "integer",
     split_selectedVarIDs = "integer",
-    split_values = "numeric", 
+    split_values = "numeric",
     split_coefficients = "list",
-    split_levels_left = "list",
     ## Module parameters
     varclusters = "list",
     splitobject = "character",
     splitmethod = "character",
-    varselection = "character"),  
+    varselection = "character",
+    ## Performance Parameters
+    linearcomb_times = "list",
+    node_times = "numeric",
+    depths = "integer",
+    sizes = "integer"
+    ),
   methods = list(
     
     ## Initiate bootstrap
@@ -45,7 +49,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       
       ## Call recursive splitting function on root node
       splitNode(1)
-    }, 
+    },
     
     ## Handle node splitting
     ## @splitNode
@@ -65,10 +69,24 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       ## Split node
       split <- splitNodeInternal(nodeID, possible_split_clusterIDs)
       
-      if (!is.null(split)) {
+      ## Read performance metrics
+      linearcomb_times[[nodeID]] <<- split$linearcomb_times
+      node_times[nodeID] <<- split$node_time
+      sizes[nodeID] <<- length(sampleIDs[[nodeID]])
+      
+      ## Calculate node depth
+      depth <- 1
+      current_nodeID <- nodeID
+      while(current_nodeID != 1) {
+        current_nodeID <- go_to_parent(child_nodeIDs, current_nodeID)
+        depth <- depth + 1
+      }
+      depths[nodeID] <<- depth
+      
+      if (!is.null(split$clusterID)) {
         ## Assign split
         split_clusterIDs[[nodeID]] <<- split$clusterID
-        split_selectedVarIDs[[nodeID]] <<- split$clusterID
+        split_selectedVarIDs[[nodeID]] <<- split$selectedVarIDs
         split_coefficients[[nodeID]] <<- split$coefficients
         split_values[[nodeID]] <<- split$value
         
@@ -93,6 +111,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       } else {
         ## Compute estimate for terminal node
         split_clusterIDs[[nodeID]] <<- NA
+        split_selectedVarIDs[[nodeID]] <<- NA
         split_coefficients[[nodeID]] <<- NA
         split_values[[nodeID]] <<- estimate(nodeID)
       }
