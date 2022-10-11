@@ -73,7 +73,7 @@ univariate_split_fast <- function(data_values, response) {
 
 SVM <- function(data_values, response) {
   ## Calculate SVM plane
-  svmfit <- svm(y=bin_response,
+  svmfit <- svm(y=response,
                 x=data_values,
                 kernel="linear",
                 scale=FALSE)
