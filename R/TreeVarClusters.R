@@ -69,6 +69,9 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       
       ## Split node
       split <- splitNodeInternal(nodeID, possible_split_clusterIDs)
+
+      print(split)
+      print(split$node_times)
       
       ## Read performance metrics
       linearcomb_times[[nodeID]] <<- split$linearcomb_times

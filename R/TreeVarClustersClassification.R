@@ -97,8 +97,6 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       
       ## Stop timing for node splitting time measurement
       node_time <- toc(quiet = TRUE)
-
-      print(node_time)
       
       if (best_split$clusterID < 0) {
         ## Stop if no good split found
