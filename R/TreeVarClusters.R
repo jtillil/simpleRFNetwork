@@ -16,7 +16,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     child_nodeIDs = "list",
     ## Split-specific parameters
     split_clusterIDs = "integer",
-    split_selectedVarIDs = "integer",
+    # split_selectedVarIDs = "integer",
     split_values = "numeric",
     split_coefficients = "list",
     ## Module parameters
@@ -87,7 +87,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       if (!is.null(split$clusterID)) {
         ## Assign split
         split_clusterIDs[[nodeID]] <<- split$clusterID
-        split_selectedVarIDs[[nodeID]] <<- split$selectedVarIDs
+        # split_selectedVarIDs[[nodeID]] <<- split$selectedVarIDs
         split_coefficients[[nodeID]] <<- split$coefficients
         split_values[[nodeID]] <<- split$value
         
@@ -112,7 +112,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       } else {
         ## Compute estimate for terminal node
         split_clusterIDs[[nodeID]] <<- NA
-        split_selectedVarIDs[[nodeID]] <<- NA
+        # split_selectedVarIDs[[nodeID]] <<- NA
         split_coefficients[[nodeID]] <<- NA
         split_values[[nodeID]] <<- estimate(nodeID)
       }

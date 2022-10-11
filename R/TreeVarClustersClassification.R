@@ -38,7 +38,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       ## Initialize
       best_split <- NULL
       best_split$clusterID <- -1
-      best_split$selectedVarIDs <- -1
+      # best_split$selectedVarIDs <- -1
       best_split$coefficients <- -1
       best_split$value <- -1
       best_split$decrease <- -1
@@ -110,7 +110,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         ## Return best split
         result <- NULL
         result$clusterID <- as.integer(best_split$clusterID)
-        result$selectedVarIDs <- NULL
+        # result$selectedVarIDs <- NULL
         result$coefficients <- best_split$coefficients
         result$value <- best_split$value
         result$linearcomb_times <- linearcomb_times
