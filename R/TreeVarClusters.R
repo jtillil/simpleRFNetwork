@@ -4,6 +4,7 @@
 ##' Contains all fields and methods used in all "VarClusters" tree subclasses.
 TreeVarClusters <- setRefClass("TreeVarClusters",
   fields = list(
+    unordered_factors = "character",
     ## Tree-specific parameters
     mtry = "integer", 
     min_node_size = "integer",
