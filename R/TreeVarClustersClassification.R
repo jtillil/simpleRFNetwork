@@ -55,7 +55,6 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       
       ## For all possible variable clusters
       for (i in 1:length(possible_split_clusterIDs)) {
-        
         ## Set current cluster ID
         split_clusterID <- possible_split_clusterIDs[i]
         
@@ -98,6 +97,8 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       
       ## Stop timing for node splitting time measurement
       node_time <- toc(quiet = TRUE)
+
+      print(node_time)
       
       if (best_split$clusterID < 0) {
         ## Stop if no good split found
