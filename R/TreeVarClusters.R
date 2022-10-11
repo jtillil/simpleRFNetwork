@@ -185,26 +185,15 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           }
           
           ## Move to child
-          if (length(split_levels_left[[nodeID]]) == 0) {
-            ## Ordered splitting
-            if (varselection == "none") {
-              value <- as.matrix(data$subset(i, varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
-            } else {
-              value <- as.matrix(data$subset(i, split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
-            }
-            if (value <= split_values[nodeID]) {
-              nodeID <- child_nodeIDs[[nodeID]][1]
-            } else {
-              nodeID <- child_nodeIDs[[nodeID]][2]
-            }
+          if (varselection == "none") {
+            value <- as.matrix(data$subset(i, varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
           } else {
-            ## Unordered splitting
-            value <- data$subset(oob_sampleIDs[i], split_varIDs[nodeID])
-            if (value %in% split_levels_left[[nodeID]]) {
-              nodeID <- child_nodeIDs[[nodeID]][1]
-            } else {
-              nodeID <- child_nodeIDs[[nodeID]][2]
-            }
+            value <- as.matrix(data$subset(i, split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
+          }
+          if (value <= split_values[nodeID]) {
+            nodeID <- child_nodeIDs[[nodeID]][1]
+          } else {
+            nodeID <- child_nodeIDs[[nodeID]][2]
           }
         }
         
@@ -276,7 +265,8 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         
       } else if (type == "surrogate_splits") {
         
-        ## 
+        ## Todo
+        stop("surrogate_splits variable importance not implemented yet.")
         
       } else {
         stop("Unknown variable importance type")
