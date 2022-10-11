@@ -82,7 +82,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         current_nodeID <- go_to_parent(child_nodeIDs, current_nodeID)
         depth <- depth + 1
       }
-      depths[nodeID] <<- depth
+      depths[nodeID] <<- as.integer(depth)
       
       if (!is.null(split$clusterID)) {
         ## Assign split
