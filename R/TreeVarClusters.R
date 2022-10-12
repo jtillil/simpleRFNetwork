@@ -47,7 +47,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       
       ## Assign bootstrap samples to root node
       sampleIDs <<- list(bootstrap_sample)
-      
+
       ## Call recursive splitting function on root node
       splitNode(1)
     },
@@ -85,7 +85,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         }
         depths[nodeID] <<- as.integer(depth)
 
-        ## Assign split
+        # ## Assign split
         split_clusterIDs[[nodeID]] <<- split$clusterID
         # split_selectedVarIDs[[nodeID]] <<- split$selectedVarIDs
         split_coefficients[[nodeID]] <<- split$coefficients

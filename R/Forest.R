@@ -6,6 +6,7 @@
 ##' @importFrom parallel makeCluster
 ##' @importFrom parallel parLapply
 ##' @import methods
+##' @import tictoc
 Forest <- setRefClass("Forest", 
   fields = list(
     ## Standard parameters
@@ -22,6 +23,7 @@ Forest <- setRefClass("Forest",
     treetype = "character",
     replace = "logical", 
     covariate_levels = "list",
+    forest_time = "numeric",
     ## Module parameters
     varclusters = "list",
     splitobject = "character",
@@ -30,6 +32,9 @@ Forest <- setRefClass("Forest",
   methods = list(
     
     grow = function(num_threads) { 
+
+      ## Start timing for forest growth
+      tic()
       
       ## Init trees
       temp <- lapply(trees, function(x) {
@@ -48,25 +53,30 @@ Forest <- setRefClass("Forest",
       })
       
       ## Grow trees
-      # if (Sys.info()["sysname"]=="Windows") {
-      #   ## On Windows
-      #   cl <- makeCluster(num_threads)
-      #   trees <<- parLapply(cl, X=trees, fun=function(x) {
-      #     x$grow(replace)
-      #     x
-      #   })
-      # } else {
-      #   ## On Unix
-      #   trees <<- mclapply(trees, function(x) {
-      #     x$grow(replace)
-      #     x
-      #   }, mc.cores = num_threads)
-      # }
+      if (Sys.info()["sysname"]=="Windows") {
+        ## On Windows
+        cl <- makeCluster(num_threads)
+        trees <<- parLapply(cl, X=trees, fun=function(x) {
+          x$grow(replace)
+          x
+        })
+      } else {
+        ## On Unix
+        trees <<- mclapply(trees, function(x) {
+          x$grow(replace)
+          x
+        }, mc.cores = num_threads)
+      }
       
-      trees <<- lapply(trees, function(x) {
-        x$grow(replace)
-        x
-      })
+      # trees <<- lapply(trees, function(x) {
+      #   x$grow(replace)
+      #   x
+      # })
+
+      ## Stop timing for forest growth
+      forest_time <- toc(quiet = TRUE)
+      forest_time <- as.numeric(forest_time$toc - forest_time$tic)
+
     }, 
     
     predict = function(newdata) {
@@ -124,8 +134,9 @@ Forest <- setRefClass("Forest",
       cat("Mtry:                            ", mtry, "\n")
       cat("Target node size:                ", min_node_size, "\n")
       cat("Replace                          ", replace, "\n")
-      cat("Unordered factor handling        ", unordered_factors, "\n")
+      # cat("Unordered factor handling        ", unordered_factors, "\n")
       cat("OOB prediction error:            ", predictionError(), "\n")
+      cat("Forest execution time:           ", forest_time, "\n")
     }, 
     
     print = function() {
