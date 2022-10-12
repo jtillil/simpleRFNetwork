@@ -95,6 +95,7 @@ LDA <- function(data_values, response) {
   mat <- 0.5*(cova(as.matrix(data_values[response == 1,])) +
                                 cova(as.matrix(data_values[response == 0,]))) +
                          Diag.matrix(ncol(data_values), v = 1e-8)
+  print(1)
   print(diag(mat))
   coefficients <- spdinv(mat) %*% (mean1 - mean0)
   value <- sum(coefficients * (0.5*(mean1 + mean0)))
