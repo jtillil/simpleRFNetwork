@@ -74,9 +74,8 @@ Forest <- setRefClass("Forest",
       # })
 
       ## Stop timing for forest growth
-      forest_time_toc <- toc(quiet = TRUE)
-      show(forest_time_toc)
-      forest_time <- as.numeric(forest_time_toc$toc - forest_time_toc$tic)
+      forest_time <- toc(quiet = TRUE)
+      forest_time <<- as.numeric(forest_time$toc - forest_time$tic)
 
     }, 
     
