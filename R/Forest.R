@@ -75,6 +75,7 @@ Forest <- setRefClass("Forest",
 
       ## Stop timing for forest growth
       forest_time <- toc(quiet = TRUE)
+      print(forest_time)
       forest_time <- as.numeric(forest_time$toc - forest_time$tic)
 
     }, 
