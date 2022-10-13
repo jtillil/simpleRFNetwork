@@ -65,16 +65,16 @@ genGeneNetworkData <- function(
              ## Sample causal genes
              causal_genes <- c()
              if (num_causal_genes == "all") {
-               sapply(1:min(causal_modules, networkdat[[i]]$num_modules),
+               sapply(1:min(num_causal_modules, networkdat[[i]]$num_modules),
                       function(j) {
                         causal_genes <<- c(causal_genes,
-                                           networkdat[[i]]$modules[[j]]$nodes)
+                                           networkdat[[i]]$modules[[causal_modules[j]]]$nodes)
                       })
              } else {
-               sapply(1:min(causal_modules, networkdat[[i]]$num_modules),
+               sapply(1:min(num_causal_modules, networkdat[[i]]$num_modules),
                       function(j) {
                         causal_genes <<- c(causal_genes,
-                                           sample(x = networkdat[[i]]$modules[[j]]$nodes,
+                                           sample(x = networkdat[[i]]$modules[[causal_modules[j]]]$nodes,
                                                   size = num_causal_genes,
                                                   replace = FALSE))
                       })
