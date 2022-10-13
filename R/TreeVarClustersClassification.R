@@ -19,21 +19,28 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       if (length(sampleIDs[[nodeID]]) <= min_node_size) {
         return(NULL)
       }
+
+      ## Get response
+      response <- data$subset(sampleIDs[[nodeID]], 1)
       
       ## Stop if node is pure
-      unique_response <- unique(data$subset(sampleIDs[[nodeID]], 1))
-      if (length(unique_response) == 1) {
+      if (length(unique(response)) == 1) {
+        return(NULL)
+      }
+
+      ## Stop if node has only one observation left for one class in the case of LDA
+      if (splitmethod == "LDA" & (length(response[response == 1]) <= 1 | length(response[response == 0]) <= 1)) {
         return(NULL)
       }
       
       ## Find best split, stop if no decrease of impurity
-      return(findBestSplit(nodeID, possible_split_clusterIDs))
+      return(findBestSplit(nodeID, possible_split_clusterIDs, response))
     }, 
     
     ## Try to order factors and finds best split
     ## @findBestSplitValuePartition
     ## @findBestSplitValueOrdered
-    findBestSplit = function(nodeID, possible_split_clusterIDs) {
+    findBestSplit = function(nodeID, possible_split_clusterIDs, response) {
       
       ## Initialize
       best_split <- NULL
@@ -43,9 +50,6 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       best_split$value <- -1
       best_split$decrease <- -1
       best_split$linearcomb_time <- -1
-      
-      ## Get response
-      response <- data$subset(sampleIDs[[nodeID]], 1)
       
       ## Initialize array for individual linear combination time measurement
       linearcomb_times <- c()
