@@ -49,6 +49,7 @@ genGeneNetworkData <- function(
                          return(list(
                            exprdat = gen_rnaseq(num_observations, rn)$x,
                            modules = rn$modules,
+                           num_modules = length(rn$modules),
                            causal_genes = NULL
                          ))
                        })
@@ -57,19 +58,20 @@ genGeneNetworkData <- function(
   if (num_causal_modules > 0) {
     sapply(1:num_networks,
            function(i) {
-             effects <- numeric(num_genes)
-             causal_modules <- sample(x = 1:num_modules,
+             ## Sample causal modules
+             causal_modules <- sample(x = 1:networkdat[[i]]$num_modules,
                                       size = num_causal_modules,
                                       replace = FALSE)
+             ## Sample causal genes
              causal_genes <- c()
              if (num_causal_genes == "all") {
-               sapply(causal_modules,
+               sapply(1:min(causal_modules, networkdat[[i]]$num_modules),
                       function(j) {
                         causal_genes <<- c(causal_genes,
                                            networkdat[[i]]$modules[[j]]$nodes)
                       })
              } else {
-               sapply(causal_modules,
+               sapply(1:min(causal_modules, networkdat[[i]]$num_modules),
                       function(j) {
                         causal_genes <<- c(causal_genes,
                                            sample(x = networkdat[[i]]$modules[[j]]$nodes,
@@ -77,11 +79,13 @@ genGeneNetworkData <- function(
                                                   replace = FALSE))
                       })
              }
+             ## Save sampled values
              causal_genes <- unique(causal_genes)
+             effects <- numeric(num_genes)
              effects[causal_genes] <- effect_measure
              networkdat[[i]]$effects <<- effects
              networkdat[[i]]$causal_modules <<- causal_modules
-             networkdat[[i]]$causal_genes <<- c(networkdat[[i]]$causal_genes, list(causal_genes))
+             networkdat[[i]]$causal_genes <<- causal_genes
            })
   } else {
     sapply(1:num_networks,
