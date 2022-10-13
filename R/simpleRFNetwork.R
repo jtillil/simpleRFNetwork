@@ -103,7 +103,7 @@ simpleRFNetwork <- function(
   
   ## Check parameters
   if (is.null(mtry)) {
-    mtry <- sqrt(ncol(model.data)-1)
+    mtry <- sqrt(length(varclusters))
   } else if (mtry > ncol(model.data)-1) {
     stop("Mtry cannot be larger than number of independent variables.")
   }
@@ -147,13 +147,13 @@ simpleRFNetwork <- function(
   }
   if (!(splitmethod %in% c("univariate",
                            "univariate_fast",
-                           "SVM_linear",
+                           "SVM",
                            "SVM_nonparametric",    # Todo
                            "SVM_Gini",             # Todo
                            "LDA",
                            "QDA",                  # Todo
                            "Gini_optimal",
-                           "Gini_stoch_optimal",   # Todo
+                           "Gini_stoch_optimal",
                            "CART",
                            "CART_fast"))) {
     stop("Unknown value for splitmethod.")

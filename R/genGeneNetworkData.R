@@ -5,7 +5,7 @@
 ##' @title simpleRFNetwork
 ##' @param num_networks Integer, number of networks to generate.
 ##' @param num_genes Integer, number of genes per network.
-##' @param num_modules Integer, number of modules per network.
+##' @param num_modules Integer, number of modules per network. Can also be NULL for natural number of modules.
 ##' @param num_observations Integer, number of expression data observations per network.
 ##' @param num_causal_modules Integer, how many modules should be causal for the phenotype.
 ##' @param num_causal_genes Integer, how many genes in each causal module should be causal for the phenotype. Can also be "all".
@@ -27,7 +27,7 @@
 genGeneNetworkData <- function(
   num_networks,
   num_genes,
-  num_modules,
+  num_modules = NULL,
   num_observations,
   num_causal_modules,
   num_causal_genes,

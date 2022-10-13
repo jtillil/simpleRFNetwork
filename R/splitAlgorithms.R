@@ -92,9 +92,22 @@ LDA <- function(data_values, response) {
   
   ## Calculate coefficients and value
   ## Calculate mean of both covariance matrices due to homoscedasticity
-  coefficients <- spdinv(0.5*(cova(as.matrix(data_values[response == 1,])) +
-                                cova(as.matrix(data_values[response == 0,]))) +
-                         Diag.matrix(ncol(data_values), v = 1e-10)) %*% (mean1 - mean0)
+  mat <- 0.5*(cova(as.matrix(data_values[response == 1,])) +
+              cova(as.matrix(data_values[response == 0,])))
+  sapply(1:ncol(mat), function(i) {
+    if (mat[i,i] == 0) {
+      mat[i,i] <<- 1e-10
+    }
+  })
+  dia <- c()
+  sapply(1:ncol(mat), function(i) {
+    dia <- c(dia, mat[i,i])
+  })
+  print(dia)
+  # coefficients <- spdinv(0.5*(cova(as.matrix(data_values[response == 1,])) +
+  #                               cova(as.matrix(data_values[response == 0,]))) +
+  #                        Diag.matrix(ncol(data_values), v = 1e-10)) %*% (mean1 - mean0)
+  coefficients <- spdinv(mat) %*% (mean1 - mean0)
   value <- sum(coefficients * (0.5*(mean1 + mean0)))
   
   return(c(value, coefficients))

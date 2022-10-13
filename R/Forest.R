@@ -128,6 +128,8 @@ Forest <- setRefClass("Forest",
       cat("simpleRF Forest\n")
       cat("Type:                            ", treetype, "\n")
       cat("Splitrule:                       ", splitrule, "\n")
+      cat("Splitmethod:                     ", splitmethod, "\n")
+      cat("Variable Selection:              ", varselection, "\n")
       cat("Number of trees:                 ", num_trees, "\n")
       cat("Sample size:                     ", data$nrow, "\n")
       cat("Number of independent variables: ", data$ncol-1, "\n")
@@ -143,5 +145,3 @@ Forest <- setRefClass("Forest",
       show()
     })
 )
-
-

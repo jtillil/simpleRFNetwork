@@ -144,7 +144,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
         res <- univariate_split_fast(data_values, response)
         
-      } else if (splitmethod == "SVM_linear") {
+      } else if (splitmethod == "SVM") {
         
         res <- SVM(data_values, response)
         
