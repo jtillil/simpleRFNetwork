@@ -69,21 +69,21 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       
       ## Split node
       split <- splitNodeInternal(nodeID, possible_split_clusterIDs)
+
+      ## Calculate node depth and size
+      depth <- 1
+      current_nodeID <- nodeID
+      while(current_nodeID != 1) {
+        current_nodeID <- go_to_parent(child_nodeIDs, current_nodeID)
+        depth <- depth + 1
+      }
+      depths[nodeID] <<- as.integer(depth)
+      sizes[nodeID] <<- length(sampleIDs[[nodeID]])
       
       if (!is.null(split$clusterID)) {
-        ## Read performance metrics
+        ## Read timing metrics
         linearcomb_times[[nodeID]] <<- split$linearcomb_times
         node_times[nodeID] <<- split$node_time
-        sizes[nodeID] <<- length(sampleIDs[[nodeID]])
-        
-        ## Calculate node depth
-        depth <- 1
-        current_nodeID <- nodeID
-        while(current_nodeID != 1) {
-          current_nodeID <- go_to_parent(child_nodeIDs, current_nodeID)
-          depth <- depth + 1
-        }
-        depths[nodeID] <<- as.integer(depth)
 
         # ## Assign split
         split_clusterIDs[[nodeID]] <<- split$clusterID

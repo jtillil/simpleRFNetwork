@@ -68,14 +68,14 @@
 ##' @export
 simpleRFNetwork <- function(
   ## Standard parameters
-  formula, 
-  data, 
+  formula,
+  data,
   num_trees = 50, 
   mtry = NULL, 
   min_node_size = NULL, 
-  replace = TRUE, 
-  probability = FALSE, 
-  splitrule = NULL, 
+  replace = TRUE,
+  probability = FALSE,
+  splitrule = NULL,
   unordered_factors = "ignore",
   num_threads = 1,
   ## Module Parameters

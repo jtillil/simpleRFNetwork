@@ -7,7 +7,7 @@ univariate_split <- function(data_values, response) {
   ## Iterate over all variables
   sapply(1:ncol(data_values), function(varID) {
     ## Read value candidates
-    val_candidates <- data_values[,varID]
+    val_candidates <- unique(data_values[,varID])
     sapply(val_candidates, function(val) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(ncol(data_values))
@@ -45,7 +45,7 @@ univariate_split_fast <- function(data_values, response) {
   ## Iterate over all variables
   sapply(1:ncol(data_values), function(varID) {
     ## Sample value candidates
-    val_candidates <- sample(data_values[,varID], round(nu*nrow(data_values)))
+    val_candidates <- sample(unique(data_values[,varID]), round(nu*nrow(data_values)))
     sapply(val_candidates, function(val) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(ncol(data_values))
@@ -217,7 +217,7 @@ CART <- function(IQR_data_values, data_values, response) {
   ## Iterate over all variables
   sapply(1:IQR_data_values$ncol, function(varID) {
     ## Read value candidates
-    val_candidates <- IQR_data_values$column(varID)
+    val_candidates <- unique(IQR_data_values$column(varID))
     sapply(val_candidates, function(val) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(IQR_data_values$ncol)
@@ -324,13 +324,11 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   
   sapply(1:IQR_data_values$ncol, function(varID) {
     ## Sample value candidates
-    val_candidates <- sample(IQR_data_values$column(varID), round(nu*IQR_data_values$nrow))
+    val_candidates <- sample(unique(IQR_data_values$column(varID)), round(nu*IQR_data_values$nrow))
     sapply(val_candidates, function(val) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(IQR_data_values$ncol)
       coefficients_start[varID] <- 1
-      # print(c(val, coefficients_start))
-      # print(IQR_data_values$data)
       Gini_impurity_val <- gini_impurity(IQR_data_values$data,
                                          response,
                                          c(val, coefficients_start))
