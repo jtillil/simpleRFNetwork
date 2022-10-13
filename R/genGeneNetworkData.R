@@ -40,7 +40,11 @@ genGeneNetworkData <- function(
   ## Generate networks, modules and associations between genes
   networkdat <- lapply(1:num_networks,
                        function(i) {
-                         rn <- random_network(num_genes, num_modules)
+                         if (is.null(num_modules)) {
+                           rn <- random_network(num_genes)
+                         } else {
+                           rn <- random_network(num_genes, num_modules)
+                         }
                          rn <- gen_partial_correlations(rn)
                          return(list(
                            exprdat = gen_rnaseq(num_observations, rn)$x,
