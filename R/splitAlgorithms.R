@@ -89,6 +89,10 @@ LDA <- function(data_values, response) {
   ## Calculate class means
   mean0 <- colmeans(as.matrix(data_values[response == 0,]))
   mean1 <- colmeans(as.matrix(data_values[response == 1,]))
+
+  print("start")
+  print(head(data_values[,c(1,2,3,4,5)]))
+  print(response)
   
   ## Calculate coefficients and value
   ## Calculate mean of both covariance matrices due to homoscedasticity
@@ -99,6 +103,11 @@ LDA <- function(data_values, response) {
       mat[i,i] <<- 1e-10
     }
   })
+  dia <- c()
+  for (i in 1:ncol(mat)) {
+    dia <- c(dia, mat[i,i])
+  }
+  print(dia)
   # coefficients <- spdinv(0.5*(cova(as.matrix(data_values[response == 1,])) +
   #                               cova(as.matrix(data_values[response == 0,]))) +
   #                        Diag.matrix(ncol(data_values), v = 1e-10)) %*% (mean1 - mean0)
