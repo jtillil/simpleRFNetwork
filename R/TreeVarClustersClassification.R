@@ -59,7 +59,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       tic()
       
       ## For all possible variable clusters
-      for (split_clusterID in possible_split_clusterIDs)) {
+      for (split_clusterID in possible_split_clusterIDs) {
         
         ## Read data values from samples in current node
         data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
