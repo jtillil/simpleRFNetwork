@@ -222,8 +222,8 @@ CART <- function(IQR_data_values, data_values, response) {
   
   ## Coerce best uni-variate split into coefficients and value
   coefficients <- numeric(IQR_data_values$ncol)
-  coefficients[best_varID] <- 1/best_val
-  value <- 1
+  coefficients[best_varID] <- 1
+  value <- best_val
   
   ## Compute starting Gini impurity
   Gini_impurity_nplus1 <- gini_impurity(IQR_data_values$data,
@@ -334,8 +334,8 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   
   ## Coerce best uni-variate split into coefficients and value
   coefficients <- numeric(IQR_data_values$ncol)
-  coefficients[best_varID] <- 1/best_val
-  value <- 1
+  coefficients[best_varID] <- 1
+  value <- best_val
 
   print(coefficients)
   print(value)
@@ -401,6 +401,9 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   }
 
   print(Gini_impurity_nplus1)
+
+  print(coefficients)
+  print(value)
   
   ## Read IQR scaling parameters
   IQR_vals <- c()
@@ -418,6 +421,9 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   coefficients <- 1/translated_axis_points
   value <- 1
 
+  print("rescaling")
+  print(axis_points)
+  print(translated_axis_points)
   print(coefficients)
   print(value)
   
