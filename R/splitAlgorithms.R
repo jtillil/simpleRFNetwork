@@ -349,7 +349,7 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   print(Gini_impurity_nplus1)
   
   ## Set convergence threshold
-  epsilon <- 0.01
+  epsilon <- 0.001
   
   ## Perform updates until improvement below threshold
   while ((Gini_impurity_n - Gini_impurity_nplus1) > epsilon) {
@@ -421,7 +421,12 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   coefficients <- 1/translated_axis_points
   value <- 1
 
+  ## Set NaN coefficients to 0
+  coefficients[is.nan(coefficients)] <- 0
+
   print("rescaling")
+  # print(IQR_vals)
+  # print(Mean_vals)
   print(axis_points)
   print(translated_axis_points)
   print(coefficients)
