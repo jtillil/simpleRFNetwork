@@ -211,7 +211,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     
     ## permute and predict OOB data with the tree
     ## @getNodePrediction
-    permuteAndPredictOOB = function(permuted_varID) {
+    permuteAndPredictOOB = function(permuted_clusterID) {
       ## Initialize
       num_samples_predict <- length(oob_sampleIDs)
       predictions <- list()
@@ -227,7 +227,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           }
 
           ## Move to child
-          if (split_varIDs[nodeID] == permuted_varID) {
+          if (split_clusterIDs[nodeID] == permuted_clusterID) {
             value <- as.matrix(data$subset(oob_sampleIDs[permutations[i]], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
           } else {
             value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
@@ -255,13 +255,19 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         oob_error <- predictionError()
 
         ## For each variable, prediction error after permutation
-        res <- sapply(2:data$ncol, function(varID) {
-          pred <- permuteAndPredictOOB(varID)
+        # res <- sapply(2:data$ncol, function(clusterID) {
+        #   pred <- permuteAndPredictOOB(clusterID)
+        #   oob_error_perm <- predictionError(pred)
+        #   oob_error_perm - oob_error
+        # })
+        res <- c()
+        for (permuted_clusterID in 1:length(varclusters)) {
+          pred <- permuteAndPredictOOB(permuted_clusterID)
           oob_error_perm <- predictionError(pred)
-          oob_error_perm - oob_error
-        })
-        names(res) <- data$names[-1]
-        res
+          res <- c(res, oob_error_perm - oob_error)
+        }
+        # names(res) <- data$names[-1]
+        return(res)
         
       } else if (type == "surrogate_splits") {
         
