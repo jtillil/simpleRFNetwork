@@ -66,8 +66,8 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
 
         ## IF LDA: skip if covariance matrix singular
         if (splitmethod == "LDA") {
-          mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=TRUE) +
-                      cova(as.matrix(data_values[response == 1,]), center=TRUE, large=TRUE))
+          mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
+                      cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE))
           sapply(1:ncol(mat), function(j) {
             if (mat[j,j] == 0) {
               mat[j,j] <<- 1e-10
