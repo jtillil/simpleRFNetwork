@@ -33,31 +33,15 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       if (splitmethod == "LDA" & (length(response[response == 1]) <= 1 | length(response[response == 0]) <= 1)) {
         return(NULL)
       }
-
-      ## IF LDA: stop if covariance matrix singular
-      if (splitmethod == "LDA") {
-        mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=TRUE) +
-                    cova(as.matrix(data_values[response == 1,]), center=TRUE, large=TRUE))
-        sapply(1:ncol(mat), function(i) {
-          if (mat[i,i] == 0) {
-            mat[i,i] <<- 1e-10
-          }
-        })
-        if (!is.positive.definite(mat)) {
-          return(NULL)
-        }
-      } else {
-        mat <- NULL
-      }
       
       ## Find best split, stop if no decrease of impurity
-      return(findBestSplit(nodeID, possible_split_clusterIDs, response, mat))
+      return(findBestSplit(nodeID, possible_split_clusterIDs, response))
     }, 
     
     ## Try to order factors and finds best split
     ## @findBestSplitValuePartition
     ## @findBestSplitValueOrdered
-    findBestSplit = function(nodeID, possible_split_clusterIDs, response, mat=NULL) {
+    findBestSplit = function(nodeID, possible_split_clusterIDs, response) {
       
       ## Initialize
       best_split <- NULL
@@ -75,14 +59,28 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       tic()
       
       ## For all possible variable clusters
-      for (i in 1:length(possible_split_clusterIDs)) {
-        ## Set current cluster ID
-        split_clusterID <- possible_split_clusterIDs[i]
+      for (split_clusterID in possible_split_clusterIDs)) {
         
         ## Read data values from samples in current node
         data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
+
+        ## IF LDA: skip if covariance matrix singular
+        if (splitmethod == "LDA") {
+          mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=TRUE) +
+                      cova(as.matrix(data_values[response == 1,]), center=TRUE, large=TRUE))
+          sapply(1:ncol(mat), function(j) {
+            if (mat[j,j] == 0) {
+              mat[j,j] <<- 1e-10
+            }
+          })
+          if (!is.positive.definite(mat)) {
+            next
+          }
+        } else {
+          mat <- NULL
+        }
         
-        ## Read IQR scaled data values from samples in current node if needed
+        ## IF CART: read IQR scaled data values from samples in current node
         if (splitmethod == "CART" | splitmethod == "CART_fast") {
           IQR_data_values <- Data$new(data = IQR_data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]]))
         } else {
