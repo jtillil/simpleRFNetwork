@@ -45,7 +45,8 @@ univariate_split_fast <- function(data_values, response) {
   ## Iterate over all variables
   sapply(1:ncol(data_values), function(varID) {
     ## Sample value candidates
-    val_candidates <- sample(unique(data_values[,varID]), round(nu*nrow(data_values)))
+    unique_col <- unique(data_values[,varID])
+    val_candidates <- sample(unique_col, round(nu*length(unique_col)))
     sapply(val_candidates, function(val) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(ncol(data_values))
@@ -89,32 +90,8 @@ LDA <- function(data_values, response, mat) {
   ## Calculate class means
   mean0 <- colmeans(as.matrix(data_values[response == 0,]))
   mean1 <- colmeans(as.matrix(data_values[response == 1,]))
-
-  # print("start")
-  # print(head(data_values[,c(1,2,3,4,5)]))
-  # print(response)
   
   ## Calculate coefficients and value
-  ## Calculate mean of both covariance matrices due to homoscedasticity
-  # mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=TRUE) +
-  #             cova(as.matrix(data_values[response == 1,]), center=TRUE, large=TRUE))
-  # sapply(1:ncol(mat), function(i) {
-  #   if (mat[i,i] == 0) {
-  #     mat[i,i] <<- 1e-10
-  #   }
-  # })
-  # dia <- c()
-  # for (i in 1:ncol(mat)) {
-  #   dia <- c(dia, mat[i,i])
-  # }
-  # print(dia)
-  # print(mat)
-  # algomat <<- mat
-  # algodat <<- data_values
-  # algoresp <<- response
-  # coefficients <- spdinv(0.5*(cova(as.matrix(data_values[response == 1,])) +
-  #                               cova(as.matrix(data_values[response == 0,]))) +
-  #                        Diag.matrix(ncol(data_values), v = 1e-10)) %*% (mean1 - mean0)
   coefficients <- spdinv(mat) %*% (mean1 - mean0)
   value <- sum(coefficients * (0.5*(mean1 + mean0)))
   
@@ -332,7 +309,8 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   
   sapply(1:IQR_data_values$ncol, function(varID) {
     ## Sample value candidates
-    val_candidates <- sample(unique(IQR_data_values$column(varID)), round(nu*IQR_data_values$nrow))
+    unique_col <- unique(IQR_data_values$column(varID))
+    val_candidates <- sample(unique_col, round(nu*length(unique_col)))
     sapply(val_candidates, function(val) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(IQR_data_values$ncol)

@@ -64,15 +64,18 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         ## Read data values from samples in current node
         data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
 
-        ## IF LDA: skip if covariance matrix singular
+        ## IF LDA: calculate covariance matrix and skip if singular
         if (splitmethod == "LDA") {
+          ## Calculate mean of both covariance matrices due to homoscedasticity
           mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
                       cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE))
+          ## Condition matrix by adding 1e-10 to diagonal elements that are 0
           sapply(1:ncol(mat), function(j) {
             if (mat[j,j] == 0) {
               mat[j,j] <<- 1e-10
             }
           })
+          ## Check if singular
           if (!is.positive.definite(mat)) {
             next
           }
