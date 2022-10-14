@@ -108,6 +108,8 @@ LDA <- function(data_values, response) {
     dia <- c(dia, mat[i,i])
   }
   print(dia)
+  print(mat)
+  algomat <<- mat
   # coefficients <- spdinv(0.5*(cova(as.matrix(data_values[response == 1,])) +
   #                               cova(as.matrix(data_values[response == 0,]))) +
   #                        Diag.matrix(ncol(data_values), v = 1e-10)) %*% (mean1 - mean0)
