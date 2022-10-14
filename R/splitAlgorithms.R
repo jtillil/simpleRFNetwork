@@ -85,7 +85,7 @@ SVM <- function(data_values, response) {
   return(c(value, coefficients))
 }
 
-LDA <- function(data_values, response) {
+LDA <- function(data_values, response, mat) {
   ## Calculate class means
   mean0 <- colmeans(as.matrix(data_values[response == 0,]))
   mean1 <- colmeans(as.matrix(data_values[response == 1,]))
@@ -96,19 +96,19 @@ LDA <- function(data_values, response) {
   
   ## Calculate coefficients and value
   ## Calculate mean of both covariance matrices due to homoscedasticity
-  mat <- 0.5*(cova(as.matrix(data_values[response == 1,])) +
-              cova(as.matrix(data_values[response == 0,])))
-  sapply(1:ncol(mat), function(i) {
-    if (mat[i,i] == 0) {
-      mat[i,i] <<- 1e-10
-    }
-  })
-  dia <- c()
-  for (i in 1:ncol(mat)) {
-    dia <- c(dia, mat[i,i])
-  }
-  print(dia)
-  print(mat)
+  # mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=TRUE) +
+  #             cova(as.matrix(data_values[response == 1,]), center=TRUE, large=TRUE))
+  # sapply(1:ncol(mat), function(i) {
+  #   if (mat[i,i] == 0) {
+  #     mat[i,i] <<- 1e-10
+  #   }
+  # })
+  # dia <- c()
+  # for (i in 1:ncol(mat)) {
+  #   dia <- c(dia, mat[i,i])
+  # }
+  # print(dia)
+  # print(mat)
   algomat <<- mat
   algodat <<- data_values
   algoresp <<- response

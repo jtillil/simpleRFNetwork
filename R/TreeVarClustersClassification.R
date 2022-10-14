@@ -7,6 +7,7 @@
 ##' @import keras
 ##' @import tensorflow
 ##' @import tictoc
+##' @import matrixcalc
 TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
   contains = "TreeVarClusters",
   fields = list(),
@@ -28,19 +29,35 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         return(NULL)
       }
 
-      ## Stop if node has only one observation left for one class in the case of LDA
+      ## IF LDA: stop if node has only one observation left for one class
       if (splitmethod == "LDA" & (length(response[response == 1]) <= 1 | length(response[response == 0]) <= 1)) {
         return(NULL)
       }
+
+      ## IF LDA: stop if covariance matrix singular
+      if (splitmethod == "LDA") {
+        mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=TRUE) +
+                    cova(as.matrix(data_values[response == 1,]), center=TRUE, large=TRUE))
+        sapply(1:ncol(mat), function(i) {
+          if (mat[i,i] == 0) {
+            mat[i,i] <<- 1e-10
+          }
+        })
+        if (!is.positive.definite(mat)) {
+          return(NULL)
+        }
+      } else {
+        mat <- NULL
+      }
       
       ## Find best split, stop if no decrease of impurity
-      return(findBestSplit(nodeID, possible_split_clusterIDs, response))
+      return(findBestSplit(nodeID, possible_split_clusterIDs, response, mat))
     }, 
     
     ## Try to order factors and finds best split
     ## @findBestSplitValuePartition
     ## @findBestSplitValueOrdered
-    findBestSplit = function(nodeID, possible_split_clusterIDs, response) {
+    findBestSplit = function(nodeID, possible_split_clusterIDs, response, mat=NULL) {
       
       ## Initialize
       best_split <- NULL
@@ -93,7 +110,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         # }
         
         ## Find best split
-        best_split = findBestSplitCoefs(split_clusterID, best_split, data_values, IQR_data_values, response)
+        best_split = findBestSplitCoefs(split_clusterID, best_split, data_values, IQR_data_values, response, mat)
         
         ## Save time measurement for single linear combination
         linearcomb_times <- c(linearcomb_times, best_split$linearcomb_time)
@@ -123,7 +140,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
     },
     
     ## Find Gini-optimal coefficients for linear combination of variables
-    findBestSplitCoefs = function(split_clusterID, best_split, data_values, IQR_data_values, response) {
+    findBestSplitCoefs = function(split_clusterID, best_split, data_values, IQR_data_values, response, mat=NULL) {
       
       ## Coerce all but the most frequent factor level to a single one
       ## Irrelevant, if exactly two factors
@@ -162,7 +179,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
       } else if (splitmethod == "LDA") {
         
-        res <- LDA(data_values, response)
+        res <- LDA(data_values, response, mat)
         
       } else if (splitmethod == "QDA") {
         
