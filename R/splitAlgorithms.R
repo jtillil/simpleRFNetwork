@@ -293,15 +293,14 @@ CART <- function(IQR_data_values, data_values, response) {
   }
   coefficients <- 1/translated_axis_points
   value <- 1
+
+  ## Set NaN coefficients to 0
+  coefficients[is.nan(coefficients)] <- 0
   
   return(c(value, coefficients))
 }
 
 CART_fast <- function(IQR_data_values, data_values, response) {
-  iqrdat <<- IQR_data_values
-  algodat <<- data_values
-  resp <<- response
-
   ## Find first split as best uni-variate split
   ## Set fraction of subset variables
   nu <- 0.1
@@ -336,25 +335,18 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   coefficients <- numeric(IQR_data_values$ncol)
   coefficients[best_varID] <- 1
   value <- best_val
-
-  print(coefficients)
-  print(value)
   
   ## Compute starting Gini impurity
   Gini_impurity_nplus1 <- gini_impurity(IQR_data_values$data,
                                         response,
                                         c(value, coefficients))
   Gini_impurity_n <- 9999
-
-  print(Gini_impurity_nplus1)
   
   ## Set convergence threshold
   epsilon <- 0.001
   
   ## Perform updates until improvement below threshold
   while ((Gini_impurity_n - Gini_impurity_nplus1) > epsilon) {
-    print("iteration")
-
     ## Set Gini impurity of last cycle
     Gini_impurity_n <- Gini_impurity_nplus1
     
@@ -399,11 +391,6 @@ CART_fast <- function(IQR_data_values, data_values, response) {
            }
     )
   }
-
-  print(Gini_impurity_nplus1)
-
-  print(coefficients)
-  print(value)
   
   ## Read IQR scaling parameters
   IQR_vals <- c()
@@ -423,14 +410,6 @@ CART_fast <- function(IQR_data_values, data_values, response) {
 
   ## Set NaN coefficients to 0
   coefficients[is.nan(coefficients)] <- 0
-
-  print("rescaling")
-  # print(IQR_vals)
-  # print(Mean_vals)
-  print(axis_points)
-  print(translated_axis_points)
-  print(coefficients)
-  print(value)
   
   return(c(value, coefficients))
 }
