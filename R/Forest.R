@@ -77,22 +77,11 @@ Forest <- setRefClass("Forest",
       forest_time <- toc(quiet = TRUE)
       forest_time <<- as.numeric(forest_time$toc - forest_time$tic)
 
-    }, 
+    },
     
     predict = function(newdata) {
+      ## Put prediction data in frame
       model.data <- model.frame(formula, newdata)
-
-      ## Recode factors if forest grown 'order_once' mode
-      if (unordered_factors == "order_once" & length(covariate_levels) > 0) {
-        model.data[, -1] <- mapply(function(x, y) {
-          if(is.null(y)) {
-            x
-          } else {
-            new.levels <- setdiff(levels(x), y)
-            factor(x, levels = c(y, new.levels), ordered = TRUE)
-          }
-        }, model.data[, -1], covariate_levels, SIMPLIFY = FALSE)
-      }
 
       ## Save prediction data in model
       predict_data <<- Data$new(data = model.data)
@@ -119,6 +108,8 @@ Forest <- setRefClass("Forest",
       vim_trees <- mclapply(trees, function(x) {
         x$variableImportance(type)
       }, mc.cores = num_threads)
+
+      print(vim_trees)
       
       ## Aggregate over trees
       rowMeans(simplify2array(vim_trees))

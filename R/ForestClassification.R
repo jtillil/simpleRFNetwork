@@ -45,6 +45,8 @@ ForestClassification <- setRefClass("ForestClassification",
         result[oob_samples] <- x$predictOOB()
         return(result)
       })
+
+      print(tree_predictions)
       
       ## Compute majority vote for each sample
       sample_predictions <- apply(tree_predictions, 1, function(x) {
@@ -55,9 +57,11 @@ ForestClassification <- setRefClass("ForestClassification",
           return(NA)
         }
       })
+
+      print(sample_predictions)
+      print(as.numeric(data$column(1)))
       
       ## Compare predictions with true data
       return(sum(sample_predictions != as.numeric(data$column(1)), na.rm = TRUE) / data$nrow)
     })
 )
-
