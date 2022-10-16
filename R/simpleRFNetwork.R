@@ -25,33 +25,52 @@
 ##' @param num_threads Number of threads used for mclapply, set to 1 for debugging.
 ##' @examples
 ##' \donttest{
-##' library(simpleRFNetwork)
-##' library(SeqNet) 
+##' library(simpleRFNetwork) 
 ##'
-##' # Network Generation
-##' n <- 100    # Number of nodes
-##' k <- 2      # Number of modules
-##' N <- 100    # Number of observations
-##' rn <- random_network(n, k)
-##' rn <- gen_partial_correlations(rn)
-##' gendat <- gen_rnaseq(N, rn)
-##' modules <- lapply(rn$modules, function(x){x$nodes})
-##'
-##' # Network Label Generation
-##' rf_data <- data.frame(phenotype=as.factor(rbinom(N, 1, 0.5)))
-##' rf_data <- cbind(rf_data, data.frame(gendat$x))
-##'
-##' # Classification
-##' rf <- simpleRFNetwork(phenotype ~ .,
-##'                       data=rf_data,
+##' # Network Data Generation
+##' 
+##' testdat <- genGeneNetworkData(
+##'   num_networks=1,
+##'   num_genes=100,
+##'   num_modules=NULL,
+##'   num_observations=1000,
+##'   num_causal_modules=1,
+##'   num_causal_genes=3,
+##'   effect_measure=0.1
+##' )
+##' 
+##' # Create Random Forest
+##' 
+##' rf <- simpleRFNetwork(pheno ~ .,
+##'                       data=testdat[[1]]$data,
 ##'                       num_trees=2,
-##'                       num_threads=2,
+##'                       num_threads=7,
 ##'                       splitobject="module",
-##'                       splitmethod="SVM_linear",
+##'                       splitmethod="LDA",
+##' # alternative splitmethods: univariate_fast, CART_fast, LDA, SVM, Gini_optimal, Gini_stoch_optimal
 ##'                       varselection="none",
-##'                       varclusters=modules)
+##'                       varclusters=testdat[[1]]$modules)
+##' 
+##' # Forest Diagnostics
+##' 
+##' rf$forest_time
+##' 
+##' rf$trees[[1]]$varclusters
+##' rf$trees[[1]]$split_clusterIDs
+##' 
+##' rf$trees[[1]]$split_coefficients
+##' rf$trees[[1]]$split_values
+##' 
+##' rf$trees[[1]]$linearcomb_times
+##' rf$trees[[1]]$node_times
+##' rf$trees[[1]]$sizes
+##' rf$trees[[1]]$depths
+##' 
+##' rf$variableImportance(num_threads = 7)
+##' rf$predictionError()
 ##' 
 ##' # TODO Prediction
+##' 
 ##' train_idx <- sample(nrow(iris), 2/3 * nrow(iris))
 ##' iris_train <- iris[train_idx, ]
 ##' iris_test <- iris[-train_idx, ]
