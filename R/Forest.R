@@ -108,7 +108,7 @@ Forest <- setRefClass("Forest",
       vim_trees <- mclapply(trees, function(x) {
         x$variableImportance(type)
       }, mc.cores = num_threads)
-
+      
       vim_trees
       
       ## Aggregate over trees
