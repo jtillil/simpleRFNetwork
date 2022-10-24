@@ -109,10 +109,10 @@ Forest <- setRefClass("Forest",
         x$variableImportance(type)
       }, mc.cores = num_threads)
 
-      print(vim_trees)
+      vim_trees
       
       ## Aggregate over trees
-      rowMeans(simplify2array(vim_trees))
+      # rowMeans(simplify2array(vim_trees))
     },
     
     show = function() {
