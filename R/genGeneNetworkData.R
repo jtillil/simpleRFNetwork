@@ -9,7 +9,7 @@
 ##' @param num_observations Integer, number of expression data observations per network.
 ##' @param num_causal_modules Integer, how many modules should be causal for the phenotype.
 ##' @param num_causal_genes Integer, how many genes in each causal module should be causal for the phenotype. Can also be "all".
-##' @param effect_measure Float, standardized effect measure of causal genes in the network.
+##' @param effect_size Float, standardized effect measure of causal genes in the network.
 ##' @examples
 ##' \donttest{
 ##' library(simpleRFNetwork)
@@ -80,7 +80,7 @@ genGeneNetworkData <- function(
              ## Save sampled values
              causal_genes <- unique(causal_genes)
              effects <- numeric(num_genes)
-             effects[causal_genes] <- effect_measure
+             effects[causal_genes] <- effect_size
              networkdat[[i]]$effects <<- effects
              networkdat[[i]]$causal_modules <<- causal_modules
              networkdat[[i]]$causal_genes <<- causal_genes

@@ -7,11 +7,12 @@
 genGeneNetworkData(
   num_networks,
   num_genes,
-  num_modules,
+  num_modules = NULL,
   num_observations,
   num_causal_modules,
   num_causal_genes,
-  effect_measure
+  effect_size = 1,
+  effect_intercept = -1
 )
 }
 \arguments{
@@ -19,7 +20,7 @@ genGeneNetworkData(
 
 \item{num_genes}{Integer, number of genes per network.}
 
-\item{num_modules}{Integer, number of modules per network.}
+\item{num_modules}{Integer, number of modules per network. Can also be NULL for natural number of modules.}
 
 \item{num_observations}{Integer, number of expression data observations per network.}
 
