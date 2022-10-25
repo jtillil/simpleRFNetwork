@@ -58,7 +58,7 @@ genGeneNetworkData <- function(
         ## Sample causal modules
         causal_modules <- sample(
           x = 1:networkdat[[i]]$num_modules,
-          size = num_causal_modules,
+          size = min(num_causal_modules, networkdat[[i]]$num_modules),
           replace = FALSE)
         ## Sample causal genes
         causal_genes <- c()
@@ -102,8 +102,6 @@ genGeneNetworkData <- function(
     1:num_networks,
     function(i) {
       probs <- 1/(1 + exp(-as.matrix(networkdat[[i]]$exprdat) %*% networkdat[[i]]$effects - effect_intercept))
-      print(probs)
-      print(as.matrix(networkdat[[i]]$exprdat) %*% networkdat[[i]]$effects)
       res <- data.frame(pheno = as.factor(sapply(
         1:num_observations,
         function(i) {
@@ -118,7 +116,8 @@ genGeneNetworkData <- function(
         data = res, 
         modules = lapply(networkdat[[i]]$modules, function(x){x$nodes}),
         causal_modules = networkdat[[i]]$causal_modules,
-        causal_genes = networkdat[[i]]$causal_genes))
+        causal_genes = networkdat[[i]]$causal_genes,
+        effects = networkdat[[i]]$effects))
     }
   ))
   

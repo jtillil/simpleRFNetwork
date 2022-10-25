@@ -144,25 +144,69 @@ as.bitvect <- function(x, length = 32) {
 ##' @return Gini impurity.
 ##' @author Johannes Tillil
 gini_impurity <- function(dat, label, par) {
-  select_idx <- as.matrix(dat) %*% par[2:length(par)] > par[1]
+  select_idx <- as.matrix(dat) %*% par[2:length(par)] <= par[1]
   N1 <- sum(select_idx)
   N2 <- sum(!select_idx)
   if (N1 != 0 & N2 != 0) {
-    gini <- -(N1/(N1+N2)*(
-      (sum(label[select_idx] == "1")/N1)^2+
+    gini <- -(
+      N1/(N1+N2)*(
+        (sum(label[select_idx] == "1")/N1)^2+
         (sum(label[select_idx] == "0")/N1)^2)+
-        N2/(N1+N2)*(
-          (sum(label[!select_idx] == "1")/N2)^2+
-            (sum(label[!select_idx] == "0")/N2)^2))
+      N2/(N1+N2)*(
+        (sum(label[!select_idx] == "1")/N2)^2+
+        (sum(label[!select_idx] == "0")/N2)^2)
+    )
   } else if (N1 == 0) {
     gini <- -(
       (sum(label[!select_idx] == "1")/N2)^2+
-        (sum(label[!select_idx] == "0")/N2)^2)
+      (sum(label[!select_idx] == "0")/N2)^2)
   } else if (N2 == 0) {
     gini <- -(
       (sum(label[select_idx] == "1")/N1)^2+
-        (sum(label[select_idx] == "0")/N1)^2)
+      (sum(label[select_idx] == "0")/N1)^2)
   }
+  return(gini)
+}
+
+##' Compute Gini impurity of candidate linear splits in CART algorithm.
+##' @title Gini impurity of candidate linear splits in CART algorithm.
+##' @param dat Data frame of predictors.
+##' @param label Vector of labels.
+##' @param par Vector of coefficients of split.
+##' @return Gini impurities.
+##' @author Johannes Tillil
+gini_impurity_CART <- function(dat, label, coefs, value, candidates, varID, gamma) {
+  coefs <- matrix(rep(coefs, length(candidates)), ncol = length(candidates), byrow = FALSE)
+  coefs[varID,] <- coefs[varID,] - candidates
+  value <- value + candidates * gamma
+  select_idx <- as.matrix(dat) %*% coefs <= drop(value)
+  N1 <- colsums(select_idx)
+  N2 <- colsums(!select_idx)
+  gini <- -(
+    N1/(N1+N2)*(
+      (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "1")})/N1)^2+
+      (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "0")})/N1)^2)+
+    N2/(N1+N2)*(
+      (sapply(1:length(candidates), function(j) {sum(label[!select_idx[,j]] == "1")})/N2)^2+
+      (sapply(1:length(candidates), function(j) {sum(label[!select_idx[,j]] == "1")})/N2)^2)
+  )
+  sapply(
+    1:length(candidates),
+    function(candidateID) {
+      if (N1[candidateID] == 0) {
+        gini[candidateID] <<- -(
+          (sum(label[!select_idx[,candidateID]] == "1")/N2[candidateID])^2+
+          (sum(label[!select_idx[,candidateID]] == "0")/N2[candidateID])^2
+        )
+      }
+      if (N2[candidateID] == 0) {
+        gini[candidateID] <<- -(
+          (sum(label[select_idx[,candidateID]] == "1")/N1[candidateID])^2+
+          (sum(label[select_idx[,candidateID]] == "0")/N1[candidateID])^2
+        )
+      }
+    }
+  )
   return(gini)
 }
 

@@ -300,6 +300,127 @@ CART <- function(IQR_data_values, data_values, response) {
   return(c(value, coefficients))
 }
 
+# CART_fast <- function(IQR_data_values, data_values, response) {
+#   ## Find first split as best uni-variate split
+#   ## Set fraction of subset variables
+#   nu <- 0.1
+  
+#   ## Initiate
+#   Gini_impurity_start <- 9999
+#   best_val <- 0
+#   best_varID <- 0
+  
+#   sapply(1:IQR_data_values$ncol, function(varID) {
+#     ## Sample value candidates
+#     unique_col <- unique(IQR_data_values$column(varID))
+#     val_candidates <- sample(unique_col, round(nu*length(unique_col)))
+#     sapply(val_candidates, function(val) {
+#       ## Compute new Gini impurity
+#       coefficients_start <- numeric(IQR_data_values$ncol)
+#       coefficients_start[varID] <- 1
+#       Gini_impurity_val <- gini_impurity(
+#         IQR_data_values$data,
+#         response,
+#         c(val, coefficients_start)
+#       )
+      
+#       ## Compare to current best Gini impurity and set value, varID if smaller
+#       if (Gini_impurity_val < Gini_impurity_start) {
+#         Gini_impurity_start <<- Gini_impurity_val
+#         best_val <<- val
+#         best_varID <<- varID
+#       }
+#     })
+#   })
+  
+#   ## Coerce best uni-variate split into coefficients and value
+#   coefficients <- numeric(IQR_data_values$ncol)
+#   coefficients[best_varID] <- 1
+#   value <- best_val
+  
+#   ## Compute starting Gini impurity
+#   Gini_impurity_nplus1 <- gini_impurity(
+#     IQR_data_values$data,
+#     response,
+#     c(value, coefficients))
+#   Gini_impurity_n <- 9999
+  
+#   ## Set convergence threshold
+#   epsilon <- 0.001
+  
+#   ## Perform updates until improvement below threshold
+#   while ((Gini_impurity_n - Gini_impurity_nplus1) > epsilon) {
+#     ## Set Gini impurity of last cycle
+#     Gini_impurity_n <- Gini_impurity_nplus1
+    
+#     ## Cycle through all variables and search for an improved split by varying their coefficient
+#     sapply(
+#       1:IQR_data_values$ncol,
+#       function(varID) {
+#         ## Sample subset
+#         subset_data_values <- IQR_data_values$data[sample(1:nrow(data_values), round(nu*nrow(data_values))),]
+
+#         ## Compute current split values for subset observations
+#         v <- as.matrix(subset_data_values) %*% coefficients
+        
+#         ## For gamma equals -0.25, 0, 0.25
+#         sapply(c(-0.25, 0, 0.25), function(gamma) {
+#           ## Compute candidates
+#           u <- (v - value) / (subset_data_values[,varID] + gamma)
+          
+#           ## For every candidate
+#           sapply(u, function(u_n) {
+#             ## Convert to candidate coefficients and value
+#             coefficients_u <- coefficients
+#             coefficients_u[varID] <- coefficients_u[varID] - u_n
+#             value_u <- value + u_n * gamma
+            
+#             if (gini_impurity(
+#               IQR_data_values$data,
+#               response,
+#               c(value_u, coefficients_u)
+#             ) < Gini_impurity_nplus1) {
+              
+#               ## Update coefficients, value, split values
+#               coefficients <<- coefficients_u
+#               value <<- value_u
+#               v <<- as.matrix(IQR_data_values$data) %*% coefficients
+              
+#               ## Calculate new Gini impurity
+#               Gini_impurity_nplus1 <<- gini_impurity(
+#                 IQR_data_values$data,
+#                 response,
+#                 c(value, coefficients)
+#               )
+#             }
+#           })
+#         })
+#       }
+#     )
+#   }
+  
+#   ## Read IQR scaling parameters
+#   IQR_vals <- c()
+#   sapply(1:ncol(data_values), function(varID) {
+#     IQR_vals <<- c(IQR_vals, IQR(data_values[,varID]))
+#   })
+#   Mean_vals <- colmeans(as.matrix(data_values))
+  
+#   ## Rescale coefficients and value
+#   axis_points <- value/coefficients*IQR_vals
+#   translated_axis_points <- NULL
+#   for (varID in 1:length(coefficients)) {
+#     translated_axis_points[varID] <- axis_points[varID] + Mean_vals[varID] + sum(axis_points[varID]/axis_points[-varID] * Mean_vals[-varID])
+#   }
+#   coefficients <- 1/translated_axis_points
+#   value <- 1
+
+#   ## Set NaN coefficients to 0
+#   coefficients[is.nan(coefficients)] <- 0
+  
+#   return(c(value, coefficients))
+# }
+
 CART_fast <- function(IQR_data_values, data_values, response) {
   ## Find first split as best uni-variate split
   ## Set fraction of subset variables
@@ -318,9 +439,11 @@ CART_fast <- function(IQR_data_values, data_values, response) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(IQR_data_values$ncol)
       coefficients_start[varID] <- 1
-      Gini_impurity_val <- gini_impurity(IQR_data_values$data,
-                                         response,
-                                         c(val, coefficients_start))
+      Gini_impurity_val <- gini_impurity(
+        IQR_data_values$data,
+        response,
+        c(val, coefficients_start)
+      )
       
       ## Compare to current best Gini impurity and set value, varID if smaller
       if (Gini_impurity_val < Gini_impurity_start) {
@@ -337,9 +460,11 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   value <- best_val
   
   ## Compute starting Gini impurity
-  Gini_impurity_nplus1 <- gini_impurity(IQR_data_values$data,
-                                        response,
-                                        c(value, coefficients))
+  Gini_impurity_nplus1 <- gini_impurity(
+    IQR_data_values$data,
+    response,
+    c(value, coefficients)
+  )
   Gini_impurity_n <- 9999
   
   ## Set convergence threshold
@@ -349,46 +474,51 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   while ((Gini_impurity_n - Gini_impurity_nplus1) > epsilon) {
     ## Set Gini impurity of last cycle
     Gini_impurity_n <- Gini_impurity_nplus1
-    
+
+    ## Sample subset
+    subset_data_values <- IQR_data_values$data[sample(1:nrow(data_values), round(nu*nrow(data_values))),]
+
     ## Cycle through all variables and search for an improved split by varying their coefficient
-    sapply(1:IQR_data_values$ncol,
-           function(varID) {
-             ## Sample subset
-             subset_data_values <- IQR_data_values$data[sample(1:nrow(data_values), round(nu*nrow(data_values))),]
-             
-             ## Compute current split values for subset observations
-             v <- as.matrix(subset_data_values) %*% coefficients
-             
-             ## For gamma equals -0.25, 0, 0.25
-             sapply(c(-0.25, 0, 0.25), function(gamma) {
-               ## Compute candidates
-               u <- (v - value) / (subset_data_values[,varID] + gamma)
-               
-               ## For every candidate
-               sapply(u, function(u_n) {
-                 ## Convert to candidate coefficients and value
-                 coefficients_u <- coefficients
-                 coefficients_u[varID] <- coefficients_u[varID] - u_n
-                 value_u <- value + u_n * gamma
-                 
-                 if (gini_impurity(IQR_data_values$data,
-                                   response,
-                                   c(value_u, coefficients_u)
-                 ) < Gini_impurity_nplus1) {
-                   
-                   ## Update coefficients, value, split values
-                   coefficients <<- coefficients_u
-                   value <<- value_u
-                   v <<- as.matrix(IQR_data_values$data) %*% coefficients
-                   
-                   ## Calculate new Gini impurity
-                   Gini_impurity_nplus1 <<- gini_impurity(IQR_data_values$data,
-                                                          response,
-                                                          c(value, coefficients))
-                 }
-               })
-             })
-           }
+    sapply(
+      1:IQR_data_values$ncol,
+      function(varID) {
+        ## Compute current split values for subset observations
+        v <- as.matrix(subset_data_values) %*% coefficients
+
+        ## For gamma equals -0.25, 0, 0.25
+        best_u <- sapply(c(-0.25, 0, 0.25), function(gamma) {
+          ## Compute candidates
+          u <- (v - value) / (subset_data_values[,varID] + gamma)
+          
+          ## Calculate gini impurities for candidates
+          impurities <- gini_impurity_CART(
+            IQR_data_values$data,
+            response,
+            coefficients,
+            value,
+            u,
+            varID,
+            gamma
+          )
+
+          ## Extract best candidate
+          best_idx <- which.min.random(impurities)
+          c(impurities[best_idx], u[best_idx])
+        })
+
+        ## Extract best candidate
+        best_gamma <- c(-0.25, 0, 0.25)[which.min.random(best_u[1,])]
+        best_impurity <- best_u[1, which.min.random(best_u[1,])]
+        best_u <- best_u[2, which.min.random(best_u[1,])]
+
+        if (best_impurity < Gini_impurity_nplus1) {
+          ## Update coefficients, value, split values, gini_impurity
+          coefficients[varID] <<- coefficients[varID] - best_u
+          value <<- value + best_u * best_gamma
+          new_coefficients <<- TRUE
+          Gini_impurity_nplus1 <<- best_impurity
+        }
+      }
     )
   }
   
