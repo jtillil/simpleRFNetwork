@@ -31,11 +31,9 @@ genGeneNetworkData <- function(
   num_observations,
   num_causal_modules,
   num_causal_genes,
-  effect_measure
+  effect_size = 1,
+  effect_intercept = -1
   ) {
-  
-  ## Set seed
-  # set.seed(1)
   
   ## Generate networks, modules and associations between genes
   networkdat <- lapply(1:num_networks,
@@ -47,7 +45,7 @@ genGeneNetworkData <- function(
                          }
                          rn <- gen_partial_correlations(rn)
                          return(list(
-                           exprdat = gen_rnaseq(num_observations, rn)$x,
+                           exprdat = scale(log(gen_rnaseq(num_observations, rn)$x)),
                            modules = rn$modules,
                            num_modules = length(rn$modules),
                            causal_genes = NULL
@@ -97,7 +95,7 @@ genGeneNetworkData <- function(
   ## Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
   return(lapply(1:num_networks,
                 function(i) {
-                  probs <- 1/(1 + exp(-scale(as.matrix(networkdat[[i]]$exprdat)) %*% networkdat[[i]]$effects))
+                  probs <- 1/(1 + exp(-as.matrix(networkdat[[i]]$exprdat) %*% networkdat[[i]]$effects - effect_intercept))
                   res <- data.frame(pheno = as.factor(sapply(
                     1:num_observations,
                     function(i) {

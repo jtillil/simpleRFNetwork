@@ -205,7 +205,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     
     ## virtual
     ## @predictOOB
-    predictionError = function(pred = NULL) {
+    predictionErrorTree = function(pred = NULL) {
       ## references subclass
     },
     
@@ -252,7 +252,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       if (type == "permutation") {
         
         ## Prediction error without any permutation
-        oob_error <- predictionError()
+        oob_error <- predictionErrorTree()
 
         ## For each variable, prediction error after permutation
         res <- sapply(1:length(varclusters), function(clusterID) {
