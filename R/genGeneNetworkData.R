@@ -43,7 +43,7 @@ genGeneNetworkData <- function(
       }
       rn <- gen_partial_correlations(rn)
       return(list(
-        exprdat = scale(log(gen_rnaseq(num_observations, rn)$x)),
+        exprdat = scale(log(gen_rnaseq(num_observations, rn)$x + 1)),
         modules = rn$modules,
         num_modules = length(rn$modules),
         causal_genes = NULL
