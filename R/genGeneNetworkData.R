@@ -102,6 +102,8 @@ genGeneNetworkData <- function(
     1:num_networks,
     function(i) {
       probs <- 1/(1 + exp(-as.matrix(networkdat[[i]]$exprdat) %*% networkdat[[i]]$effects - effect_intercept))
+      print(probs)
+      print(as.matrix(networkdat[[i]]$exprdat) %*% networkdat[[i]]$effects)
       res <- data.frame(pheno = as.factor(sapply(
         1:num_observations,
         function(i) {
