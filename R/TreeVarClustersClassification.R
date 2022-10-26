@@ -21,8 +21,6 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         return(NULL)
       }
 
-      print(sampleIDs[[nodeID]])
-
       ## Get response
       response <- data$subset(sampleIDs[[nodeID]], 1)
       

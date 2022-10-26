@@ -476,7 +476,7 @@ CART_fast <- function(IQR_data_values, data_values, response) {
     Gini_impurity_n <- Gini_impurity_nplus1
 
     ## Sample subset
-    subset_data_values <- IQR_data_values$data[sample(1:nrow(data_values), max(round(nu*nrow(data_values)), 10)),]
+    subset_data_values <- IQR_data_values$data[sample(1:nrow(data_values), max(round(nu*nrow(data_values)), nrow(data_values))),]
 
     ## Cycle through all variables and search for an improved split by varying their coefficient
     sapply(
@@ -490,15 +490,6 @@ CART_fast <- function(IQR_data_values, data_values, response) {
           ## Compute candidates
           u <- (v - value) / (subset_data_values[,varID] + gamma)
           u[is.nan(u)] <- 0
-
-          if (length(u) == 0) {
-            print("inside CART")
-            print(subset_data_values)
-            print(v)
-            print(value)
-            print(gamma)
-            print(response)
-          }
           
           ## Calculate gini impurities for candidates
           impurities <- gini_impurity_CART(
