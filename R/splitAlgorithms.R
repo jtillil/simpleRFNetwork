@@ -542,4 +542,6 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   coefficients[is.nan(coefficients)] <- 0
   
   return(c(value, coefficients))
+
+  print("new split")
 }
