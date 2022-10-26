@@ -181,8 +181,8 @@ gini_impurity_CART <- function(dat, label, pure_coefs, value, candidates, varID,
     print(varID)
     print(dim(coefs))
     print(pure_coefs)
-    print(candidates)
-    print(length(sampleIDs[[nodeID]]))
+    print(length(candidates))
+    # print(length(sampleIDs[[nodeID]]))
   }
   coefs[varID,] <- coefs[varID,] - candidates
   value <- value + candidates * gamma
