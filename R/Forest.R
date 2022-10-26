@@ -106,6 +106,10 @@ Forest <- setRefClass("Forest",
     predictionErrorTrees = function() {
       ## Empty virtual function
     },
+
+    predictionErrorForestAndTrees = function() {
+      ## Empty virtual function
+    },
     
     variableImportance = function(type = "permutation", num_threads = 1) {
       ## Calculate tree VIM
