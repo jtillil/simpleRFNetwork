@@ -177,13 +177,13 @@ gini_impurity <- function(dat, label, par) {
 ##' @author Johannes Tillil
 gini_impurity_CART <- function(dat, label, pure_coefs, value, candidates, varID, gamma) {
   coefs <- matrix(rep(pure_coefs, length(candidates)), ncol = length(candidates), byrow = FALSE)
-  if (varID > nrow(coefs)) {
-    print(varID)
-    print(dim(coefs))
-    print(pure_coefs)
-    print(length(candidates))
-    # print(length(sampleIDs[[nodeID]]))
-  }
+  # if (varID > nrow(coefs)) {
+  #   print(varID)
+  #   print(dim(coefs))
+  #   print(pure_coefs)
+  #   print(length(candidates))
+  #   # print(length(sampleIDs[[nodeID]]))
+  # }
   coefs[varID,] <- coefs[varID,] - candidates
   value <- value + candidates * gamma
   select_idx <- as.matrix(dat) %*% coefs <= drop(value)

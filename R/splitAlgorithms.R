@@ -490,6 +490,13 @@ CART_fast <- function(IQR_data_values, data_values, response) {
           ## Compute candidates
           u <- (v - value) / (subset_data_values[,varID] + gamma)
           u[is.nan(u)] <- 0
+
+          if (length(u) == 0) {
+            print(subset_data_values)
+            print(v)
+            print(value)
+            print(gamma)
+          }
           
           ## Calculate gini impurities for candidates
           impurities <- gini_impurity_CART(
