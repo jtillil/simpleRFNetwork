@@ -544,4 +544,5 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   return(c(value, coefficients))
 
   print("new split")
+  flush.console()
 }
