@@ -492,6 +492,7 @@ CART_fast <- function(IQR_data_values, data_values, response) {
           u[is.nan(u)] <- 0
 
           if (length(u) == 0) {
+            print("inside CART")
             print(subset_data_values)
             print(v)
             print(value)
@@ -500,13 +501,13 @@ CART_fast <- function(IQR_data_values, data_values, response) {
           
           ## Calculate gini impurities for candidates
           impurities <- gini_impurity_CART(
-            IQR_data_values$data,
-            response,
-            coefficients,
-            value,
-            u,
-            varID,
-            gamma
+            dat = IQR_data_values$data,
+            label = response,
+            pure_coefs = coefficients,
+            value = value,
+            candidates = u,
+            varID = varID,
+            gamma = gamma
           )
 
           ## Extract best candidate
