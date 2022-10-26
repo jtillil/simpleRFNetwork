@@ -70,8 +70,6 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       ## Split node
       split <- splitNodeInternal(nodeID, possible_split_clusterIDs)
 
-      print("new node")
-
       ## Calculate node depth and size
       depth <- 1
       current_nodeID <- nodeID
@@ -259,7 +257,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         ## For each variable, prediction error after permutation
         res <- sapply(1:length(varclusters), function(clusterID) {
           pred <- permuteAndPredictOOB(clusterID)
-          oob_error_perm <- predictionError(pred)
+          oob_error_perm <- predictionErrorTree(pred)
           oob_error_perm - oob_error
         })
         return(res)

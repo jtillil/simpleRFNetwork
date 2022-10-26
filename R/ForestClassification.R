@@ -37,7 +37,7 @@ ForestClassification <- setRefClass("ForestClassification",
       return(factor(result, levels = 1:length(response_levels), labels = response_levels))
     }, 
     
-    predictionError = function() {
+    predictionErrorForest = function() {
       ## For each tree loop over OOB samples and count classes
       tree_predictions <- sapply(trees, function(x) {
         oob_samples <- x$oob_sampleIDs
@@ -63,5 +63,59 @@ ForestClassification <- setRefClass("ForestClassification",
       
       ## Compare predictions with true data
       return(sum(sample_predictions != as.numeric(data$column(1)), na.rm = TRUE) / data$nrow)
+    },
+    
+    predictionErrorTrees = function() {
+      ## For each tree loop over OOB samples and count classes
+      tree_predictions <- ĺapply(trees, function(x) {
+        oob_samples <- x$oob_sampleIDs
+        result <- rep(NA, data$nrow)
+        result[oob_samples] <- x$predictOOB()
+        return(result)
+      })
+
+      ## Calculate OOB prediction errors for all trees
+      errors <- sapply(
+        1:length(trees),
+        function(treeID) {
+          return(sum(tree_predictions[[treeID]] != as.numeric(data$column(1)), na.rm = TRUE) / data$nrow)
+        }
+      )
+
+      ## Return mean error
+      return(mean(errors))
+    },
+    
+    predictionErrorForestAndTrees = function() {
+      ## For each tree loop over OOB samples and count classes
+      tree_predictions <- sapply(trees, function(x) {
+        oob_samples <- x$oob_sampleIDs
+        result <- rep(NA, data$nrow)
+        result[oob_samples] <- x$predictOOB()
+        return(result)
+      })
+
+      ## Compute majority vote for each sample
+      sample_predictions <- apply(tree_predictions, 1, function(x) {
+        if (sum(!is.na(x)) > 0) {
+          class_counts <- table(x)
+          return(as.numeric(names(class_counts)[which.max.random(class_counts)]))
+        } else {
+          return(NA)
+        }
+      })
+
+      ## Calculate OOB prediction errors for all trees
+      errors_trees <- sapply(
+        1:length(trees),
+        function(treeID) {
+          return(sum(tree_predictions[,treeID] != as.numeric(data$column(1)), na.rm = TRUE) / data$nrow)
+        }
+      )
+
+      ## Return mean error
+      return(list(
+        error_forest = sum(sample_predictions != as.numeric(data$column(1)), na.rm = TRUE) / data$nrow,
+        error_trees = mean(errors_trees))
     })
 )

@@ -210,6 +210,48 @@ gini_impurity_CART <- function(dat, label, pure_coefs, value, candidates, varID,
   return(gini)
 }
 
+##' Compute Batchwise gini impurity of candidate linear splits.
+##' @title Batchwise gini impurity of candidate linear splits.
+##' @param dat Data frame of predictors.
+##' @param label Vector of labels.
+##' @param par Vector of coefficients of split.
+##' @return Gini impurities.
+##' @author Johannes Tillil
+gini_impurity_batch <- function(dat, label, candidates, varID) {
+  coefs <- matrix(rep(numeric(ncol(dat)), length(candidates)), ncol = length(candidates), byrow = FALSE)
+  coefs[varID,] <- 1
+  value <- candidates
+  select_idx <- as.matrix(dat) %*% coefs <= drop(value)
+  N1 <- colsums(select_idx)
+  N2 <- colsums(!select_idx)
+  gini <- -(
+    N1/(N1+N2)*(
+      (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "1")})/N1)^2+
+      (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "0")})/N1)^2)+
+    N2/(N1+N2)*(
+      (sapply(1:length(candidates), function(j) {sum(label[!select_idx[,j]] == "1")})/N2)^2+
+      (sapply(1:length(candidates), function(j) {sum(label[!select_idx[,j]] == "1")})/N2)^2)
+  )
+  sapply(
+    1:length(candidates),
+    function(candidateID) {
+      if (N1[candidateID] == 0) {
+        gini[candidateID] <<- -(
+          (sum(label[!select_idx[,candidateID]] == "1")/N2[candidateID])^2+
+          (sum(label[!select_idx[,candidateID]] == "0")/N2[candidateID])^2
+        )
+      }
+      if (N2[candidateID] == 0) {
+        gini[candidateID] <<- -(
+          (sum(label[select_idx[,candidateID]] == "1")/N1[candidateID])^2+
+          (sum(label[select_idx[,candidateID]] == "0")/N1[candidateID])^2
+        )
+      }
+    }
+  )
+  return(gini)
+}
+
 # ##' Compute Gini loss of linear split for Keras backend.
 # ##' @title Gini loss of linear split
 # ##' @param y_true Tensorflow tensor of true labels.

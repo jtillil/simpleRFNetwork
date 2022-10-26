@@ -199,8 +199,6 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         res <- CART(IQR_data_values, data_values, response)
         
       } else if (splitmethod == "CART_fast") {
-
-        print("CART_fast")
         
         res <- CART_fast(IQR_data_values, data_values, response)
         

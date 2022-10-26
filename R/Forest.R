@@ -99,7 +99,11 @@ Forest <- setRefClass("Forest",
       ## Empty virtual function
     }, 
     
-    predictionError = function() {
+    predictionErrorForest = function() {
+      ## Empty virtual function
+    },
+
+    predictionErrorTrees = function() {
       ## Empty virtual function
     },
     
@@ -112,7 +116,7 @@ Forest <- setRefClass("Forest",
       vim_trees
       
       ## Aggregate over trees
-      # rowMeans(simplify2array(vim_trees))
+      # return(rowMeans(simplify2array(vim_trees)))
     },
     
     show = function() {
@@ -128,7 +132,7 @@ Forest <- setRefClass("Forest",
       cat("Target node size:                ", min_node_size, "\n")
       cat("Replace                          ", replace, "\n")
       # cat("Unordered factor handling        ", unordered_factors, "\n")
-      cat("OOB prediction error:            ", predictionError(), "\n")
+      # cat("OOB prediction error:            ", predictionError(), "\n")
       cat("Forest execution time:           ", forest_time, "\n")
     }, 
     
