@@ -70,7 +70,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       ## Split node
       split <- splitNodeInternal(nodeID, possible_split_clusterIDs)
 
-      prnt("new node")
+      print("new node")
 
       ## Calculate node depth and size
       depth <- 1

@@ -28,7 +28,7 @@ genGeneNetworkData(
 
 \item{num_causal_genes}{Integer, how many genes in each causal module should be causal for the phenotype. Can also be "all".}
 
-\item{effect_measure}{Float, standardized effect measure of causal genes in the network.}
+\item{effect_size}{Float, standardized effect measure of causal genes in the network.}
 }
 \description{
 Generates random networks of genes, their associations, expression data and
@@ -38,14 +38,10 @@ the user.
 \examples{
 \donttest{
 library(simpleRFNetwork)
-library(SeqNet) 
 
 
 }
 
-}
-\references{
-Breiman, L. (2001). Random forests. Mach Learn, 45(1), 5-32. \cr
 }
 \author{
 Johannes Tillil
