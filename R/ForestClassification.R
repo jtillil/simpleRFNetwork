@@ -67,7 +67,7 @@ ForestClassification <- setRefClass("ForestClassification",
     
     predictionErrorTrees = function() {
       ## For each tree loop over OOB samples and count classes
-      tree_predictions <- ĺapply(trees, function(x) {
+      tree_predictions <- lapply(trees, function(x) {
         oob_samples <- x$oob_sampleIDs
         result <- rep(NA, data$nrow)
         result[oob_samples] <- x$predictOOB()
