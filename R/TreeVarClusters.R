@@ -183,6 +183,8 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
             break
           }
+
+          check_nodeID <<- c(check_nodeID, nodeID)
           
           ## Move to child
           if (varselection == "none") {
@@ -190,12 +192,18 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           } else {
             value <- as.matrix(data$subset(i, split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
           }
+
+          check_coefvalue <<- c(check_coefvalue, value)
+          check_split_value <<- c(check_split_value, split_values[nodeID])
+
           if (value <= split_values[nodeID]) {
             nodeID <- child_nodeIDs[[nodeID]][1]
           } else {
             nodeID <- child_nodeIDs[[nodeID]][2]
           }
         }
+
+        check_noce_prediction <<- getNodePrediction(nodeID)
         
         ## Add to prediction
         predictions[[i]] <- getNodePrediction(nodeID)
