@@ -171,6 +171,13 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     ## predict OOB data with the tree
     ## @getNodePrediction
     predictOOB = function() {
+
+      check_nodeID <<- NULL
+      check_coefvalue <<- NULL
+      check_split_value <<- NULL
+      check_node_prediction <<- NULL
+      check_node_predictions <<- NULL
+
       ## Initialize
       num_samples_predict <- length(oob_sampleIDs)
       predictions <- list()
@@ -203,11 +210,14 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           }
         }
 
-        check_noce_prediction <<- getNodePrediction(nodeID)
+        check_node_prediction <<- c(check_node_prediction, getNodePrediction(nodeID))
         
         ## Add to prediction
         predictions[[i]] <- getNodePrediction(nodeID)
       }
+
+      check_node_predictions <<- predictions
+
       return(simplify2array(predictions))
     }, 
     
