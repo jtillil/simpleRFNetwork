@@ -95,8 +95,6 @@ ForestClassification <- setRefClass("ForestClassification",
         return(result)
       })
 
-      check_tree_predictions <<- tree_predictions
-
       ## Compute majority vote for each sample
       sample_predictions <- apply(tree_predictions, 1, function(x) {
         if (sum(!is.na(x)) > 0) {
@@ -107,9 +105,6 @@ ForestClassification <- setRefClass("ForestClassification",
         }
       })
 
-      check_sample_predictions <<- sample_predictions
-      check_sample_labels <<- as.numeric(data$column(1))
-
       ## Calculate OOB prediction errors for all trees
       errors_trees <- sapply(
         1:length(trees),
@@ -117,8 +112,6 @@ ForestClassification <- setRefClass("ForestClassification",
           return(sum(tree_predictions[,treeID] != as.numeric(data$column(1)), na.rm = TRUE) / length(trees[[treeID]]$oob_sampleIDs))
         }
       )
-
-      check_errors_trees <<- errors_trees
 
       ## Return errors
       return(list(
