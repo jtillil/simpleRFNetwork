@@ -175,8 +175,8 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       num_samples_predict <- length(oob_sampleIDs)
       predictions <- list()
       
-      ## For each sample start in root and drop down tree
-      for (i in 1:num_samples_predict) {
+      ## For each OOB sample start in root and drop down tree
+      for (i in oob_sampleIDs[1:num_samples_predict]) {
         nodeID <- 1
         while(TRUE) {
           ## Break if terminal node
@@ -217,7 +217,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       predictions <- list()
       permutations <- sample(num_samples_predict)
 
-      ## For each sample start in root and drop down tree
+      ## For each OOB sample start in root and drop down tree
       for (i in 1:num_samples_predict) {
         nodeID <- 1
         while(TRUE) {
