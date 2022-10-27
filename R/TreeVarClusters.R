@@ -183,7 +183,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       predictions <- list()
       
       ## For each OOB sample start in root and drop down tree
-      for (i in oob_sampleIDs[1:num_samples_predict]) {
+      for (i in 1:num_samples_predict) {
         nodeID <- 1
         while(TRUE) {
           ## Break if terminal node
@@ -195,9 +195,9 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           
           ## Move to child
           if (varselection == "none") {
-            value <- as.matrix(data$subset(i, varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
+            value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
           } else {
-            value <- as.matrix(data$subset(i, split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
+            value <- as.matrix(data$subset(oob_sampleIDs[i], split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
           }
 
           check_coefvalue <<- c(check_coefvalue, value)
