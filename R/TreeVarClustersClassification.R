@@ -208,6 +208,12 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       coef_norm <- Norm(as.matrix(res[-1]), "F")
       value <- res[1]/coef_norm
       coefficients <- res[-1]/coef_norm
+
+      ## Restrict coefficients to positive split value
+      if (value < 0) {
+        value <- -value
+        coefficients <- -coefficients
+      }
       
       ## Stop timing for individual linear combination time measurement
       linearcomb_time <- toc(quiet = TRUE)

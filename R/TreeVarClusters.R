@@ -254,10 +254,14 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         ## Prediction error without any permutation
         oob_error <- predictionErrorTree()
 
+        check_oob_error <<- oob_error
+
         ## For each variable, prediction error after permutation
         res <- sapply(1:length(varclusters), function(clusterID) {
           pred <- permuteAndPredictOOB(clusterID)
+          check_pred <<- c(check_pred, pred)
           oob_error_perm <- predictionErrorTree(pred)
+          check_oob_error_perm <<- c(check_oob_error_perm, oob_error_perm)
           oob_error_perm - oob_error
         })
         return(res)
