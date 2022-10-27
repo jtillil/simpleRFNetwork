@@ -224,6 +224,8 @@ simpleRFNetwork <- function(
     ## Save levels
     covariate_levels <- lapply(model.data[, -1], levels)
   }
+
+  print("diagnostics should be on")
   
   ## Create forest object
   if (treetype == "Classification") {
