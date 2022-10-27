@@ -38,7 +38,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       return(findBestSplit(nodeID, possible_split_clusterIDs, response))
     }, 
     
-    ## Try to order factors and finds best split
+    ## Find best split
     ## @findBestSplitValuePartition
     ## @findBestSplitValueOrdered
     findBestSplit = function(nodeID, possible_split_clusterIDs, response) {
@@ -140,7 +140,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       }
     },
     
-    ## Find Gini-optimal coefficients for linear combination of variables
+    ## Find coefficients for linear combination of variables
     findBestSplitCoefs = function(split_clusterID, best_split, data_values, IQR_data_values, response, mat=NULL) {
       
       ## Coerce all but the most frequent factor level to a single one
@@ -209,7 +209,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       value <- res[1]/coef_norm
       coefficients <- res[-1]/coef_norm
 
-      ## Restrict coefficients to positive split value
+      ## Restrict coefficients to positive split value for a completely unique solution
       if (value < 0) {
         value <- -value
         coefficients <- -coefficients
@@ -237,7 +237,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         stop("Unknown splitrule.")
       }
       
-      ## Use this svm split if decrease better than from earlier clusters
+      ## Use this cluster for the split if decrease better than from earlier clusters
       if (decrease > best_split$decrease) {
         best_split$clusterID <- split_clusterID
         best_split$coefficients <- coefficients

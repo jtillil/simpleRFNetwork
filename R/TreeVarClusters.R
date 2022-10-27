@@ -168,7 +168,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       return(simplify2array(predictions))
     }, 
     
-    ## predict OOB data with thee tree
+    ## predict OOB data with the tree
     ## @getNodePrediction
     predictOOB = function() {
       ## Initialize

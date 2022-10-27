@@ -114,7 +114,7 @@ ForestClassification <- setRefClass("ForestClassification",
       errors_trees <- sapply(
         1:length(trees),
         function(treeID) {
-          return(sum(tree_predictions[,treeID] != as.numeric(data$column(1)), na.rm = TRUE) / data$nrow)
+          return(sum(tree_predictions[,treeID] != as.numeric(data$column(1)), na.rm = TRUE) / length(trees[[treeID]]$oob_sampleIDs))
         }
       )
 
@@ -122,7 +122,7 @@ ForestClassification <- setRefClass("ForestClassification",
 
       ## Return errors
       return(list(
-        error_forest = sum(sample_predictions != as.numeric(data$column(1)), na.rm = TRUE) / data$nrow,
+        error_forest = sum(sample_predictions != as.numeric(data$column(1)), na.rm = TRUE) / length(trees[[treeID]]$oob_sampleIDs),
         error_trees = mean(errors_trees))
       )
     })
