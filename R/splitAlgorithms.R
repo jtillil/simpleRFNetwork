@@ -522,7 +522,7 @@ CART_fast <- function(IQR_data_values, data_values, response) {
       }
     )
   }
-  
+
   ## Read IQR scaling parameters
   IQR_vals <- c()
   sapply(1:ncol(data_values), function(varID) {
@@ -543,7 +543,4 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   coefficients[is.nan(coefficients)] <- 0
   
   return(c(value, coefficients))
-
-  print("new split")
-  flush.console()
 }

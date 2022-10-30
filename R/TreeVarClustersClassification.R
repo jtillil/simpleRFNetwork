@@ -266,7 +266,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
     
     ## Calculate proportion of wrong OOB predictions
     ## @predictOOB
-    predictionErrorTree = function(pred = NULL) {
+    OOBPredictionErrorTree = function(pred = NULL) {
       if (is.null(pred)) {
         pred <- predictOOB()
       }

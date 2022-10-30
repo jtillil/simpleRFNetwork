@@ -80,9 +80,6 @@ Forest <- setRefClass("Forest",
     },
     
     predict = function(newdata) {
-      ## Put prediction data in frame
-      model.data <- model.frame(formula, newdata)
-
       ## Save prediction data in model
       predict_data <<- Data$new(data = model.data)
       
@@ -117,10 +114,10 @@ Forest <- setRefClass("Forest",
         x$variableImportance(type)
       }, mc.cores = num_threads)
       
-      vim_trees
+      # vim_trees
       
       ## Aggregate over trees
-      # return(rowMeans(simplify2array(vim_trees)))
+      return(rowMeans(simplify2array(vim_trees)))
     },
     
     show = function() {
