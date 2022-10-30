@@ -28,7 +28,8 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     linearcomb_times = "list",
     node_times = "numeric",
     depths = "integer",
-    sizes = "integer"
+    sizes = "integer",
+    impurities = "numeric"
     ),
   methods = list(
     
@@ -70,7 +71,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       ## Split node
       split <- splitNodeInternal(nodeID, possible_split_clusterIDs)
 
-      ## Calculate node depth and size
+      ## Calculate node depth, size and gini impurity
       depth <- 1
       current_nodeID <- nodeID
       while(current_nodeID != 1) {
@@ -79,6 +80,10 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       }
       depths[nodeID] <<- as.integer(depth)
       sizes[nodeID] <<- length(sampleIDs[[nodeID]])
+      impurities[nodeID] <<- 1-(
+        (sum(data$column(1) == "1")/sizes[nodeID])^2+
+        (sum(data$column(1) == "0")/sizes[nodeID])^2
+      )
       
       if (!is.null(split$clusterID)) {
         ## Read timing metrics

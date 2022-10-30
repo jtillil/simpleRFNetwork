@@ -148,7 +148,7 @@ gini_impurity <- function(dat, label, par) {
   N1 <- sum(select_idx)
   N2 <- sum(!select_idx)
   if (N1 != 0 & N2 != 0) {
-    gini <- -(
+    gini <- 1-(
       N1/(N1+N2)*(
         (sum(label[select_idx] == "1")/N1)^2+
         (sum(label[select_idx] == "0")/N1)^2)+
@@ -157,11 +157,11 @@ gini_impurity <- function(dat, label, par) {
         (sum(label[!select_idx] == "0")/N2)^2)
     )
   } else if (N1 == 0) {
-    gini <- -(
+    gini <- 1-(
       (sum(label[!select_idx] == "1")/N2)^2+
       (sum(label[!select_idx] == "0")/N2)^2)
   } else if (N2 == 0) {
-    gini <- -(
+    gini <- 1-(
       (sum(label[select_idx] == "1")/N1)^2+
       (sum(label[select_idx] == "0")/N1)^2)
   }
@@ -182,7 +182,7 @@ gini_impurity_CART <- function(dat, label, pure_coefs, value, candidates, varID,
   select_idx <- as.matrix(dat) %*% coefs <= drop(value)
   N1 <- colsums(select_idx)
   N2 <- colsums(!select_idx)
-  gini <- -(
+  gini <- 1-(
     N1/(N1+N2)*(
       (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "1")})/N1)^2+
       (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "0")})/N1)^2)+
@@ -194,13 +194,13 @@ gini_impurity_CART <- function(dat, label, pure_coefs, value, candidates, varID,
     1:length(candidates),
     function(candidateID) {
       if (N1[candidateID] == 0) {
-        gini[candidateID] <<- -(
+        gini[candidateID] <<- 1-(
           (sum(label[!select_idx[,candidateID]] == "1")/N2[candidateID])^2+
           (sum(label[!select_idx[,candidateID]] == "0")/N2[candidateID])^2
         )
       }
       if (N2[candidateID] == 0) {
-        gini[candidateID] <<- -(
+        gini[candidateID] <<- 1-(
           (sum(label[select_idx[,candidateID]] == "1")/N1[candidateID])^2+
           (sum(label[select_idx[,candidateID]] == "0")/N1[candidateID])^2
         )
@@ -224,7 +224,7 @@ gini_impurity_batch <- function(dat, label, candidates, varID) {
   select_idx <- as.matrix(dat) %*% coefs <= drop(value)
   N1 <- colsums(select_idx)
   N2 <- colsums(!select_idx)
-  gini <- -(
+  gini <- 1-(
     N1/(N1+N2)*(
       (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "1")})/N1)^2+
       (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "0")})/N1)^2)+
@@ -236,13 +236,13 @@ gini_impurity_batch <- function(dat, label, candidates, varID) {
     1:length(candidates),
     function(candidateID) {
       if (N1[candidateID] == 0) {
-        gini[candidateID] <<- -(
+        gini[candidateID] <<- 1-(
           (sum(label[!select_idx[,candidateID]] == "1")/N2[candidateID])^2+
           (sum(label[!select_idx[,candidateID]] == "0")/N2[candidateID])^2
         )
       }
       if (N2[candidateID] == 0) {
-        gini[candidateID] <<- -(
+        gini[candidateID] <<- 1-(
           (sum(label[select_idx[,candidateID]] == "1")/N1[candidateID])^2+
           (sum(label[select_idx[,candidateID]] == "0")/N1[candidateID])^2
         )
@@ -265,7 +265,7 @@ gini_impurity_batch <- function(dat, label, candidates, varID) {
 #   N1 <- K$sum(y_pred)$numpy()
 #   N2 <- K$sum(1-y_pred)$numpy()
 #   if (N1 != 0 & N2 != 0) {
-#     -(
+#     1-(
 #       N1/(N1+N2)*(
 #         (K$dot(y_true, y_pred)/N1)^2+
 #           (K$dot(y_true, 1-y_pred)/N1)^2) +
@@ -274,12 +274,12 @@ gini_impurity_batch <- function(dat, label, candidates, varID) {
 #             (K$dot(1-y_true, 1-y_pred)/N2)^2)
 #     )
 #   } else if (N1 == 0) {
-#     -(
+#     1-(
 #       (K$dot(1-y_true, y_pred)/N2)^2+
 #         (K$dot(1-y_true, 1-y_pred)/N2)^2
 #     )
 #   } else if (N2 == 0) {
-#     -(
+#     1-(
 #       (K$dot(y_true, y_pred)/N1)^2+
 #         (K$dot(y_true, 1-y_pred)/N1)^2
 #     )

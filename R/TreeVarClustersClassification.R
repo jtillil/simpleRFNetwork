@@ -34,7 +34,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         return(NULL)
       }
       
-      ## Find best split, stop if no decrease of impurity
+      ## Find best split
       return(findBestSplit(nodeID, possible_split_clusterIDs, response))
     }, 
     
