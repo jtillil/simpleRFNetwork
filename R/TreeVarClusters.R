@@ -81,8 +81,8 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       depths[nodeID] <<- as.integer(depth)
       sizes[nodeID] <<- length(sampleIDs[[nodeID]])
       impurities[nodeID] <<- 1-(
-        (sum(data$column(1) == "1")/sizes[nodeID])^2+
-        (sum(data$column(1) == "0")/sizes[nodeID])^2
+        (sum(data$subset(sampleIDs[nodeID], 1) == "1")/sizes[nodeID])^2+
+        (sum(data$subset(sampleIDs[nodeID], 1) == "0")/sizes[nodeID])^2
       )
       
       if (!is.null(split$clusterID)) {
