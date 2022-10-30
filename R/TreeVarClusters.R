@@ -115,6 +115,10 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         splitNode(left_child)
         splitNode(right_child)
       } else {
+        ## Read timing metrics
+        linearcomb_times[[nodeID]] <<- NA
+        node_times[nodeID] <<- NA
+
         ## Compute estimate for terminal node
         split_clusterIDs[[nodeID]] <<- NA
         # split_selectedVarIDs[[nodeID]] <<- NA

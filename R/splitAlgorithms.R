@@ -47,7 +47,7 @@ univariate_split_fast <- function(data_values, response) {
   sapply(1:ncol(data_values), function(varID) {
     ## Sample value candidates
     unique_col <- unique(data_values[,varID])
-    val_candidates <- sample(unique_col, min(max(round(nu*nrow(data_values)), minN), nrow(data_values)))
+    val_candidates <- sample(unique_col, min(max(round(nu*nrow(data_values)), minN), length(unique_col)))
     sapply(val_candidates, function(val) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(ncol(data_values))
@@ -113,7 +113,8 @@ gini_optim <- function(data_values, response) {
   ## Iterate over all variables
   sapply(1:ncol(data_values), function(varID) {
     ## Sample value candidates
-    val_candidates <- sample(data_values[,varID], min(max(round(nu*nrow(data_values)), minN), nrow(data_values)))
+    unique_col <- unique(data_values[,varID])
+    val_candidates <- sample(unique_col, min(max(round(nu*nrow(data_values)), minN), length(unique_col)))
     sapply(val_candidates, function(val) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(ncol(data_values))
@@ -437,7 +438,7 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   sapply(1:IQR_data_values$ncol, function(varID) {
     ## Sample value candidates
     unique_col <- unique(IQR_data_values$column(varID))
-    val_candidates <- sample(unique_col, min(max(round(nu*nrow(data_values)), minN), nrow(data_values)))
+    val_candidates <- sample(unique_col, min(max(round(nu*nrow(data_values)), minN), length(unique_col)))
     sapply(val_candidates, function(val) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(IQR_data_values$ncol)
