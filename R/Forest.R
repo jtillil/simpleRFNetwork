@@ -81,7 +81,7 @@ Forest <- setRefClass("Forest",
     
     predict = function(newdata) {
       ## Save prediction data in model
-      predict_data <<- Data$new(data = model.data)
+      predict_data <<- Data$new(data = newdata)
       
       ## Predict in trees
       predictions <- simplify2array(lapply(trees, function(x) {
