@@ -22,9 +22,9 @@ ForestClassification <- setRefClass("ForestClassification",
       callSuper(num_threads)
     }, 
     
-    predict = function(newdata) {
-      callSuper(newdata)
-    },
+    # predict = function(newdata, num_threads) {
+    #   callSuper(newdata, num_threads)
+    # },
     
     aggregatePredictions = function(predictions) {
       ## For all samples take majority vote over all trees
