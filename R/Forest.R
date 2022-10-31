@@ -79,14 +79,14 @@ Forest <- setRefClass("Forest",
 
     },
     
-    predict = function(newdata) {
+    predict = function(newdata, num_threads = 1) {
       ## Save prediction data in model
       predict_data <<- Data$new(data = newdata)
       
       ## Predict in trees
-      predictions <- simplify2array(lapply(trees, function(x) {
+      predictions <- simplify2array(mclapply(trees, function(x) {
         x$predict(predict_data)
-      }))
+      }, mc.cores = num_threads))
       
       ## Aggregate predictions
       return(aggregatePredictions(predictions))
