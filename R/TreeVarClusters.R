@@ -158,6 +158,12 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
             break
           }
           
+          print(i)
+          print(nodeID)
+          print(split_clusterIDs[nodeID])
+          print(varclusters[[split_clusterIDs[nodeID]]])
+          print(data$subset(i, varclusters[[split_clusterIDs[nodeID]]]))
+
           ## Move to child
           if (varselection == "none") {
             value <- as.matrix(data$subset(i, varclusters[[split_clusterIDs[nodeID]]])) %*% split_coefficients[[nodeID]]
