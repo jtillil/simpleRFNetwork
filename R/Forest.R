@@ -79,7 +79,7 @@ Forest <- setRefClass("Forest",
 
     },
     
-    predict = function(newdata, num_threads = 1) {
+    predict = function(newdata = data, num_threads = 1) {
       ## Save prediction data in model
       predict_data <<- Data$new(data = newdata)
       
