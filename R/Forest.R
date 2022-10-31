@@ -82,8 +82,6 @@ Forest <- setRefClass("Forest",
     predict = function(newdata, num_threads = 1) {
       ## Save prediction data in model
       predict_data <<- Data$new(data = newdata)
-
-      print(num_threads)
       
       ## Predict in trees
       predictions <- simplify2array(mclapply(trees, function(x) {
