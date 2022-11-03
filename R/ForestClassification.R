@@ -20,11 +20,7 @@ ForestClassification <- setRefClass("ForestClassification",
       
       ## Call parent method
       callSuper(num_threads)
-    }, 
-    
-    # predict = function(newdata, num_threads) {
-    #   callSuper(newdata, num_threads)
-    # },
+    },
     
     aggregatePredictions = function(predictions) {
       ## For all samples take majority vote over all trees
