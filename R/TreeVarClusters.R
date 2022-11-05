@@ -43,7 +43,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       } else {
         num_bootstrap_samples <- num_samples * 0.6321
       }
-      bootstrap_sample <- sample(num_samples, num_bootstrap_samples, replace = replace)
+      bootstrap_sample <- sample(num_samples, round(num_bootstrap_samples), replace = replace)
       oob_sampleIDs <<- (1:num_samples)[-bootstrap_sample]
       
       ## Assign bootstrap samples to root node

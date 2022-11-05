@@ -18,7 +18,8 @@ simpleRFNetwork(
   varclusters = NULL,
   splitobject = NULL,
   splitmethod = NULL,
-  varselection = NULL
+  varselection = NULL,
+  seed = 1
 )
 }
 \arguments{

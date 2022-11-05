@@ -10,6 +10,7 @@
 ##' @param num_causal_modules Integer, how many modules should be causal for the phenotype.
 ##' @param num_causal_genes Integer, how many genes in each causal module should be causal for the phenotype. Can also be "all".
 ##' @param effect_size Float, standardized effect measure of causal genes in the network.
+##' @param effect_intercept Float, standardized intercept effect of all genes in the network.
 ##' @examples
 ##' \donttest{
 ##' library(simpleRFNetwork)

@@ -12,7 +12,8 @@
 ##' @param effect_size Float, standardized effect size of causal genes in the network.
 ##' @param effect_intercept Float, standardized intercept effect of all genes in the network.
 ##' @param causal_genes_randomly_distributed Boolean, if TRUE causal genes will be sampled randomly from all available genes.
-##' @param num_threads Integer, number of cores to parallelize 
+##' @param num_threads Integer, number of cores to parallelize on.
+##' @param seed Integer, initial seed for the L'Ecuyer-CMRG random number streams.
 ##' @examples
 ##' \donttest{
 ##' library(simpleRFNetwork)
@@ -35,34 +36,32 @@ genGeneNetworkDataMulticore <- function(
   effect_size = 1,
   effect_intercept = -1,
   causal_genes_randomly_distributed = FALSE,
-  num_threads = 1
+  num_threads = 1,
+  seed = 1
 ) {
+
+  ## Set up parallel reproducibility
+  RNGkind("L'Ecuyer-CMRG")
+  set.seed(seed)
+  mc.reset.stream()
   
-  ## Generate networks, modules and associations between genes
-  networkdat <- mclapply(
+  ## Start parallel computing
+  return(mclapply(
     1:num_networks,
     function(i) {
+      ## Generate networks, modules and associations between genes
       if (is.null(num_modules)) {
         rn <- random_network(num_genes)
       } else {
         rn <- random_network(num_genes, num_modules)
       }
       rn <- gen_partial_correlations(rn)
-      return(list(
-        exprdat = scale(log(gen_rnaseq(num_observations, rn)$x + 1)),
-        modules = rn$modules,
-        num_modules = length(rn$modules),
-        causal_genes = NULL
-      ))
-    },
-    mc.cores = num_threads
-  )
-  
-  ## Sample causal modules and genes and set gene effects accordingly
-  if (causal_genes_randomly_distributed) {
-    sapply(
-      1:num_networks,
-      function(i) {
+      exprdat <- scale(log(gen_rnaseq(num_observations, rn)$x + 1))
+      modules <- rn$modules
+      num_modules <- length(rn$modules)
+
+      ## Sample causal modules and genes and set gene effects accordingly
+      if (causal_genes_randomly_distributed) {
         ## Sample causal genes
         causal_genes <- sample(
           1:num_genes,
@@ -70,11 +69,11 @@ genGeneNetworkDataMulticore <- function(
           replace = FALSE
         )
         ## Count causal modules
-        causal_modules <- c()
+        causal_modules <- NULL
         sapply(
-          1:length(networkdat[[i]]$modules),
+          1:length(modules),
           function(j) {
-            if (sum(causal_genes %in% networkdat[[i]]$modules[[j]]$nodes) > 0) {
+            if (sum(causal_genes %in% modules[[j]]$nodes) > 0) {
               causal_modules <<- c(causal_modules, j)
             }
           }
@@ -83,37 +82,32 @@ genGeneNetworkDataMulticore <- function(
         causal_genes <- unique(causal_genes)
         effects <- numeric(num_genes)
         effects[causal_genes] <- effect_size
-        networkdat[[i]]$effects <<- effects
-        networkdat[[i]]$causal_modules <<- causal_modules
-        networkdat[[i]]$causal_genes <<- causal_genes
-      }
-    )
-  } else if (num_causal_modules > 0) {
-    sapply(
-      1:num_networks,
-      function(i) {
+        effects <- effects
+        causal_modules <- causal_modules
+        causal_genes <- causal_genes
+      } else if (num_causal_modules > 0) {
         ## Sample causal modules
         causal_modules <- sample(
-          x = 1:networkdat[[i]]$num_modules,
-          size = min(num_causal_modules, networkdat[[i]]$num_modules),
+          x = 1:num_modules,
+          size = min(num_causal_modules, num_modules),
           replace = FALSE)
         ## Sample causal genes
-        causal_genes <- c()
+        causal_genes <- NULL
         if (num_causal_genes == "all") {
-          sapply(1:min(num_causal_modules, networkdat[[i]]$num_modules),
+          sapply(1:min(num_causal_modules, num_modules),
                 function(j) {
                   causal_genes <<- c(
                     causal_genes,
-                    networkdat[[i]]$modules[[causal_modules[j]]]$nodes)
+                    modules[[causal_modules[j]]]$nodes)
                 })
         } else {
           sapply(
-            1:min(num_causal_modules, networkdat[[i]]$num_modules),
+            1:min(num_causal_modules, num_modules),
             function(j) {
               causal_genes <<- c(
                 causal_genes,
                 sample(
-                  x = networkdat[[i]]$modules[[causal_modules[j]]]$nodes,
+                  x = modules[[causal_modules[j]]]$nodes,
                   size = num_causal_genes,
                   replace = FALSE))
             })
@@ -122,25 +116,17 @@ genGeneNetworkDataMulticore <- function(
         causal_genes <- unique(causal_genes)
         effects <- numeric(num_genes)
         effects[causal_genes] <- effect_size
-        networkdat[[i]]$effects <<- effects
-        networkdat[[i]]$causal_modules <<- causal_modules
-        networkdat[[i]]$causal_genes <<- causal_genes
+        effects <- effects
+        causal_modules <- causal_modules
+        causal_genes <- causal_genes
+      } else {
+        causal_modules <- NULL
+        causal_genes <- NULL
+        effects <- numeric(num_genes)
       }
-    )
-  } else {
-    sapply(
-      1:num_networks,
-      function(i) {
-        networkdat[[i]]$effects <<- numeric(num_genes)
-      }
-    )
-  }
-  
-  ## Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
-  return(lapply(
-    1:num_networks,
-    function(i) {
-      probs <- 1/(1 + exp(-as.matrix(networkdat[[i]]$exprdat) %*% networkdat[[i]]$effects - effect_intercept))
+      
+      ## Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
+      probs <- 1/(1 + exp(-as.matrix(exprdat) %*% effects - effect_intercept))
       res <- data.frame(pheno = as.factor(sapply(
         1:num_observations,
         function(i) {
@@ -150,14 +136,15 @@ genGeneNetworkDataMulticore <- function(
             prob = c(1-probs[i], probs[i]))
         }
       )))
-      res <- cbind(res, data.frame(networkdat[[i]]$exprdat))
+      res <- cbind(res, data.frame(exprdat))
       return(list(
         data = res, 
-        modules = lapply(networkdat[[i]]$modules, function(x){x$nodes}),
-        causal_modules = networkdat[[i]]$causal_modules,
-        causal_genes = networkdat[[i]]$causal_genes,
-        effects = networkdat[[i]]$effects))
-    }
+        modules = lapply(modules, function(x){x$nodes}),
+        causal_modules = causal_modules,
+        causal_genes = causal_genes,
+        effects = effects
+      ))
+    },
+    mc.cores = num_threads
   ))
-  
 }

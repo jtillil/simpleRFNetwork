@@ -101,7 +101,9 @@ simpleRFNetwork <- function(
   varclusters = NULL,
   splitobject = NULL,
   splitmethod = NULL,
-  varselection = NULL) {
+  varselection = NULL,
+  seed = 1
+  ) {
   
   model.data <- model.frame(formula, data)
   
