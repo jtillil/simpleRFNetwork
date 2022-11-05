@@ -102,7 +102,7 @@ simpleRFNetwork <- function(
   splitobject = NULL,
   splitmethod = NULL,
   varselection = NULL,
-  seed = 1
+  seed = 1L
   ) {
   
   model.data <- model.frame(formula, data)
@@ -257,7 +257,8 @@ simpleRFNetwork <- function(
                                        varclusters = varclusters,
                                        splitobject = splitobject,
                                        splitmethod = splitmethod,
-                                       varselection = varselection)
+                                       varselection = varselection,
+                                       seed = seed)
   } else if (treetype == "Probability") {
     forest <- ForestProbability$new(num_trees = as.integer(num_trees), mtry = as.integer(mtry), 
                                    min_node_size = as.integer(min_node_size), 
