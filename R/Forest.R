@@ -80,7 +80,7 @@ Forest <- setRefClass("Forest",
       # })
 
       ## Stop timing for forest growth
-      forest_time <- toc(quiet = TRUE)
+      forest_time <<- toc(quiet = TRUE)
       forest_time <<- as.numeric(forest_time$toc - forest_time$tic)
 
     },
@@ -124,6 +124,87 @@ Forest <- setRefClass("Forest",
       
       ## Aggregate over trees
       return(rowMeans(simplify2array(vim_trees)))
+    },
+
+    readSplitClusters = function(num_threads = 1) {
+      ## Read split_clusterIDs
+      return(mclapply(
+        trees,
+        function(tree) tree$split_clusterIDs,
+        mc.cores = num_threads
+      ))
+    },
+
+    readSplitValues = function(num_threads = 1) {
+      ## Read split_values
+      return(mclapply(
+        trees,
+        function(tree) tree$split_values,
+        mc.cores = num_threads
+      ))
+    },
+
+    readSplitCoefficients = function(num_threads = 1) {
+      ## Read split_coefficients
+      return(mclapply(
+        trees,
+        function(tree) tree$split_coefficients,
+        mc.cores = num_threads
+      ))
+    },
+
+    readDepths = function(num_threads = 1) {
+      ## Read depths
+      return(mclapply(
+        trees,
+        function(tree) tree$depths,
+        mc.cores = num_threads
+      ))
+    },
+
+    readSizes = function(num_threads = 1) {
+      ## Read sizes
+      return(mclapply(
+        trees,
+        function(tree) tree$sizes,
+        mc.cores = num_threads
+      ))
+    },
+
+    readLinearcombTimes = function(num_threads = 1) {
+      ## Read linearcomb times
+      return(mclapply(
+        trees,
+        function(tree) tree$linearcomb_times,
+        mc.cores = num_threads
+      ))
+    },
+
+    readImpurities = function(num_threads = 1) {
+      ## Read linearcomb times
+      return(mclapply(
+        trees,
+        function(tree) tree$impurities,
+        mc.cores = num_threads
+      ))
+    },
+
+    readOOBSamples = function(num_threads = 1) {
+      ## Read OOB samples
+      return(mclapply(
+        trees,
+        function(tree) tree$oob_sampleIDs,
+        mc.cores = num_threads
+      ))
+    },
+
+    readChildNodes = function(num_threads = 1) {
+      ## Read child nodes
+      return(mclapply(
+        trees,
+        function(tree) tree$child_nodeIDs,
+        mc.cores = num_threads
+      ))
     },
     
     show = function() {
