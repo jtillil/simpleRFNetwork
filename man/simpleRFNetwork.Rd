@@ -19,7 +19,7 @@ simpleRFNetwork(
   splitobject = NULL,
   splitmethod = NULL,
   varselection = NULL,
-  seed = 1
+  seed = 1L
 )
 }
 \arguments{

@@ -10,9 +10,12 @@ genGeneNetworkData(
   num_modules = NULL,
   num_observations,
   num_causal_modules,
-  num_causal_genes,
+  prop_causal_genes,
   effect_size = 1,
-  effect_intercept = -1
+  effect_intercept = -1,
+  causal_genes_randomly_distributed = FALSE,
+  num_threads = 1,
+  seed = 1
 )
 }
 \arguments{
@@ -20,17 +23,23 @@ genGeneNetworkData(
 
 \item{num_genes}{Integer, number of genes per network.}
 
-\item{num_modules}{Integer, number of modules per network. Can also be NULL for natural number of modules.}
+\item{num_modules}{Integer, number of modules per network. Can also be NULL for random number of modules.}
 
 \item{num_observations}{Integer, number of expression data observations per network.}
 
 \item{num_causal_modules}{Integer, how many modules should be causal for the phenotype.}
 
-\item{num_causal_genes}{Integer, how many genes in each causal module should be causal for the phenotype. Can also be "all".}
+\item{prop_causal_genes}{Float, proportion of genes in each causal module that should be causal for the phenotype. If "causal_genes_randomly_distributed == TRUE" refers to proportion of all genes that should be causal.}
 
-\item{effect_size}{Float, standardized effect measure of causal genes in the network.}
+\item{effect_size}{Float, standardized effect size of causal genes in the network.}
 
 \item{effect_intercept}{Float, standardized intercept effect of all genes in the network.}
+
+\item{causal_genes_randomly_distributed}{Boolean, if TRUE causal genes will be sampled randomly from all available genes.}
+
+\item{num_threads}{Integer, number of cores to parallelize on.}
+
+\item{seed}{Integer, initial seed for the L'Ecuyer-CMRG random number streams.}
 }
 \description{
 Generates random networks of genes, their associations, expression data and
