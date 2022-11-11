@@ -2,7 +2,7 @@
 % Please edit documentation in R/genGeneNetworkData.R
 \name{genGeneNetworkData}
 \alias{genGeneNetworkData}
-\title{simpleRFNetwork}
+\title{genGeneNetworkData}
 \usage{
 genGeneNetworkData(
   num_networks,
@@ -13,6 +13,7 @@ genGeneNetworkData(
   prop_causal_genes,
   effect_size = 1,
   effect_intercept = -1,
+  effect_type = "linear",
   causal_genes_randomly_distributed = FALSE,
   num_threads = 1,
   seed = 1
@@ -34,6 +35,8 @@ genGeneNetworkData(
 \item{effect_size}{Float, standardized effect size of causal genes in the network.}
 
 \item{effect_intercept}{Float, standardized intercept effect of all genes in the network.}
+
+\item{effect_type}{Character, type of gene-effect on phenotype. Default is "linear". One of "linear", "quadratic".}
 
 \item{causal_genes_randomly_distributed}{Boolean, if TRUE causal genes will be sampled randomly from all available genes.}
 

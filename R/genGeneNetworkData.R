@@ -2,7 +2,7 @@
 ##' binary labels where the effect measures of individual genes can be set by
 ##' the user.
 ##' 
-##' @title simpleRFNetwork
+##' @title genGeneNetworkData
 ##' @param num_networks Integer, number of networks to generate.
 ##' @param num_genes Integer, number of genes per network.
 ##' @param num_modules Integer, number of modules per network. Can also be NULL for random number of modules.
@@ -14,6 +14,7 @@
 ##' @param causal_genes_randomly_distributed Boolean, if TRUE causal genes will be sampled randomly from all available genes.
 ##' @param num_threads Integer, number of cores to parallelize on.
 ##' @param seed Integer, initial seed for the L'Ecuyer-CMRG random number streams.
+##' @param effect_type Character, type of gene-effect on phenotype. Default is "linear". One of "linear", "quadratic".
 ##' @examples
 ##' \donttest{
 ##' library(simpleRFNetwork)
@@ -35,6 +36,7 @@ genGeneNetworkData <- function(
   prop_causal_genes,
   effect_size = 1,
   effect_intercept = -1,
+  effect_type = "linear",
   causal_genes_randomly_distributed = FALSE,
   num_threads = 1,
   seed = 1
@@ -136,7 +138,11 @@ genGeneNetworkData <- function(
       }
       
       ## Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
-      probs <- 1/(1 + exp(-as.matrix(exprdat) %*% effects - effect_intercept))
+      if (effect_type == "linear") {
+        probs <- 1/(1 + exp(-as.matrix(exprdat) %*% effects - effect_intercept))
+      } else if (effect_type == "quadratic") {
+        probs <- 1/(1 + exp(-(sign(as.matrix(exprdat)) * as.matrix(exprdat)^2) %*% effects - effect_intercept))
+      }
       res <- data.frame(pheno = as.factor(sapply(
         1:num_observations,
         function(i) {
