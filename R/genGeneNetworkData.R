@@ -37,6 +37,7 @@ genGeneNetworkData <- function(
   effect_size = 1,
   effect_intercept = -1,
   effect_type = "linear",
+  effect_error_sd = 0,
   causal_genes_randomly_distributed = FALSE,
   num_threads = 1,
   seed = 1
@@ -138,10 +139,17 @@ genGeneNetworkData <- function(
       }
       
       ## Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
+      if (effect_error_sd > 0) {
+        effects <- effects + rnorm(length(effects), 0, effect_error_sd)
+      }
       if (effect_type == "linear") {
         probs <- 1/(1 + exp(-as.matrix(exprdat) %*% effects - effect_intercept))
       } else if (effect_type == "quadratic") {
-        probs <- 1/(1 + exp(-(sign(as.matrix(exprdat)) * as.matrix(exprdat)^2) %*% effects - effect_intercept))
+        probs <- 1/(1 + exp(-(sign(as.matrix(exprdat) %*% effects) * (as.matrix(exprdat) %*% effects)^2) - effect_intercept))
+      } else if (effect_type == "cubic") {
+        probs <- 1/(1 + exp(-((as.matrix(exprdat) %*% effects)^3) - effect_intercept))
+      } else if (effect_type == "root") {
+        probs <- 1/(1 + exp(-(sign(as.matrix(exprdat) %*% effects) * sqrt(abs(as.matrix(exprdat) %*% effects))) - effect_intercept))
       }
       res <- data.frame(pheno = as.factor(sapply(
         1:num_observations,
