@@ -157,7 +157,7 @@ gini_optim <- function(data_values, response) {
 
 stoch_optim <- function(data_values, response) {
   ## Turn on eager execution
-  tf$config$run_functions_eagerly(TRUE)
+  # tf$config$run_functions_eagerly(TRUE)
   
   ## Create, compile and fit Keras model
   model <- keras_model_sequential() %>%

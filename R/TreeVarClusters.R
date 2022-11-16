@@ -52,6 +52,22 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       ## Call recursive splitting function on root node
       splitNode(1)
     },
+
+    ## Initiate bootstrap without call to splitNode
+    init_grow = function(replace) {
+      ## Bootstrap 
+      num_samples <- data$nrow
+      if (replace) {
+        num_bootstrap_samples <- num_samples
+      } else {
+        num_bootstrap_samples <- num_samples * 0.6321
+      }
+      bootstrap_sample <- sample(num_samples, round(num_bootstrap_samples), replace = replace)
+      oob_sampleIDs <<- (1:num_samples)[-bootstrap_sample]
+      
+      ## Assign bootstrap samples to root node
+      sampleIDs <<- list(bootstrap_sample)
+    },
     
     ## Handle node splitting
     ## @splitNode

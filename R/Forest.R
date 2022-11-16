@@ -53,25 +53,46 @@ Forest <- setRefClass("Forest",
         x$varselection <- varselection
       })
 
-      ## Set up parallel reproducibility
-      RNGkind("L'Ecuyer-CMRG")
-      set.seed(seed)
-      mc.reset.stream()
-      
-      ## Grow trees
-      if (Sys.info()["sysname"]=="Windows") {
-        ## On Windows
-        cl <- makeCluster(num_threads)
-        trees <<- parLapply(cl, X=trees, fun=function(x) {
-          x$grow(replace)
-          x
-        })
+      if (splitmethod == "Gini_stoch_optimal") {
+
+        ## Divide trees into batches
+        treeIDs <- 1:num_trees
+        treeBatchList <- NULL
+        i <- 0
+        while(length(treeIDs) > 0) {
+          i <- i+1
+          treeBatchList[[i]] <- treeIDs[1:num_threads]
+          treeIDs <- treeIDs[-(1:num_threads)]#
+        }
+        treeBatchList[[i]] <- treeBatchList[[i]][!is.na(treeBatchList[[i]])]
+
+        ## Grow trees in batches
+        ## @grow_batch
+        for (treeBatch in treeBatchList) {
+          grow_batch(treeBatch)
+        }
+
       } else {
-        ## On Unix
-        trees <<- mclapply(trees, function(x) {
-          x$grow(replace)
-          x
-        }, mc.cores = num_threads)
+        ## Set up parallel reproducibility
+        RNGkind("L'Ecuyer-CMRG")
+        set.seed(seed)
+        mc.reset.stream()
+        
+        ## Grow trees
+        if (Sys.info()["sysname"]=="Windows") {
+          ## On Windows
+          cl <- makeCluster(num_threads)
+          trees <<- parLapply(cl, X=trees, fun=function(x) {
+            x$grow(replace)
+            x
+          })
+        } else {
+          ## On Unix
+          trees <<- mclapply(trees, function(x) {
+            x$grow(replace)
+            x
+          }, mc.cores = num_threads)
+        }
       }
       
       # trees <<- lapply(trees, function(x) {
