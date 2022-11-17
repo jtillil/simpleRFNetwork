@@ -125,7 +125,7 @@ simpleRFNetwork <- function(
   ## Check parameters
   if (is.null(mtry)) {
     # mtry <- sqrt(length(varclusters))
-    if (length(varclusters) < 10) {
+    if (num_trees < 10) {
       mtry <- length(varclusters)
     } else {
       mtry <- ceiling(length(varclusters) * 0.5)
