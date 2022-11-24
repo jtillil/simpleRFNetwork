@@ -87,7 +87,7 @@ ForestClassification <- setRefClass("ForestClassification",
       tree_predictions <- sapply(trees, function(x) {
         oob_samples <- x$oob_sampleIDs
         result <- rep(NA, data$nrow)
-        result[oob_samples] <- x$predictOOB()
+        result[oob_samples] <- x$predictOOB_batch()
         return(result)
       })
 

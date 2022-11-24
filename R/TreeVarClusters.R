@@ -173,12 +173,6 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
             break
           }
-          
-          # print(i)
-          # print(nodeID)
-          # print(split_clusterIDs[nodeID])
-          # print(varclusters[[split_clusterIDs[nodeID]]])
-          # print(data$subset(i, varclusters[[split_clusterIDs[nodeID]]]))
 
           ## Move to child
           if (varselection == "none") {
