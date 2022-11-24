@@ -53,26 +53,26 @@ Forest <- setRefClass("Forest",
         x$varselection <- varselection
       })
 
-      if (splitmethod == "Gini_stoch_optimal") {
+      # if (splitmethod == "Gini_stoch_optimal") {
 
-        ## Divide trees into batches
-        treeIDs <- 1:num_trees
-        treeBatchList <- NULL
-        i <- 0
-        while(length(treeIDs) > 0) {
-          i <- i+1
-          treeBatchList[[i]] <- treeIDs[1:num_threads]
-          treeIDs <- treeIDs[-(1:num_threads)]#
-        }
-        treeBatchList[[i]] <- treeBatchList[[i]][!is.na(treeBatchList[[i]])]
+      #   ## Divide trees into batches
+      #   treeIDs <- 1:num_trees
+      #   treeBatchList <- NULL
+      #   i <- 0
+      #   while(length(treeIDs) > 0) {
+      #     i <- i+1
+      #     treeBatchList[[i]] <- treeIDs[1:num_threads]
+      #     treeIDs <- treeIDs[-(1:num_threads)]#
+      #   }
+      #   treeBatchList[[i]] <- treeBatchList[[i]][!is.na(treeBatchList[[i]])]
 
-        ## Grow trees in batches
-        ## @grow_batch
-        for (treeBatch in treeBatchList) {
-          grow_batch(treeBatch)
-        }
+      #   ## Grow trees in batches
+      #   ## @grow_batch
+      #   for (treeBatch in treeBatchList) {
+      #     grow_batch(treeBatch)
+      #   }
 
-      } else {
+      # } else {
         ## Set up parallel reproducibility
         RNGkind("L'Ecuyer-CMRG")
         set.seed(seed)
@@ -93,7 +93,7 @@ Forest <- setRefClass("Forest",
             x
           }, mc.cores = num_threads)
         }
-      }
+      # }
       
       # trees <<- lapply(trees, function(x) {
       #   x$grow(replace)

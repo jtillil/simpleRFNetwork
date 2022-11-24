@@ -58,61 +58,86 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       ## Start timing for node splitting time measurement
       tic()
       
-      ## For all possible variable clusters
-      for (split_clusterID in possible_split_clusterIDs) {
-        
-        ## Read data values from samples in current node
-        data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
+      if (splitmethod != "Gini_stoch_optimal") {
+        ## For all possible variable clusters
+        for (split_clusterID in possible_split_clusterIDs) {
+          
+          ## Read data values from samples in current node
+          data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
 
-        ## IF LDA: calculate covariance matrix and skip if singular
-        if (splitmethod == "LDA") {
-          ## Calculate mean of both covariance matrices due to homoscedasticity
-          mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
-                      cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE))
-          ## Condition matrix by adding 1e-10 to diagonal elements that are 0
-          sapply(1:ncol(mat), function(j) {
-            if (mat[j,j] == 0) {
-              mat[j,j] <<- 1e-10
+          ## IF LDA: calculate covariance matrix and skip if singular
+          if (splitmethod == "LDA") {
+            ## Calculate mean of both covariance matrices due to homoscedasticity
+            mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
+                        cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE))
+            ## Condition matrix by adding 1e-10 to diagonal elements that are 0
+            sapply(1:ncol(mat), function(j) {
+              if (mat[j,j] == 0) {
+                mat[j,j] <<- 1e-10
+              }
+            })
+            ## Check if singular
+            if (!is.positive.definite(mat)) {
+              next
             }
-          })
-          ## Check if singular
-          if (!is.positive.definite(mat)) {
-            next
+          } else {
+            mat <- NULL
           }
-        } else {
-          mat <- NULL
+          
+          ## IF CART: read IQR scaled data values from samples in current node
+          if (splitmethod == "CART" | splitmethod == "CART_fast") {
+            IQR_data_values <- Data$new(data = IQR_data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]]))
+          } else {
+            IQR_data_values <- NULL
+          }
+          
+          ## Select variables
+          # if (varselection=="half_lowest_p" | varselection=="signif_p") {
+          #   ## Obtain p values from logistic regression
+          #   p_vals <- lapply(varclusters[[split_clusterID]] + 1,
+          #                    function(x) {
+          #                      p <- summary(glm(response ~ data_values[,x],
+          #                                       family=binomial(link="logit")))$coefficients[2,4] 
+          #                    })
+          #   if (varselection=="half_lowest_p") {
+          #     ## Get ranks of variables, sorted by p value
+          #     ranks <- order(p_vals)
+          #     ## Use only the variables with below average p value
+          #     best_split$selectedVarIDs <- varclusters[[split_clusterID]][ranks[1:round(length(ranks)/2)]]
+          #   } else if (varselection=="signif_p") {
+          #     ## Use only the variables with significant p value
+          #     best_split$selectedVarIDs <- varclusters[[split_clusterID]][p_vals < 0.15]
+          #   }
+          #   data_values <- data_values[,best_split$selectedVarIDs]
+          # }
+          
+          ## Find best split
+          best_split = findBestSplitCoefs(split_clusterID, best_split, data_values, IQR_data_values, response, mat)
+        
+          ## Save time measurement for single linear combination
+          linearcomb_times <- c(linearcomb_times, best_split$linearcomb_time)
         }
-        
-        ## IF CART: read IQR scaled data values from samples in current node
-        if (splitmethod == "CART" | splitmethod == "CART_fast") {
-          IQR_data_values <- Data$new(data = IQR_data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]]))
-        } else {
-          IQR_data_values <- NULL
+      } else {
+        ## Init lists
+        data_valList <- NULL
+        responseList <- NULL
+
+        ## For all possible variable clusters
+        for (id in 1:length(possible_split_clusterIDs)) {
+          ## Read data values from samples in current node
+          data_valList[[id]] <- as.matrix(data$subset(sampleIDs[[nodeID]], varclusters[[possible_split_clusterIDs[id]]] + 1))
+          ## Put in response
+          responseList[[id]] <- as.numeric(response) - 1
         }
-        
-        ## Select variables
-        # if (varselection=="half_lowest_p" | varselection=="signif_p") {
-        #   ## Obtain p values from logistic regression
-        #   p_vals <- lapply(varclusters[[split_clusterID]] + 1,
-        #                    function(x) {
-        #                      p <- summary(glm(response ~ data_values[,x],
-        #                                       family=binomial(link="logit")))$coefficients[2,4] 
-        #                    })
-        #   if (varselection=="half_lowest_p") {
-        #     ## Get ranks of variables, sorted by p value
-        #     ranks <- order(p_vals)
-        #     ## Use only the variables with below average p value
-        #     best_split$selectedVarIDs <- varclusters[[split_clusterID]][ranks[1:round(length(ranks)/2)]]
-        #   } else if (varselection=="signif_p") {
-        #     ## Use only the variables with significant p value
-        #     best_split$selectedVarIDs <- varclusters[[split_clusterID]][p_vals < 0.15]
-        #   }
-        #   data_values <- data_values[,best_split$selectedVarIDs]
-        # }
-        
-        ## Find best split
-        best_split = findBestSplitCoefs(split_clusterID, best_split, data_values, IQR_data_values, response, mat)
-        
+
+        ## Find best split in batch model training
+        best_split = findBestSplitCoefs_batch(
+          split_clusterIDList = possible_split_clusterIDs,
+          best_splitList = vector("list", length(possible_split_clusterIDs)),
+          data_valList = data_valList,
+          responseList = responseList
+        )
+
         ## Save time measurement for single linear combination
         linearcomb_times <- c(linearcomb_times, best_split$linearcomb_time)
       }

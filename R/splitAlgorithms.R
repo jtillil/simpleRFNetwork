@@ -158,6 +158,8 @@ gini_optim <- function(data_values, response) {
 stoch_optim <- function(data_values, response) {
   ## Turn on eager execution
   # tf$config$run_functions_eagerly(TRUE)
+
+  cat("\n\n\n\n\n\n\n New NN Optim \n\n\n\n\n\n\n")
   
   ## Create, compile and fit Keras model
   model <- keras_model_sequential() %>%
@@ -168,6 +170,7 @@ stoch_optim <- function(data_values, response) {
       kernel_initializer='glorot_uniform',
       bias_initializer='glorot_uniform'
     )
+  
   model %>%
     compile(
       optimizer = tf$keras$optimizers$Adam(learning_rate = 0.1),
@@ -179,7 +182,7 @@ stoch_optim <- function(data_values, response) {
     fit(as.matrix(data_values),
         as.numeric(response)-1,
         epochs = 100,
-        verbose = 0,
+        verbose = 1,
         callbacks = c(callback_early_stopping(
           monitor = "loss",
           min_delta = 0.01,

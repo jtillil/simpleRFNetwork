@@ -130,8 +130,8 @@ simpleRFNetwork <- function(
   } else {
     mtry <- sqrt(length(varclusters))
   }
-  if (mtry > ncol(model.data)-1) {
-    stop("Mtry cannot be larger than number of independent variables.")
+  if (mtry > length(varclusters)) {
+    stop("Mtry cannot be larger than number of variable groups.")
   }
   if (is.null(min_node_size)) {
     if (treetype == "Classification") {
