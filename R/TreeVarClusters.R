@@ -292,11 +292,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         
         new_nodeIDs <- sapply((1:num_samples_predict)[!terminal], function(id) {
           ## Batch calculate sample values
-          if (varselection == "none") {
-            value <- as.matrix(data$subset(oob_sampleIDs[id], varclusters[[split_clusterIDs[nodeIDs[id]]]] + 1)) %*% split_coefficients[[nodeIDs[id]]]
-          } else {
-            value <- as.matrix(data$subset(oob_sampleIDs[id], split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
-          }
+          value <- as.matrix(data$subset(oob_sampleIDs[id], varclusters[[split_clusterIDs[nodeIDs[id]]]] + 1)) %*% split_coefficients[[nodeIDs[id]]]
 
           ## Batch update child nodes
           if (value <= split_values[nodeIDs[id]]) {
@@ -318,14 +314,14 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       ## Initialize
       num_samples_predict <- length(oob_sampleIDs)
       permutations <- sample(num_samples_predict)
-
+      
       ## For all OOB samples in batch, start in root and drop down tree
       nodeIDs <- numeric(num_samples_predict) + 1
       terminal <- rep(FALSE, num_samples_predict)
       while(TRUE) {
         ## Check if samples in terminal node
         terminal[nodeIDs > length(child_nodeIDs) | lengths(child_nodeIDs[nodeIDs]) == 0] <- TRUE
-
+ 
         ## Break if all samples in terminal node
         if (sum(!terminal) == 0) {
           break
