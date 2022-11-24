@@ -102,7 +102,7 @@ findBestSplitCoefs_batch = function(split_clusterIDList, best_splitList, data_va
     ## Sort by decrease and extract best split
     best_id <- 0
     best_decrease <- 0
-    for (id in 1:length(split_clusterIDList)[!skipvec]) {
+    for (id in (1:length(split_clusterIDList))[!skipvec]) {
       if (best_splitList[[id]]$decrease > best_decrease) {
         best_id <- id
         best_decrease <- best_splitList[[id]]$decrease
