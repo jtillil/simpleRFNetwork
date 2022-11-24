@@ -79,7 +79,7 @@ findBestSplitCoefs_batch = function(split_clusterIDList, best_splitList, data_va
     class_counts_right <- tabulate(responseList[[id]][!idx])
   
     ## Skip cluster if one child empty
-    skipvec <- c(skip, FALSE)
+    skipvec <- c(skipvec, FALSE)
     if (sum(class_counts_left) == 0 | sum(class_counts_right) == 0) {
       skipvec[id] <- TRUE
     }
