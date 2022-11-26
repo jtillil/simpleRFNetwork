@@ -10,9 +10,5 @@ Description: R package for the master thesis of Johannes Tillil. Based
     of RF that handles node splitting with a linear combination of
     multiple variables instead of a single one.
 License: GPL-3
-Imports:
-    methods,
-    ipred, 
-    coin
 Suggests: survival
 RoxygenNote: 7.2.1
