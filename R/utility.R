@@ -180,8 +180,8 @@ gini_impurity_CART <- function(dat, label, pure_coefs, value, candidates, varID,
   coefs[varID,] <- coefs[varID,] - candidates
   value <- value + candidates * gamma
   select_idx <- as.matrix(dat) %*% coefs <= drop(value)
-  N1 <- colsums(select_idx)
-  N2 <- colsums(!select_idx)
+  N1 <- colSums(select_idx)
+  N2 <- colSums(!select_idx)
   gini <- 1-(
     N1/(N1+N2)*(
       (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "1")})/N1)^2+
@@ -222,8 +222,8 @@ gini_impurity_batch <- function(dat, label, candidates, varID) {
   coefs[varID,] <- 1
   value <- candidates
   select_idx <- as.matrix(dat) %*% coefs <= drop(value)
-  N1 <- colsums(select_idx)
-  N2 <- colsums(!select_idx)
+  N1 <- colSums(select_idx)
+  N2 <- colSums(!select_idx)
   gini <- 1-(
     N1/(N1+N2)*(
       (sapply(1:length(candidates), function(j) {sum(label[select_idx[,j]] == "1")})/N1)^2+
