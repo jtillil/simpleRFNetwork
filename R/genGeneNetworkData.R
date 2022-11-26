@@ -23,9 +23,6 @@
 ##' }
 ##' 
 ##' @author Johannes Tillil
-##' @import stats
-##' @import SeqNet
-##' @import parallel
 ##' @export
 genGeneNetworkData <- function(
   num_networks,

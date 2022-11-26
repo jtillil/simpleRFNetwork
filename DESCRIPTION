@@ -13,12 +13,6 @@ License: GPL-3
 Imports:
     methods,
     ipred, 
-    coin,
-    parallel,
-    e1071,
-    Rfast,
-    keras,
-    tensorflow,
-    SeqNet
+    coin
 Suggests: survival
 RoxygenNote: 7.2.1

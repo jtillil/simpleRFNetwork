@@ -82,8 +82,6 @@
 ##' @author Marvin N. Wright, Johannes Tillil
 ##' @references
 ##' Breiman, L. (2001). Random forests. Mach Learn, 45(1), 5-32. \cr
-##' @import stats
-##' @import Rfast
 ##' @export
 simpleRFNetwork <- function(
   ## Standard parameters

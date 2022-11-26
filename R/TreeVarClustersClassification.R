@@ -2,12 +2,6 @@
 ##' @title Classification tree class
 ##' @description Subclass for classification tree where split variables are clusters.
 ##' Contains all fields and methods used special for classification trees.
-##' @import e1071
-##' @import Rfast
-##' @import keras
-##' @import tensorflow
-##' @import tictoc
-##' @import matrixcalc
 TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
   contains = "TreeVarClusters",
   fields = list(),

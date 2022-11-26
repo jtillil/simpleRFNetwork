@@ -2,11 +2,6 @@
 ##' @title Forest class
 ##' @description Virtual class for Random forest. 
 ##' Contains all fields and methods used in all Forest subclasses.
-##' @importFrom parallel mclapply
-##' @importFrom parallel makeCluster
-##' @importFrom parallel parLapply
-##' @import methods
-##' @import tictoc
 Forest <- setRefClass("Forest", 
   fields = list(
     ## Standard parameters
