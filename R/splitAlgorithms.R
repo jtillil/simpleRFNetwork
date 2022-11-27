@@ -145,7 +145,8 @@ gini_optim <- function(data_values, response) {
                            response,
                            par))
     },
-    method="Nelder"
+    # method="Nelder"
+    method="BFGS"
   )$par
   
   ## Read coefficients and value
