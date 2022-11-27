@@ -145,9 +145,9 @@ gini_optim <- function(data_values, response) {
                            response,
                            par))
     },
-    # method="Nelder" # 46sec on 500
+    method="Nelder" # 46sec on 500
     # method="BFGS" # 69sec on 500
-    method = "CG" # .sec on 500
+    # method = "CG" # 70sec on 500
   )$par
   
   ## Read coefficients and value
