@@ -125,6 +125,8 @@ simpleRFNetwork <- function(
     mtry <- length(varclusters)
   } else if (mtry == "half") {
     mtry <- ceiling(length(varclusters) * 0.5)
+  } else if (mtry == "root") {
+    mtry <- sqrt(length(varclusters))
   } else {
     mtry <- sqrt(length(varclusters))
   }

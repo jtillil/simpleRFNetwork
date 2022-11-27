@@ -28,6 +28,8 @@ genGeneNetworkData <- function(
   num_networks,
   num_genes,
   num_modules = NULL,
+  max_genes_per_module,
+  sd_genes_per_module,
   num_observations,
   num_causal_modules,
   prop_causal_genes,
@@ -51,9 +53,16 @@ genGeneNetworkData <- function(
     function(i) {
       ## Generate networks, modules and associations between genes
       if (is.null(num_modules)) {
-        rn <- random_network(num_genes)
+        rn <- random_network(
+          num_genes, 
+          max_module_size = max_genes_per_module,
+          sd_module_size = sd_genes_per_module)
       } else {
-        rn <- random_network(num_genes, num_modules)
+        rn <- random_network(
+          num_genes, 
+          num_modules, 
+          max_module_size = max_genes_per_module,
+          sd_module_size = sd_genes_per_module)
       }
       rn <- gen_partial_correlations(rn)
       exprdat <- scale(log(gen_rnaseq(num_observations, rn)$x + 1))

@@ -125,7 +125,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         }
 
         ## Find best split in batch model training
-        best_split = findBestSplitCoefs_batch(
+        best_split <- findBestSplitCoefs_batch(
           split_clusterIDList = possible_split_clusterIDs,
           best_splitList = vector("list", length(possible_split_clusterIDs)),
           data_valList = data_valList,
