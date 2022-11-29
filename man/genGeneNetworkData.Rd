@@ -8,6 +8,8 @@ genGeneNetworkData(
   num_networks,
   num_genes,
   num_modules = NULL,
+  max_genes_per_module,
+  sd_genes_per_module,
   num_observations,
   num_causal_modules,
   prop_causal_genes,

@@ -2,7 +2,6 @@
 ##' @title Survival tree class
 ##' @description Subclass for survival tree.
 ##' Contains all fields and methods used special for survival trees.
-##' @importFrom coin logrank_trafo
 TreeSurvival <- setRefClass("TreeSurvival", 
   contains = "Tree",
   fields = list(

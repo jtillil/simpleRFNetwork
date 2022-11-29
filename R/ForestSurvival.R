@@ -2,7 +2,6 @@
 ##' @title Survival forest class
 ##' @description Subclass for survival forest. 
 ##' Contains all fields and methods used special for survival forests.
-##' @importFrom ipred sbrier
 ForestSurvival <- setRefClass("ForestSurvival", 
   contains = "Forest", 
   fields = list(

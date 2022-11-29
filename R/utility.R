@@ -80,7 +80,6 @@ pc.order <- function(y, x) {
 ##' @title Reorder factor columns
 ##' @param data Data with factor columns.
 ##' @return Data with reordered factor columns.
-##' @importFrom coin logrank_trafo
 ##' @author Marvin N. Wright
 reorder.factor.columns <- function(data) {
   ## Recode characters and unordered factors
