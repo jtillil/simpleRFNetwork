@@ -9,7 +9,7 @@
 ##' @param num_observations Integer, number of expression data observations per network.
 ##' @param num_causal_modules Integer, how many modules should be causal for the phenotype.
 ##' @param prop_causal_genes Float, proportion of genes in each causal module that should be causal for the phenotype. If "causal_genes_randomly_distributed == TRUE" refers to proportion of all genes that should be causal.
-##' @param effect_size Float, standardized effect size of causal genes in the network.
+##' @param total_effect_size Float, standardized effect size of causal genes in the network.
 ##' @param effect_intercept Float, standardized intercept effect of all genes in the network.
 ##' @param causal_genes_randomly_distributed Boolean, if TRUE causal genes will be sampled randomly from all available genes.
 ##' @param num_threads Integer, number of cores to parallelize on.
@@ -33,7 +33,7 @@ genGeneNetworkData <- function(
   num_observations,
   num_causal_modules,
   prop_causal_genes,
-  effect_size = 1,
+  total_effect_size = 10,
   effect_intercept = -1,
   effect_type = "linear",
   effect_error_sd = 0,
@@ -90,16 +90,19 @@ genGeneNetworkData <- function(
         ## Save sampled values
         causal_genes <- unique(causal_genes)
         effects <- numeric(num_genes)
-        effects[causal_genes] <- effect_size
-        effects <- effects
+        effects[causal_genes] <- 1
         causal_modules <- causal_modules
         causal_genes <- causal_genes
       } else if (num_causal_modules > 0 & prop_causal_genes > 0) {
         ## Sample causal modules
-        causal_modules <- sample(
-          x = 1:num_modules,
-          size = min(num_causal_modules, num_modules),
-          replace = FALSE)
+        if (sum(lengths(modules) < 30) >= min(num_causal_modules, num_modules)) {
+          causal_modules <- sample(
+            x = (1:num_modules)[lengths(modules) < 30],
+            size = min(num_causal_modules, num_modules),
+            replace = FALSE)
+        } else {
+          causal_modules <- order(lengths(modules))[1:min(num_causal_modules, num_modules)]
+        }
         ## Sample causal genes
         causal_genes <- NULL
         sapply(
@@ -134,8 +137,7 @@ genGeneNetworkData <- function(
         ## Save sampled values
         causal_genes <- unique(causal_genes)
         effects <- numeric(num_genes)
-        effects[causal_genes] <- effect_size
-        effects <- effects
+        effects[causal_genes] <- 1
         causal_modules <- causal_modules
         causal_genes <- causal_genes
       } else {
@@ -145,6 +147,7 @@ genGeneNetworkData <- function(
       }
       
       ## Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
+      effects <- effects * (total_effect_size / sum(effects))
       if (effect_error_sd > 0) {
         effects <- effects + rnorm(length(effects), 0, effect_error_sd)
       }
