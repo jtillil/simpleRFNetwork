@@ -266,6 +266,42 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       return(simplify2array(predictions))
     },
 
+    ## predict on data with the tree
+    ## @getNodePrediction
+    predict_batch = function(predict_data) {
+      ## Initialize
+      num_samples_predict <- predict_data$nrow
+      
+      ## For all OOB samples in batch, start in root and drop down tree
+      nodeIDs <- numeric(num_samples_predict) + 1
+      terminal <- rep(FALSE, num_samples_predict)
+      while(TRUE) {
+        ## Check if samples in terminal node
+        terminal[nodeIDs > length(child_nodeIDs) | lengths(child_nodeIDs[nodeIDs]) == 0] <- TRUE
+
+        ## Break if all samples in terminal node
+        if (sum(!terminal) == 0) {
+          break
+        }
+        
+        new_nodeIDs <- sapply((1:num_samples_predict)[!terminal], function(id) {
+          ## Batch calculate sample values
+          value <- as.matrix(predict_data$subset(i, varclusters[[split_clusterIDs[nodeIDs[id]]]])) %*% split_coefficients[[nodeIDs[id]]]
+
+          ## Batch update child nodes
+          if (value <= split_values[nodeIDs[id]]) {
+            return(child_nodeIDs[[nodeIDs[id]]][1])
+          } else {
+            return(child_nodeIDs[[nodeIDs[id]]][2])
+          }
+        })
+
+        nodeIDs[!terminal] <- new_nodeIDs
+      }
+
+      return(split_values[nodeIDs])
+    }, 
+
     ## predict OOB data with the tree, all samples in one batch
     ## @getNodePrediction
     predictOOB_batch = function() {

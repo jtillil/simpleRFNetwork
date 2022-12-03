@@ -107,7 +107,7 @@ Forest <- setRefClass("Forest",
       
       ## Predict in trees
       predictions <- simplify2array(mclapply(trees, function(x) {
-        x$predict(predict_data)
+        x$predict_batch(predict_data)
       }, mc.cores = num_threads))
       
       ## Aggregate predictions
