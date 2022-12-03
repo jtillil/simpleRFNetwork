@@ -147,7 +147,9 @@ genGeneNetworkData <- function(
       }
       
       ## Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
-      effects <- effects * (total_effect_size / sum(effects))
+      if (sum(effects) != 0) {
+        effects <- effects * (total_effect_size / sum(effects))
+      }
       if (effect_error_sd > 0) {
         effects <- effects + rnorm(length(effects), 0, effect_error_sd)
       }
