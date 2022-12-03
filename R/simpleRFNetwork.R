@@ -180,7 +180,7 @@ simpleRFNetwork <- function(
                            "QDA",                  # Todo
                            "Nelder",
                            "SANN",
-                           "Gini_stoch_optimal",
+                           "NN",
                            "CART",
                            "CART_fast"))) {
     stop("Unknown value for splitmethod.")

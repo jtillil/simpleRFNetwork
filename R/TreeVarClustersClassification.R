@@ -213,7 +213,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
         res <- SANN(data_values, response)
         
-      } else if (splitmethod == "Gini_stoch_optimal") {
+      } else if (splitmethod == "NN") {
         
         res <- stoch_optim(data_values, response)
         
