@@ -178,7 +178,8 @@ simpleRFNetwork <- function(
                            "SVM_Gini",             # Todo
                            "LDA",
                            "QDA",                  # Todo
-                           "Gini_optimal",
+                           "Nelder",
+                           "SANN",
                            "Gini_stoch_optimal",
                            "CART",
                            "CART_fast"))) {

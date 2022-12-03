@@ -205,9 +205,13 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
         stop("QDA not implemented yet.")
         
-      } else if (splitmethod == "Gini_optimal") {
+      } else if (splitmethod == "Nelder") {
         
-        res <- gini_optim(data_values, response)
+        res <- Nelder(data_values, response)
+        
+      } else if (splitmethod == "SANN") {
+        
+        res <- SANN(data_values, response)
         
       } else if (splitmethod == "Gini_stoch_optimal") {
         

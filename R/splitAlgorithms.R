@@ -99,7 +99,7 @@ LDA <- function(data_values, response, mat) {
   return(c(value, coefficients))
 }
 
-gini_optim <- function(data_values, response) {
+Nelder <- function(data_values, response) {
   ## Find first split as best uni-variate split
   ## Set fraction of subset variables
   nu <- 0.1
@@ -148,6 +148,62 @@ gini_optim <- function(data_values, response) {
     method="Nelder" # 46sec on 500
     # method="BFGS" # 69sec on 500
     # method = "CG" # 70sec on 500
+  )$par
+  
+  ## Read coefficients and value
+  coefficients <- par[2:length(par)]
+  value <- par[1]
+  
+  return(c(value, coefficients))
+}
+
+SANN <- function(data_values, response) {
+  ## Find first split as best uni-variate split
+  ## Set fraction of subset variables
+  nu <- 0.1
+  minN <- 100
+  
+  ## Initiate
+  Gini_impurity_start <- 9999
+  best_val <- 0
+  best_varID <- 0
+  
+  ## Iterate over all variables
+  sapply(1:ncol(data_values), function(varID) {
+    ## Sample value candidates
+    unique_col <- unique(data_values[,varID])
+    val_candidates <- sample(unique_col, min(max(round(nu*nrow(data_values)), minN), length(unique_col)))
+    sapply(val_candidates, function(val) {
+      ## Compute new Gini impurity
+      coefficients_start <- numeric(ncol(data_values))
+      coefficients_start[varID] <- 1
+      Gini_impurity_val <- gini_impurity(data_values,
+                                         response,
+                                         c(val, coefficients_start))
+      
+      ## Compare to current best Gini impurity and set value, varID if smaller
+      if (Gini_impurity_val < Gini_impurity_start) {
+        Gini_impurity_start <<- Gini_impurity_val
+        best_val <<- val
+        best_varID <<- varID
+      }
+    })
+  })
+  
+  ## Coerce best uni-variate split into parameters
+  coefficients <- numeric(ncol(data_values))
+  coefficients[best_varID] <- 1
+  param <- c(best_val, coefficients)
+  
+  ## Calculate Gini-optimal plane with univariate initial split
+  par <- optim(
+    par = param,
+    fn = function(par) {
+      return(gini_impurity(data_values,
+                           response,
+                           par))
+    },
+    method="SANN"
   )$par
   
   ## Read coefficients and value
