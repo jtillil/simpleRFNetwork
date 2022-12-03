@@ -286,7 +286,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         
         new_nodeIDs <- sapply((1:num_samples_predict)[!terminal], function(id) {
           ## Batch calculate sample values
-          value <- as.matrix(predict_data$subset(i, varclusters[[split_clusterIDs[nodeIDs[id]]]])) %*% split_coefficients[[nodeIDs[id]]]
+          value <- as.matrix(predict_data$subset(id, varclusters[[split_clusterIDs[nodeIDs[id]]]])) %*% split_coefficients[[nodeIDs[id]]]
 
           ## Batch update child nodes
           if (value <= split_values[nodeIDs[id]]) {
