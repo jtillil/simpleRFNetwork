@@ -106,9 +106,18 @@ Forest <- setRefClass("Forest",
       predict_data <<- Data$new(data = newdata)
       
       ## Predict in trees
-      predictions <- simplify2array(mclapply(trees, function(x) {
-        x$predict_batch(predict_data)
-      }, mc.cores = num_threads))
+      if (Sys.info()["sysname"]=="Windows") {
+        ## On Windows
+        cl <- makeCluster(num_threads)
+        predictions <- parLapply(cl, X=trees, fun=function(x) {
+          x$predict_batch(predict_data)
+        })
+      } else {
+        ## On Unix
+        predictions <- simplify2array(mclapply(trees, function(x) {
+          x$predict_batch(predict_data)
+        }, mc.cores = num_threads))
+      }
       
       ## Aggregate predictions
       return(aggregatePredictions(predictions))
@@ -132,10 +141,20 @@ Forest <- setRefClass("Forest",
     
     variableImportance = function(type = "permutation", num_threads = 1) {
       ## Calculate tree VIM
-      vim_trees <- mclapply(trees, function(x) {
-        x$variableImportance(type)
-      }, mc.cores = num_threads)
       
+      if (Sys.info()["sysname"]=="Windows") {
+        ## On Windows
+        cl <- makeCluster(num_threads)
+        vim_trees <- parLapply(cl, X=trees, fun=function(x) {
+          x$variableImportance(type)
+        })
+      } else {
+        ## On Unix
+        vim_trees <- mclapply(trees, function(x) {
+          x$variableImportance(type)
+        }, mc.cores = num_threads)
+      }
+
       # vim_trees
       
       ## Aggregate over trees
@@ -147,7 +166,7 @@ Forest <- setRefClass("Forest",
       return(mclapply(
         trees,
         function(tree) tree$split_clusterIDs,
-        mc.cores = num_threads
+        mc.cores = 1
       ))
     },
 
@@ -156,7 +175,7 @@ Forest <- setRefClass("Forest",
       return(mclapply(
         trees,
         function(tree) tree$split_values,
-        mc.cores = num_threads
+        mc.cores = 1
       ))
     },
 
@@ -165,7 +184,7 @@ Forest <- setRefClass("Forest",
       return(mclapply(
         trees,
         function(tree) tree$split_coefficients,
-        mc.cores = num_threads
+        mc.cores = 1
       ))
     },
 
@@ -174,7 +193,7 @@ Forest <- setRefClass("Forest",
       return(mclapply(
         trees,
         function(tree) tree$depths,
-        mc.cores = num_threads
+        mc.cores = 1
       ))
     },
 
@@ -183,7 +202,7 @@ Forest <- setRefClass("Forest",
       return(mclapply(
         trees,
         function(tree) tree$sizes,
-        mc.cores = num_threads
+        mc.cores = 1
       ))
     },
 
@@ -192,7 +211,7 @@ Forest <- setRefClass("Forest",
       return(mclapply(
         trees,
         function(tree) tree$linearcomb_times,
-        mc.cores = num_threads
+        mc.cores = 1
       ))
     },
 
@@ -201,7 +220,7 @@ Forest <- setRefClass("Forest",
       return(mclapply(
         trees,
         function(tree) tree$impurities,
-        mc.cores = num_threads
+        mc.cores = 1
       ))
     },
 
@@ -210,7 +229,7 @@ Forest <- setRefClass("Forest",
       return(mclapply(
         trees,
         function(tree) tree$oob_sampleIDs,
-        mc.cores = num_threads
+        mc.cores = 1
       ))
     },
 
@@ -219,7 +238,7 @@ Forest <- setRefClass("Forest",
       return(mclapply(
         trees,
         function(tree) tree$child_nodeIDs,
-        mc.cores = num_threads
+        mc.cores = 1
       ))
     },
     
