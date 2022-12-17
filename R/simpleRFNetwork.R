@@ -241,7 +241,11 @@ simpleRFNetwork <- function(
       means <- colMeans(as.matrix(IQR_dat))
       sapply(1:ncol(IQR_dat),
              function(i) {
-               IQR_dat[,i] <<- (IQR_dat[,i] - means[i])/IQR(IQR_dat[,i])
+               if (IQR(IQR_dat[,i])==0) {
+                 IQR_dat[,i] <<- 0
+               } else {
+                 IQR_dat[,i] <<- (IQR_dat[,i] - means[i])/IQR(IQR_dat[,i])
+               }
              })
       IQR_dat <- Data$new(data = IQR_dat)
     } else {

@@ -144,8 +144,24 @@ as.bitvect <- function(x, length = 32) {
 ##' @author Johannes Tillil
 gini_impurity <- function(dat, label, par) {
   select_idx <- as.matrix(dat) %*% par[2:length(par)] <= par[1]
+  # if (is.na(select_idx[1])) {
+  #   print("gini")
+  #   print(nrow(dat))
+  #   print(ncol(dat))
+  #   print(length(par))
+  #   print(as.matrix(dat)[1:5,])
+  #   print(par[2:6])
+  #   print((as.matrix(dat) %*% par[2:length(par)])[1:5])
+  #   print(par[1])
+  #   print(select_idx[1:5])
+  #   print(summary(select_idx))
+  #   print(N1)
+  #   print(N2)
+  # }
+  
   N1 <- sum(select_idx)
   N2 <- sum(!select_idx)
+  
   if (N1 != 0 & N2 != 0) {
     gini <- 1-(
       N1/(N1+N2)*(
@@ -177,8 +193,26 @@ gini_impurity <- function(dat, label, par) {
 gini_impurity_CART <- function(dat, label, pure_coefs, value, candidates, varID, gamma) {
   coefs <- matrix(rep(pure_coefs, length(candidates)), ncol = length(candidates), byrow = FALSE)
   coefs[varID,] <- coefs[varID,] - candidates
+  coefs[is.infinite(coefs)] <- 0
+  # if (any(is.infinite(coefs))) {
+  #   print(coefs)
+  # }
   value <- value + candidates * gamma
-  select_idx <- as.matrix(dat) %*% coefs <= drop(value)
+  value <- matrix(rep(value, length(candidates)), ncol = length(candidates), byrow = TRUE)
+  # if (ncol(as.matrix(dat)) != nrow(coefs) |
+  #     nrow(as.matrix(dat)) != length(value) |
+  #     nrow(coefs != length(value))) {
+  #       print(as.matrix(dat)[,1:5])
+  #       print(as.matrix(dat)[1:5,])
+  #       print(coefs)
+  #       print(value)
+  #       print(ncol(as.matrix(dat)))
+  #       print(nrow(as.matrix(dat)))
+  #       print(ncol(coefs))
+  #       print(nrow(coefs))
+  #       print(length(value))
+  #     }
+  select_idx <- as.matrix(dat) %*% coefs <= value
   N1 <- colSums(select_idx)
   N2 <- colSums(!select_idx)
   gini <- 1-(
@@ -192,6 +226,14 @@ gini_impurity_CART <- function(dat, label, pure_coefs, value, candidates, varID,
   sapply(
     1:length(candidates),
     function(candidateID) {
+      if (is.na(N1[candidateID])) {
+        print(candidateID)
+        print(select_idx[,candidateID])
+        print(as.matrix(dat)[,candidateID])
+        print(as.matrix(dat)[candidateID,])
+        print(coefs)
+        print(value)
+      }
       if (N1[candidateID] == 0) {
         gini[candidateID] <<- 1-(
           (sum(label[!select_idx[,candidateID]] == "1")/N2[candidateID])^2+

@@ -504,6 +504,11 @@ CART_fast <- function(IQR_data_values, data_values, response) {
       ## Compute new Gini impurity
       coefficients_start <- numeric(IQR_data_values$ncol)
       coefficients_start[varID] <- 1
+      # print("CART")
+      # print(nrow(IQR_data_values$data))
+      # print(ncol(IQR_data_values$data))
+      # print(summary(response))
+      # print(c(val, coefficients_start))
       Gini_impurity_val <- gini_impurity(
         IQR_data_values$data,
         response,
@@ -524,6 +529,9 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   coefficients[best_varID] <- 1
   value <- best_val
   
+  # print("final_gini")
+  # print(c(value, coefficients))
+
   ## Compute starting Gini impurity
   Gini_impurity_nplus1 <- gini_impurity(
     IQR_data_values$data,
@@ -545,7 +553,7 @@ CART_fast <- function(IQR_data_values, data_values, response) {
 
     ## Cycle through all variables and search for an improved split by varying their coefficient
     sapply(
-      1:IQR_data_values$ncol,
+      1:ncol(subset_data_values),
       function(varID) {
         ## Compute current split values for subset observations
         v <- as.matrix(subset_data_values) %*% coefficients
@@ -555,10 +563,11 @@ CART_fast <- function(IQR_data_values, data_values, response) {
           ## Compute candidates
           u <- (v - value) / (subset_data_values[,varID] + gamma)
           u[is.nan(u)] <- 0
+          u[is.infinite(u)] <- 0
           
           ## Calculate gini impurities for candidates
           impurities <- gini_impurity_CART(
-            dat = IQR_data_values$data,
+            dat = subset_data_values,
             label = response,
             pure_coefs = coefficients,
             value = value,
@@ -580,8 +589,8 @@ CART_fast <- function(IQR_data_values, data_values, response) {
         if (best_impurity < Gini_impurity_nplus1) {
           ## Update coefficients, value, split values, gini_impurity
           coefficients[varID] <<- coefficients[varID] - best_u
+          coefficients[is.infinite(coefficients)] <- 0
           value <<- value + best_u * best_gamma
-          new_coefficients <<- TRUE
           Gini_impurity_nplus1 <<- best_impurity
         }
       }
@@ -606,6 +615,7 @@ CART_fast <- function(IQR_data_values, data_values, response) {
 
   ## Set NaN coefficients to 0
   coefficients[is.nan(coefficients)] <- 0
+  coefficients[is.infinite(coefficients)] <- 0
   
   return(c(value, coefficients))
 }
