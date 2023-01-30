@@ -17,8 +17,26 @@
 ##' @param effect_type Character, type of gene-effect on phenotype. Default is "linear". One of "linear", "quadratic".
 ##' @examples
 ##' \donttest{
-##' library(simpleRFNetwork)
+##' library(simpleRFNetwork) 
+##' library(SeqNet)
 ##' 
+##' # Generate Network Data
+##' 
+##' testdat <- genGeneNetworkData(
+##'   num_networks = 1,
+##'   num_genes = 500,
+##'   num_modules = NULL,
+##'   max_genes_per_module = 100,
+##'   sd_genes_per_module = 25,
+##'   num_observations = 1500,
+##'   num_causal_modules = 1,
+##'   prop_causal_genes = 0.5,
+##'   total_effect_size = 10,
+##'   effect_intercept = -1,
+##'   causal_genes_randomly_distributed = FALSE,
+##'   num_threads = 12,
+##'   seed = 1
+##' )
 ##' 
 ##' }
 ##' 

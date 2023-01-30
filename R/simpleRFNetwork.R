@@ -26,6 +26,7 @@
 ##' @examples
 ##' \donttest{
 ##' library(simpleRFNetwork) 
+##' library(SeqNet)
 ##'
 ##' # Generate Network Data
 ##' 
@@ -42,7 +43,7 @@
 ##'   effect_intercept = -1,
 ##'   causal_genes_randomly_distributed = FALSE,
 ##'   num_threads = 12,
-##'   seed = 101
+##'   seed = 1
 ##' )
 ##' 
 ##' # Create Random Forest
