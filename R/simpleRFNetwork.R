@@ -27,27 +27,33 @@
 ##' \donttest{
 ##' library(simpleRFNetwork) 
 ##'
-##' # Network Data Generation
+##' # Generate Network Data
 ##' 
 ##' testdat <- genGeneNetworkData(
-##'   num_networks=1,
-##'   num_genes=100,
-##'   num_modules=NULL,
-##'   num_observations=1000,
-##'   num_causal_modules=1,
-##'   num_causal_genes=3,
-##'   effect_measure=0.1
+##'   num_networks = 1,
+##'   num_genes = 500,
+##'   num_modules = NULL,
+##'   max_genes_per_module = 100,
+##'   sd_genes_per_module = 25,
+##'   num_observations = 1500,
+##'   num_causal_modules = 1,
+##'   prop_causal_genes = 0.5,
+##'   total_effect_size = 10,
+##'   effect_intercept = -1,
+##'   causal_genes_randomly_distributed = FALSE,
+##'   num_threads = 12,
+##'   seed = 101
 ##' )
 ##' 
 ##' # Create Random Forest
 ##' 
 ##' rf <- simpleRFNetwork(pheno ~ .,
-##'                       data=testdat[[1]]$data,
+##'                       data=testdat[[1]]$data[1001:1500],
 ##'                       num_trees=2,
-##'                       num_threads=7,
+##'                       num_threads=1,
 ##'                       splitobject="module",
 ##'                       splitmethod="LDA",
-##' # alternative splitmethods: univariate_fast, CART_fast, LDA, SVM, Gini_optimal, Gini_stoch_optimal
+##' # alternative splitmethods: univariate_fast, CART_fast, LDA, SVM, Nelder, SANN
 ##'                       varselection="none",
 ##'                       varclusters=testdat[[1]]$modules)
 ##' 
@@ -65,18 +71,15 @@
 ##' rf$trees[[1]]$node_times
 ##' rf$trees[[1]]$sizes
 ##' rf$trees[[1]]$depths
+##'
+##' # Permutation Importance and OOB Prediction Error
 ##' 
-##' rf$variableImportance(num_threads = 7)
-##' rf$predictionError()
+##' rf$variableImportance(num_threads = 1)
+##' rf$predictionErrorForestAndTrees()
 ##' 
-##' # TODO Prediction
+##' # Generalization Error
 ##' 
-##' train_idx <- sample(nrow(iris), 2/3 * nrow(iris))
-##' iris_train <- iris[train_idx, ]
-##' iris_test <- iris[-train_idx, ]
-##' rf_iris <- simpleRF(Species ~ ., data = iris_train)
-##' pred_iris <- rf_iris$predict(iris_test)
-##' table(iris_test$Species, pred_iris)
+##' sum(rf$predict(testdat[[1]]$data[1:1000,-1]) != testdat[[1]]$data[1:1000,1]) / 1000
 ##' }
 ##' 
 ##' @author Marvin N. Wright, Johannes Tillil
