@@ -6,7 +6,7 @@ R package for the master thesis of Johannes Tillil. Based upon the package simpl
 
 ### Functions
 #### simpleRFNetwork
-Generates a RF object that can be used for prediction and data inference using the multiple variable splitting algorithm proposed in the master thesis of Johannes Tillil.
+Generates a RF object that can be used for prediction and data inference using the grouped variable random forest algorithm proposed in the master thesis of Johannes Tillil.
 
 #### genGeneNetworkData
 Generates random networks with gene expression data and draws a binary label for each observation using a logistic regression model.
