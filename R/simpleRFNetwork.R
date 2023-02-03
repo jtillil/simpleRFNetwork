@@ -181,6 +181,7 @@ simpleRFNetwork <- function(
                            "SVM_nonparametric",    # Todo
                            "SVM_Gini",             # Todo
                            "LDA",
+                           "LDA_weighted",
                            "QDA",                  # Todo
                            "Nelder",
                            "SANN",

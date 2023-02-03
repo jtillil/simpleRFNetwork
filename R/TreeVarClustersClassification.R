@@ -74,6 +74,25 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
             if (!is.positive.definite(mat)) {
               next
             }
+          } else if (splitmethod == "LDA_weighted") {
+            ## Calculate class sizes
+            N1 <- sum(response[sampleIDs[nodeID]] == 1)
+            N0 <- sum(response[sampleIDs[nodeID]] == 0)
+            N <- N0 + N1
+
+            ## Calculate mean of both covariance matrices due to homoscedasticity
+            mat <- (N0/N) * cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
+                   (N1/N) * cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE)
+            ## Condition matrix by adding 1e-10 to diagonal elements that are 0
+            sapply(1:ncol(mat), function(j) {
+              if (mat[j,j] == 0) {
+                mat[j,j] <<- 1e-10
+              }
+            })
+            ## Check if singular
+            if (!is.positive.definite(mat)) {
+              next
+            }
           } else {
             mat <- NULL
           }
@@ -197,7 +216,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
         stop("SVM_Gini not implemented yet.")
         
-      } else if (splitmethod == "LDA") {
+      } else if (splitmethod == "LDA" | splitmethod == "LDA_weighted") {
         
         res <- LDA(data_values, response, mat)
         
