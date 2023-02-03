@@ -13,7 +13,7 @@ genGeneNetworkData(
   num_observations,
   num_causal_modules,
   prop_causal_genes,
-  effect_size = 1,
+  total_effect_size = 10,
   effect_intercept = -1,
   effect_type = "linear",
   effect_error_sd = 0,
@@ -35,7 +35,7 @@ genGeneNetworkData(
 
 \item{prop_causal_genes}{Float, proportion of genes in each causal module that should be causal for the phenotype. If "causal_genes_randomly_distributed == TRUE" refers to proportion of all genes that should be causal.}
 
-\item{effect_size}{Float, standardized effect size of causal genes in the network.}
+\item{total_effect_size}{Float, standardized effect size of causal genes in the network.}
 
 \item{effect_intercept}{Float, standardized intercept effect of all genes in the network.}
 
@@ -54,8 +54,26 @@ the user.
 }
 \examples{
 \donttest{
-library(simpleRFNetwork)
+library(simpleRFNetwork) 
+library(SeqNet)
 
+# Generate Network Data
+
+testdat <- genGeneNetworkData(
+  num_networks = 1,
+  num_genes = 500,
+  num_modules = NULL,
+  max_genes_per_module = 100,
+  sd_genes_per_module = 25,
+  num_observations = 1500,
+  num_causal_modules = 1,
+  prop_causal_genes = 0.5,
+  total_effect_size = 10,
+  effect_intercept = -1,
+  causal_genes_randomly_distributed = FALSE,
+  num_threads = 12,
+  seed = 1
+)
 
 }
 
