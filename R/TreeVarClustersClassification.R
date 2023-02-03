@@ -81,24 +81,35 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
             N <- N0 + N1
 
             ## Calculate mean of both covariance matrices due to homoscedasticity
-            mat <- (N0/N) * cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
-                   (N1/N) * cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE)
+            if (N0 != 1 & N1 != 1) {
+              mat <- (N0/N) * cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
+                     (N1/N) * cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE)
+            } else if (N0 == 1) {
+              mat <- cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE)
+            } else if (N1 == 1) {
+              mat <- cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE)
+            }
             # for (j in 1:ncol(mat)) {
             #   if (!is.numeric(mat[j, j])) {
             #     browser()
             #   }
             # }
             ## Condition matrix by adding 1e-10 to diagonal elements that are 0
-            tryCatch({
-              sapply(1:ncol(mat), function(j) {
-                if (mat[j,j] == 0) {
-                  mat[j,j] <<- 1e-10
-                }
-              })},
-              error = function(cond) {
-                browser()
+            sapply(1:ncol(mat), function(j) {
+              if (mat[j,j] == 0) {
+                mat[j,j] <<- 1e-10
               }
-            )
+            })
+            # tryCatch({
+            #   sapply(1:ncol(mat), function(j) {
+            #     if (mat[j,j] == 0) {
+            #       mat[j,j] <<- 1e-10
+            #     }
+            #   })},
+            #   error = function(cond) {
+            #     browser()
+            #   }
+            # )
             ## Check if singular
             if (!is.positive.definite(mat)) {
               next
