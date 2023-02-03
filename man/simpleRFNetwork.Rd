@@ -89,7 +89,7 @@ testdat <- genGeneNetworkData(
 # Create Random Forest
 
 rf <- simpleRFNetwork(pheno ~ .,
-                      data=testdat[[1]]$data[1001:1500],
+                      data=testdat[[1]]$data[1001:1500,],
                       num_trees=2,
                       num_threads=1,
                       splitobject="module",
