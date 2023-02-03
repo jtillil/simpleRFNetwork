@@ -76,8 +76,8 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
             }
           } else if (splitmethod == "LDA_weighted") {
             ## Calculate class sizes
-            N1 <- sum(response[sampleIDs[[nodeID]]] == 1)
-            N0 <- sum(response[sampleIDs[[nodeID]]] == 0)
+            N1 <- sum(response == 1)
+            N0 <- sum(response == 0)
             N <- N0 + N1
 
             ## Calculate mean of both covariance matrices due to homoscedasticity
