@@ -76,14 +76,14 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
             }
           } else if (splitmethod == "LDA_weighted") {
             ## Calculate class sizes
-            N1 <- sum(response == 1)
             N0 <- sum(response == 0)
+            N1 <- sum(response == 1)
             N <- N0 + N1
 
             ## Calculate mean of both covariance matrices due to homoscedasticity
             mat <- (N0/N) * cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
                    (N1/N) * cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE)
-            browser()
+            # browser()
             ## Condition matrix by adding 1e-10 to diagonal elements that are 0
             sapply(1:ncol(mat), function(j) {
               if (mat[j,j] == 0) {
