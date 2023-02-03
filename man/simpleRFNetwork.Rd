@@ -29,7 +29,7 @@ simpleRFNetwork(
 
 \item{num_trees}{Number of trees.}
 
-\item{mtry}{Number of variables to possibly split at in each node.}
+\item{mtry}{Number of variables to possibly split at in each node. One of "root", "half", "full".}
 
 \item{min_node_size}{Minimal node size. Default 1 for classification, 5 for regression, 3 for survival and 10 for probability estimation.}
 
@@ -41,13 +41,13 @@ simpleRFNetwork(
 
 \item{unordered_factors}{How to handle unordered factor variables. One of "ignore", "order_once", "order_split" and "partition" with default "ignore".}
 
-\item{num_threads}{Number of threads used for mclapply, set to 1 for debugging.}
+\item{num_threads}{Number of threads used for mclapply. Default is 1.}
 
-\item{varclusters}{List of numeric vectors that contain the IDs of the nodes in the respective module.}
+\item{varclusters}{List of numeric vectors that contain the IDs of genes in the respective modules.}
 
-\item{splitobject}{Object for node splitting. Use "single_variable" for standard procedure and "module" for use of complete modules in splitting.}
+\item{splitobject}{Object for node splitting. Use "single_variable" for standard procedure and "module" for use of modules as vector-valued predictor variables in splitting.}
 
-\item{splitmethod}{Method for node splitting. Use "SVM_linear" for a linear SVM line separating classes.}
+\item{splitmethod}{Method for node splitting if splitobject is "module". One of "univarate", "univariate_fast", "CART", "CART_fast", "LDA", "SVM", "Nelder", "SANN".}
 
 \item{varselection}{Variable selection in case multiple variables are used for node splitting. Default "none" uses all variables of a module.}
 }
@@ -56,12 +56,6 @@ Implements Random Forests (Breiman 2001) with emphasis on simplicity.
 Uses reference classes and only plain \code{R}. 
 Not optimized for computation speed. 
 Allows rapid prototyping of RF-type algorithms.
-}
-\details{
-Unordered factor variables can be handled in different ways. 
-Use "ignore" to treat them as ordered in the order of the factor levels. 
-With "order_once" and "order_split" they are ordered by their response values. For "order_once" this is done once before the analysis, for "order_split" this is done in each split.
-With "partition" all 2-partitions of the factor levels are considered for splitting.
 }
 \examples{
 \donttest{
