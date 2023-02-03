@@ -56,6 +56,7 @@
 ##'                       splitmethod="LDA",
 ##' # alternative splitmethods: univariate_fast, CART_fast, LDA, SVM, Nelder, SANN
 ##'                       varselection="none",
+##'                       mtry="root",
 ##'                       varclusters=testdat[[1]]$modules)
 ##' 
 ##' # Forest Diagnostics
