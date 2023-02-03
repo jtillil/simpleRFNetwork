@@ -6,6 +6,8 @@
 ##' @param num_networks Integer, number of networks to generate.
 ##' @param num_genes Integer, number of genes per network.
 ##' @param num_modules Integer, number of modules per network. Can also be NULL for random number of modules.
+##' @param max_genes_per_module Integer, maximum module size.
+##' @param sd_genes_per_module Float, standard deviation of module sizes.
 ##' @param num_observations Integer, number of expression data observations per network.
 ##' @param num_causal_modules Integer, how many modules should be causal for the phenotype.
 ##' @param prop_causal_genes Float, proportion of genes in each causal module that should be causal for the phenotype. If "causal_genes_randomly_distributed == TRUE" refers to proportion of all genes that should be causal.
@@ -54,7 +56,7 @@ genGeneNetworkData <- function(
   total_effect_size = 10,
   effect_intercept = -1,
   effect_type = "linear",
-  effect_error_sd = 0,
+  # effect_error_sd = 0,
   causal_genes_randomly_distributed = FALSE,
   num_threads = 1,
   seed = 1
@@ -168,9 +170,9 @@ genGeneNetworkData <- function(
       if (sum(effects) != 0) {
         effects <- effects * (total_effect_size / sum(effects))
       }
-      if (effect_error_sd > 0) {
-        effects <- effects + rnorm(length(effects), 0, effect_error_sd)
-      }
+      # if (effect_error_sd > 0) {
+      #   effects <- effects + rnorm(length(effects), 0, effect_error_sd)
+      # }
       if (effect_type == "linear") {
         probs <- 1/(1 + exp(-as.matrix(exprdat) %*% effects - effect_intercept))
       } else if (effect_type == "quadratic") {

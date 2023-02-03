@@ -16,7 +16,6 @@ genGeneNetworkData(
   total_effect_size = 10,
   effect_intercept = -1,
   effect_type = "linear",
-  effect_error_sd = 0,
   causal_genes_randomly_distributed = FALSE,
   num_threads = 1,
   seed = 1
@@ -28,6 +27,10 @@ genGeneNetworkData(
 \item{num_genes}{Integer, number of genes per network.}
 
 \item{num_modules}{Integer, number of modules per network. Can also be NULL for random number of modules.}
+
+\item{max_genes_per_module}{Integer, maximum module size.}
+
+\item{sd_genes_per_module}{Float, standard deviation of module sizes.}
 
 \item{num_observations}{Integer, number of expression data observations per network.}
 

@@ -22,7 +22,7 @@
 ##' \donttest{
 ##' library(simpleRFNetwork) 
 ##' library(SeqNet)
-##'
+##' 
 ##' # Generate Network Data
 ##' 
 ##' testdat <- genGeneNetworkData(
