@@ -88,6 +88,8 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
               mat <- cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE)
             } else if (N1 == 1) {
               mat <- cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE)
+            } else {
+              next
             }
             # for (j in 1:ncol(mat)) {
             #   if (!is.numeric(mat[j, j])) {
