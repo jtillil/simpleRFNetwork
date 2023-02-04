@@ -91,28 +91,20 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
             } else {
               next
             }
-            # for (j in 1:ncol(mat)) {
-            #   if (!is.numeric(mat[j, j])) {
-            #     browser()
-            #   }
-            # }
+
+            ## Skip if matrix contains NAs
+            if (any(is.na(mat))) {
+              next
+            }
+
             ## Condition matrix by adding 1e-10 to diagonal elements that are 0
             sapply(1:ncol(mat), function(j) {
               if (mat[j,j] == 0) {
                 mat[j,j] <<- 1e-10
               }
             })
-            # tryCatch({
-            #   sapply(1:ncol(mat), function(j) {
-            #     if (mat[j,j] == 0) {
-            #       mat[j,j] <<- 1e-10
-            #     }
-            #   })},
-            #   error = function(cond) {
-            #     browser()
-            #   }
-            # )
-            ## Check if singular
+
+            ## Skip if matrix is singular
             if (!is.positive.definite(mat)) {
               next
             }
