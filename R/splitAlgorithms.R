@@ -75,7 +75,7 @@ univariate_split_fast <- function(data_values, response) {
 
 SVM <- function(data_values, response) {
   ## Calculate SVM plane
-  svmfit <- svm(y=response,
+  svmfit <- svm(y=as.factor(response),
                 x=data_values,
                 kernel="linear",
                 scale=FALSE)
@@ -488,8 +488,8 @@ CART <- function(IQR_data_values, data_values, response) {
 CART_fast <- function(IQR_data_values, data_values, response) {
   ## Find first split as best uni-variate split
   ## Set fraction of subset variables
-  nu <- 0.1
-  minN <- 100
+  nu <- 1
+  minN <- 10000
   
   ## Initiate
   Gini_impurity_start <- 9999

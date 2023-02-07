@@ -98,11 +98,11 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
             }
 
             ## Condition matrix by adding 1e-10 to diagonal elements that are 0
-            sapply(1:ncol(mat), function(j) {
-              if (mat[j,j] == 0) {
-                mat[j,j] <<- 1e-10
-              }
-            })
+            # sapply(1:ncol(mat), function(j) {
+            #   if (mat[j,j] == 0) {
+            #     mat[j,j] <<- 1e-10
+            #   }
+            # })
 
             ## Skip if matrix is singular
             if (!is.positive.definite(mat)) {
