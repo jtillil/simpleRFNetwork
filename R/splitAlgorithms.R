@@ -546,7 +546,7 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   # print("Start")
   # print(c(value, coefficients))
   # print(Gini_impurity_nplus1)
-  # Gini_impurity_n <- 9999
+  Gini_impurity_n <- 9999
   
   ## Set convergence threshold
   epsilon <- 0.001
