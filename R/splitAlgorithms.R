@@ -488,8 +488,8 @@ CART <- function(IQR_data_values, data_values, response) {
 CART_fast <- function(IQR_data_values, data_values, response) {
   ## Find first split as best uni-variate split
   ## Set fraction of subset variables
-  nu <- 1
-  minN <- 10000
+  nu <- 0.1
+  minN <- 100
   
   ## Initiate
   Gini_impurity_start <- 9999
@@ -528,6 +528,11 @@ CART_fast <- function(IQR_data_values, data_values, response) {
   coefficients <- numeric(IQR_data_values$ncol)
   coefficients[best_varID] <- 1
   value <- best_val
+
+  # univ <- c(1.060909, 1, 0)
+  # univ <- c(0.0648134, 1, 0)
+  # coefficients <- univ[2:3]
+  # value <- univ[1]
   
   # print("final_gini")
   # print(c(value, coefficients))
@@ -538,13 +543,19 @@ CART_fast <- function(IQR_data_values, data_values, response) {
     response,
     c(value, coefficients)
   )
-  Gini_impurity_n <- 9999
+  # print("Start")
+  # print(c(value, coefficients))
+  # print(Gini_impurity_nplus1)
+  # Gini_impurity_n <- 9999
   
   ## Set convergence threshold
   epsilon <- 0.001
   
   ## Perform updates until improvement below threshold
   while ((Gini_impurity_n - Gini_impurity_nplus1) > epsilon) {
+    # print(Gini_impurity_n)
+    # print(Gini_impurity_nplus1)
+
     ## Set Gini impurity of last cycle
     Gini_impurity_n <- Gini_impurity_nplus1
 
@@ -566,25 +577,58 @@ CART_fast <- function(IQR_data_values, data_values, response) {
           u[is.infinite(u)] <- 0
           
           ## Calculate gini impurities for candidates
-          impurities <- gini_impurity_CART(
-            dat = subset_data_values,
-            label = response,
-            pure_coefs = coefficients,
-            value = value,
-            candidates = u,
-            varID = varID,
-            gamma = gamma
-          )
+          # impurities <- gini_impurity_CART(
+          #   dat = subset_data_values,
+          #   label = response,
+          #   pure_coefs = coefficients,
+          #   value = value,
+          #   candidates = u,
+          #   varID = varID,
+          #   gamma = gamma
+          # )
+
+          impurities <- c()
+          for (g_cand in gamma) {
+            for (u_cand in u) {
+              val_cand <- value + u_cand * g_cand
+              coef_cand <- coefficients
+              coef_cand[varID] <- coef_cand[varID] - u_cand
+              impurities <- c(impurities, gini_impurity(
+                IQR_data_values$data,
+                response,
+                c(val_cand, coef_cand)
+              ))
+            }
+          }
+
+          # print(impurities)
 
           ## Extract best candidate
           best_idx <- which.min.random(impurities)
-          c(impurities[best_idx], u[best_idx])
+          # c(impurities[best_idx], u[best_idx])
+          if (best_idx <= length(u)) {
+            u_b <- u[best_idx]
+            g_b <- -0.25
+          } else if (best_idx <= 2*length(u)) {
+            u_b <- u[best_idx - length(u)]
+            g_b <- 0
+          } else {
+            u_b <- u[best_idx - 2*length(u)]
+            g_b <- 0.25
+          }
+          c(impurities[best_idx], u_b, g_b)
         })
 
         ## Extract best candidate
-        best_gamma <- c(-0.25, 0, 0.25)[which.min.random(best_u[1,])]
-        best_impurity <- best_u[1, which.min.random(best_u[1,])]
-        best_u <- best_u[2, which.min.random(best_u[1,])]
+        # best_gamma <- c(-0.25, 0, 0.25)[which.min.random(best_u[1,])]
+        # best_impurity <- best_u[1, which.min.random(best_u[1,])]
+        # best_u <- best_u[2, which.min.random(best_u[1,])]
+
+        best_gamma <- best_u[3]
+        best_impurity <- best_u[1]
+        best_u <- best_u[2]
+
+        # print(best_impurity)
 
         if (best_impurity < Gini_impurity_nplus1) {
           ## Update coefficients, value, split values, gini_impurity
@@ -592,6 +636,10 @@ CART_fast <- function(IQR_data_values, data_values, response) {
           coefficients[is.infinite(coefficients)] <- 0
           value <<- value + best_u * best_gamma
           Gini_impurity_nplus1 <<- best_impurity
+
+          # print("Best update")
+          # print(c(value, coefficients))
+          # print(Gini_impurity_nplus1)
         }
       }
     )
