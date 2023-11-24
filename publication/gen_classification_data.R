@@ -1,3 +1,9 @@
+library(SeqNet)
+library(parallel)
+
+setwd(getSrcDirectory(function(){})[1])
+source("../R/genGeneNetworkData.R")
+
 # set scenarios
 n_networks = c(2)
 n_genes = c(1000)
@@ -50,6 +56,5 @@ for (i in 1:nrow(scenarios)) {
   )
   
   # save networkdat
-  setwd(getSrcDirectory(function(){})[1])
   save(dat, file = saveroot)
 }
