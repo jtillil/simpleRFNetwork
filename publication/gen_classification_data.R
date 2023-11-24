@@ -1,5 +1,7 @@
 library(SeqNet)
 library(parallel)
+library(pracma)
+library(tictoc)
 
 setwd(getSrcDirectory(function(){})[1])
 source("../R/genGeneNetworkDataClassification.R")
@@ -27,6 +29,7 @@ scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0))
 
 # scenarios = scenarios[1,]
 
+tic()
 # generate networks
 for (i in 1:nrow(scenarios)) {
   # read scenario
@@ -39,7 +42,8 @@ for (i in 1:nrow(scenarios)) {
     n_samples = scenario$n_samples,
     n_disease_modules = scenario$n_disease_modules,
     main_disease_gene = scenario$main_disease_gene,
-    average_beta = scenario$average_beta
+    average_beta = scenario$average_beta,
+    num_threads = 60
   )
   
   # build saveroot
@@ -57,3 +61,5 @@ for (i in 1:nrow(scenarios)) {
   # save networkdat
   save(dat, file = saveroot)
 }
+toc()
+
