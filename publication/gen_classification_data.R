@@ -32,6 +32,8 @@ scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0))
 tic()
 # generate networks
 for (i in 1:nrow(scenarios)) {
+  print(i)
+  
   # read scenario
   scenario = scenarios[i,]
   
