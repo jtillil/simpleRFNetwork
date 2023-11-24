@@ -15,6 +15,5 @@ boruta <- function(dat, splitmethod, num_trees, num_threads) {
     
   }
   
-  
-  return(rf)
+  return()
 }
