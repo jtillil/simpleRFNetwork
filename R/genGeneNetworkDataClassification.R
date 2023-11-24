@@ -95,12 +95,12 @@ genGeneNetworkDataClassification <- function(
       x.disease = x.total[, gene.sig]
       
       # binary phenotype
-      y = as.factor(rbinom(n_samples, 1, sigmoid(average_beta*rowMeans(x.disease))))
+      pheno = as.factor(rbinom(n_samples, 1, sigmoid(average_beta*rowMeans(x.disease))))
       
       # return
       return(list(
-        data = cbind(y, x.total),
-        modules = network$modules,
+        data = cbind(pheno, as.data.frame(x.total)),
+        modules = lapply(network$modules, function(x) x$nodes),
         causal_modules = mod.sig,
         causal_genes = gene.sig
       ))
