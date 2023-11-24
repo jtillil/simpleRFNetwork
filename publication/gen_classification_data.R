@@ -2,7 +2,7 @@ library(SeqNet)
 library(parallel)
 
 setwd(getSrcDirectory(function(){})[1])
-source("../R/genGeneNetworkData.R")
+source("../R/genGeneNetworkDataCLassification.R")
 
 # set scenarios
 n_networks = c(2)
