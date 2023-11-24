@@ -1,12 +1,12 @@
 # set scenarios
 n_networks = c(2)
-n_genes = c(1000, 3000)
+n_genes = c(1000)
 n_samples = c(1000)
 n_disease_modules = c(1, 2)
 main_disease_gene = c(F)
 # main_disease_gene = c(T, F)
-average_beta = c(1)
-# average_beta = c(0.5, 1, 2)
+# average_beta = c(1)
+average_beta = c(0.5, 1, 2)
 
 scenarios = expand.grid(
   n_networks = n_networks,
