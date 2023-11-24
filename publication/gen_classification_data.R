@@ -5,7 +5,7 @@ setwd(getSrcDirectory(function(){})[1])
 source("../R/genGeneNetworkDataCLassification.R")
 
 # set scenarios
-n_networks = c(2)
+n_networks = c(100)
 n_genes = c(1000)
 n_samples = c(1000)
 n_disease_modules = c(1, 2)
@@ -23,10 +23,9 @@ scenarios = expand.grid(
   average_beta = average_beta
 )
 scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0))
-scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0))
+# scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0))
 
-scenarios = scenarios[1,]
-seed = 1
+# scenarios = scenarios[1,]
 
 # generate networks
 for (i in 1:nrow(scenarios)) {
