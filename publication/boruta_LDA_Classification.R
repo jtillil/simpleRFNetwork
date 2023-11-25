@@ -1,11 +1,5 @@
-library(parallel)
-library(pracma)
-library(tictoc)
-library(Rfast)
-library(matrixcalc)
-library(simpleRFNetwork)
-
 setwd(getSrcDirectory(function(){})[1])
+source("./source_files.R")
 
 # set scenarios
 n_networks = c(2)
@@ -28,10 +22,16 @@ scenarios = expand.grid(
 scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0))
 # scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0))
 
-scenarios = scenarios[1,]
+method = "LDA"
+n_iterations = 20
 
+# scenarios = scenarios[1,]
+
+print(paste0("This is run ", method, " Classification"))
 # generate networks
 for (i in 1:nrow(scenarios)) {
+  print(i)
+  
   # read scenario
   scenario = scenarios[i,]
   
@@ -48,12 +48,34 @@ for (i in 1:nrow(scenarios)) {
   )
   load(datroot)
   
-  # run boruta
-  borutares = boruta(dat[[1]], "LDA", 50, 1)
+  # save root
+  saveroot = paste0(
+    "./results/resclassif_",
+    method,
+    "_ni", n_iterations,
+    "_nn", n_networks,
+    "_ng", n_genes,
+    "_ns", n_samples,
+    "_ndm", n_disease_modules,
+    "_mdg", main_disease_gene,
+    "_ab", average_beta,
+    ".Rdata"
+  )
+  borutares = list()
+  save(borutares, file = saveroot)
   
-  # save results
-  setwd(getSrcDirectory(function(){})[1])
-  save(dat, file = saveroot)
+  # run boruta
+  borutares = lapply(
+    1:length(dat),
+    function(i) {
+      tic()
+      print(paste("Boruta for Network Nr", i))
+      boruta(dat[[i]], method, 500, 64, n_iterations, i, saveroot)
+      toc()
+    }
+  )
+  
+  # clear dat
+  rm(dat)
 }
-
 

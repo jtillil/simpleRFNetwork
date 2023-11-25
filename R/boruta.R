@@ -1,19 +1,88 @@
-boruta <- function(dat, splitmethod, num_trees, num_threads) {
+boruta <- function(dat, splitmethod, num_trees, num_threads, num_iterations, seed, saveroot) {
+  # seed
+  set.seed(seed)
   
-  while (not_all_modules_classified) {
+  # initiate
+  binomresults = rep(0, length(dat$modules))
+  iteration = 0
+  
+  print(paste("This is", splitmethod, "Boruta"))
+  
+  # boruta loop
+  while (iteration < num_iterations) {
+    # advance iteration
+    iteration = iteration + 1
+    print(paste("Iteration:", iteration))
+    
+    # tic()
+    
+    # add shadow modules
+    original_and_shadow_modules = dat$modules
+    for (module in dat$modules) {
+      original_and_shadow_modules = c(original_and_shadow_modules, list(module+1000))
+    }
+    
+    # add shadow variables
+    rfdat = dat$data[1:500,]
+    rfdat = cbind(rfdat, rfdat[,-1])
+    colnames(rfdat)[-1] = 1:(ncol(rfdat)-1)
+    # print(colnames(rfdat))
+    for (col in (((ncol(rfdat)-1)/2)+1):ncol(rfdat)) {
+      rfdat[,col] = sample(rfdat[,col])
+    }
+    
+    # run rf
     rf = simpleRFNetwork(pheno ~ .,
-                         data = dat$data[501:1000,],
-                         num_trees=num_trees,
-                         num_threads=num_threads,
-                         splitobject="module",
-                         splitmethod=splitmethod,
-                         # alternative splitmethods: univariate_fast, CART_fast, LDA, SVM, Nelder, SANN
-                         varselection="none",
-                         mtry="root",
-                         varclusters = dat$modules
+      data = rfdat,
+      num_trees=num_trees,
+      num_threads=num_threads,
+      splitobject="module",
+      splitmethod=splitmethod,
+      varselection="none",
+      mtry="root",
+      varclusters = original_and_shadow_modules
     )
     
+    # run var importance
+    varimp = rf$variableImportance(num_threads = num_threads)
+    
+    # get max var imp of shadow modules
+    shadow_varimp = varimp[(length(dat$modules)+1):length(varimp)]
+    max_shadow_varimp = max(shadow_varimp)
+    
+    # classify modules
+    for (i in 1:length(dat$modules) ) {
+      if (varimp[i] > max_shadow_varimp) {
+        binomresults[i] = binomresults[i] + 1
+      }
+    }
+    
+    # clean variables
+    rm(rf)
+    rm(rfdat)
+    
+    # toc()
   }
   
-  return()
+  # classify modules
+  module_classifications = rep(0, length(dat$modules))
+  cutoff = qbinom(0.95, num_iterations, 0.5)
+  for (i in 1:length(dat$modules) ) {
+    if (binomresults[i] > cutoff) {
+      module_classifications[i] = 1
+    }
+  }
+  
+  # save results
+  load(file = saveroot)
+  borutares = c(borutares, list(
+    binomresults = binomresults,
+    classification = module_classifications
+  ))
+  save(borutares, file = saveroot)
+  
+  return(list(
+    binomresults = binomresults,
+    classification = module_classifications
+  ))
 }
