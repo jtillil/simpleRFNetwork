@@ -4,9 +4,11 @@ boruta <- function(dat, splitmethod, num_trees, num_threads, num_iterations, see
   
   # initiate
   binomresults = rep(0, length(dat$modules))
+  bernresults = zeros(num_iterations, length(dat$modules))
   iteration = 0
   
   print(paste("This is", splitmethod, "Boruta"))
+  print(saveroot)
   
   # boruta loop
   while (iteration < num_iterations) {
@@ -54,6 +56,7 @@ boruta <- function(dat, splitmethod, num_trees, num_threads, num_iterations, see
     for (i in 1:length(dat$modules) ) {
       if (varimp[i] > max_shadow_varimp) {
         binomresults[i] = binomresults[i] + 1
+        bernresults[iteration, i] = 1
       }
     }
     

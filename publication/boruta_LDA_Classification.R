@@ -2,7 +2,7 @@ setwd(getSrcDirectory(function(){})[1])
 source("./source_files.R")
 
 # set scenarios
-n_networks = c(2)
+n_networks = c(100)
 n_genes = c(1000)
 n_samples = c(1000)
 n_disease_modules = c(1, 2)
