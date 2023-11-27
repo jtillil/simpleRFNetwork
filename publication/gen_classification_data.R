@@ -2,9 +2,9 @@ library(SeqNet)
 library(parallel)
 library(pracma)
 library(tictoc)
+library(simpleRFNetwork)
 
 setwd(getSrcDirectory(function(){})[1])
-source("../R/genGeneNetworkDataClassification.R")
 
 # set scenarios
 n_networks = c(100)

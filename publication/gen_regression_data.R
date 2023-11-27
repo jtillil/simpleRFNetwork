@@ -2,9 +2,9 @@ library(SeqNet)
 library(parallel)
 library(pracma)
 library(tictoc)
+library(simpleRFNetwork)
 
 setwd(getSrcDirectory(function(){})[1])
-source("../R/genGeneNetworkDataRegression.R")
 
 # set scenarios
 n_networks = c(100)
@@ -34,21 +34,17 @@ for (i in 1:nrow(scenarios)) {
     n_networks = scenario$n_networks,
     n_genes = scenario$n_genes,
     n_samples = scenario$n_samples,
-    n_disease_modules = scenario$n_disease_modules,
-    main_disease_gene = scenario$main_disease_gene,
-    average_beta = scenario$average_beta,
+    disease_modules = scenario$disease_modules,
     num_threads = 60
   )
   
   # build saveroot
   saveroot = paste0(
-    "./data/ndclassif",
+    "./data/ndregress",
     "_nn", scenario$n_networks,
     "_ng", scenario$n_genes,
     "_ns", scenario$n_samples,
-    "_ndm", scenario$n_disease_modules,
-    "_mdg", scenario$main_disease_gene,
-    "_ab", scenario$average_beta,
+    "_dm", scenario$disease_modules,
     ".Rdata"
   )
   
