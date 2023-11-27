@@ -54,7 +54,7 @@ for (i in 1:nrow(scenarios)) {
   saveroot = paste0(
     "./results/resclassif_",
     method,
-    "_ni", scenario$n_iterations,
+    "_ni", n_iterations,
     "_nn", scenario$n_networks,
     "_ng", scenario$n_genes,
     "_ns", scenario$n_samples,
