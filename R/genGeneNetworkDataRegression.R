@@ -61,50 +61,69 @@ genGeneNetworkDataRegression <- function(
       # seed
       set.seed(i)
       
-      #### Network ####
-      
-      # generate network
-      network <- random_network(n_genes)
-      network <- gen_partial_correlations(network)
-      
-      #### RNA-Seq ####
-      
-      # generate RNA-Seq data and take log-transformation
-      x.total <- gen_rnaseq(n_samples, network)
-      x.total <- log2(x.total$x + 1)
-      x.total <- scale(x.total, center = TRUE, scale = TRUE)
-      
       #### Phenotype ####
       
       # error
       e <- rnorm(n_samples, mean = 0, sd = 0.1)
       
       if (disease_modules) {
-        # disease module candidates
-        module.length <- sapply(network$modules, function(module) length(module$nodes))
-        mod.len.q1 <- floor(quantile(module.length, probs = 0.25))
-        mod.candidate <- which(module.length <= mod.len.q1)
+        # while counter
+        while_idx = 1
         
-        # first module
-        mod.signal.1st <- sample(mod.candidate, 1)
-        mod.sig = mod.signal.1st
-        gene.sig <- network$modules[[mod.signal.1st]]$nodes
-        
-        # second module
-        mod.intersect <- sapply(mod.candidate,
-                                function(mod){length(intersect(gene.sig, network$modules[[mod]]$nodes))>0})
-        mod.mutual <- mod.candidate[!mod.intersect]
-        mod.signal.2nd <- sample(mod.mutual, 1)
-        mod.sig = c(mod.sig, mod.signal.2nd)
-        gene.sig <- c(gene.sig, network$modules[[mod.signal.2nd]]$nodes)
-        
-        # third module
-        mod.intersect <- sapply(mod.candidate,
-                                function(mod){length(intersect(gene.sig, network$modules[[mod]]$nodes))>0})
-        mod.mutual <- mod.candidate[!mod.intersect]
-        mod.signal.3rd <- sample(mod.mutual, 1)
-        mod.sig = c(mod.sig, mod.signal.3rd)
-        gene.sig <- c(gene.sig, network$modules[[mod.signal.3rd]]$nodes)
+        # ensure enough modules
+        while (TRUE) {
+          # generate network
+          network <- random_network(n_genes)
+          network <- gen_partial_correlations(network)
+          
+          # generate RNA-Seq data and take log-transformation
+          x.total <- gen_rnaseq(n_samples, network)
+          x.total <- log2(x.total$x + 1)
+          x.total <- scale(x.total, center = TRUE, scale = TRUE)
+          
+          # disease module candidates
+          module.length <- sapply(network$modules, function(module) length(module$nodes))
+          mod.len.q1 <- floor(quantile(module.length, probs = 0.25))
+          mod.candidate <- which(module.length <= mod.len.q1)
+          if (length(mod.candidate) < 3) {
+            while_idx = while_idx + 1
+            print(paste("while iteration:", while_idx))
+            next
+          }
+          
+          # first module
+          mod.signal.1st <- sample(mod.candidate, 1)
+          mod.sig = mod.signal.1st
+          gene.sig <- network$modules[[mod.signal.1st]]$nodes
+          
+          # second module
+          mod.intersect <- sapply(mod.candidate,
+                                  function(mod){length(intersect(gene.sig, network$modules[[mod]]$nodes))>0})
+          mod.mutual <- mod.candidate[!mod.intersect]
+          if (length(mod.mutual) < 2) {
+            while_idx = while_idx + 1
+            print(paste("while iteration:", while_idx))
+            next
+          }
+          mod.signal.2nd <- sample(mod.mutual, 1)
+          mod.sig = c(mod.sig, mod.signal.2nd)
+          gene.sig <- c(gene.sig, network$modules[[mod.signal.2nd]]$nodes)
+          
+          # third module
+          mod.intersect <- sapply(mod.candidate,
+                                  function(mod){length(intersect(gene.sig, network$modules[[mod]]$nodes))>0})
+          mod.mutual <- mod.candidate[!mod.intersect]
+          if (length(mod.mutual) < 1) {
+            while_idx = while_idx + 1
+            print(paste("while iteration:", while_idx))
+            next
+          }
+          mod.signal.3rd <- sample(mod.mutual, 1)
+          mod.sig = c(mod.sig, mod.signal.3rd)
+          gene.sig <- c(gene.sig, network$modules[[mod.signal.3rd]]$nodes)
+          
+          break
+        }
         
         # collect modules
         disease.module <- list(first = NULL, second = NULL, third = NULL)
@@ -128,6 +147,15 @@ genGeneNetworkDataRegression <- function(
           causal_genes = gene.sig
         ))
       } else {
+        # generate network
+        network <- random_network(n_genes)
+        network <- gen_partial_correlations(network)
+        
+        # generate RNA-Seq data and take log-transformation
+        x.total <- gen_rnaseq(n_samples, network)
+        x.total <- log2(x.total$x + 1)
+        x.total <- scale(x.total, center = TRUE, scale = TRUE)
+        
         # random data not from the gene network
         x.disease <- matrix(runif(n_samples*3, 0, 1), ncol = 3)
         
