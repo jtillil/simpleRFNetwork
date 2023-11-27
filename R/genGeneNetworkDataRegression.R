@@ -48,6 +48,7 @@ genGeneNetworkDataRegression <- function(
     n_networks = 1,
     n_genes = 1000,
     n_samples = 1000,
+    disease_modules = T,
     # n_disease_modules = 2,  ALWAYS 3 DISEASE MODULES
     # main_disease_gene = F,  NO MAIN DISEASE GENES
     # average_beta = 1,       PARAMETERS PRE-SPECIFIED
@@ -60,41 +61,11 @@ genGeneNetworkDataRegression <- function(
       # seed
       set.seed(i)
       
+      #### Network ####
+      
       # generate network
       network <- random_network(n_genes)
       network <- gen_partial_correlations(network)
-      
-      # disease module candidates
-      module.length <- sapply(network$modules, function(module) length(module$nodes))
-      mod.len.q1 <- floor(quantile(module.length, probs = 0.25))
-      mod.candidate <- which(module.length <= mod.len.q1)
-      
-      # first module
-      mod.signal.1st <- sample(mod.candidate, 1)
-      mod.sig = mod.signal.1st
-      gene.sig <- network$modules[[mod.signal.1st]]$nodes
-      
-      # second module
-      mod.intersect <- sapply(mod.candidate,
-                              function(mod){length(intersect(gene.sig, network$modules[[mod]]$nodes))>0})
-      mod.mutual <- mod.candidate[!mod.intersect]
-      mod.signal.2nd <- sample(mod.mutual, 1)
-      mod.sig = c(mod.sig, mod.signal.2nd)
-      gene.sig <- c(gene.sig, network$modules[[mod.signal.2nd]]$nodes)
-      
-      # third module
-      mod.intersect <- sapply(mod.candidate,
-                              function(mod){length(intersect(gene.sig, network$modules[[mod]]$nodes))>0})
-      mod.mutual <- mod.candidate[!mod.intersect]
-      mod.signal.3rd <- sample(mod.mutual, 1)
-      mod.sig = c(mod.sig, mod.signal.3rd)
-      gene.sig <- c(gene.sig, network$modules[[mod.signal.3rd]]$nodes)
-      
-      # collect modules
-      disease.module <- list(first = NULL, second = NULL, third = NULL)
-      disease.module$first <- list(mod = mod.signal.1st, gene = network$modules[[mod.signal.1st]]$nodes)
-      disease.module$second <- list(mod = mod.signal.2nd, gene = network$modules[[mod.signal.2nd]]$nodes)
-      disease.module$third <- list(mod = mod.signal.3rd, gene = network$modules[[mod.signal.3rd]]$nodes)
       
       #### RNA-Seq ####
       
@@ -103,22 +74,74 @@ genGeneNetworkDataRegression <- function(
       x.total <- log2(x.total$x + 1)
       x.total <- scale(x.total, center = TRUE, scale = TRUE)
       
-      # read disease gene data
-      x.disease <- lapply(disease.module,
-                          function(m) rowMeans(x.total[, m$gene]))
-      x.disease <- as.data.frame(x.disease)
+      #### Phenotype ####
       
-      # regression phenotype
+      # error
       e <- rnorm(n_samples, mean = 0, sd = 0.1)
-      pheno <- 0.25 * exp(4*x.disease[, 1]) + 4 / (1+exp(-20*(x.disease[, 2]-0.5))) + 3*x.disease[, 3] + e
       
-      # return
-      return(list(
-        data = cbind(pheno, as.data.frame(x.total)),
-        modules = lapply(network$modules, function(x) x$nodes),
-        causal_modules = mod.sig,
-        causal_genes = gene.sig
-      ))
+      if (disease_modules) {
+        # disease module candidates
+        module.length <- sapply(network$modules, function(module) length(module$nodes))
+        mod.len.q1 <- floor(quantile(module.length, probs = 0.25))
+        mod.candidate <- which(module.length <= mod.len.q1)
+        
+        # first module
+        mod.signal.1st <- sample(mod.candidate, 1)
+        mod.sig = mod.signal.1st
+        gene.sig <- network$modules[[mod.signal.1st]]$nodes
+        
+        # second module
+        mod.intersect <- sapply(mod.candidate,
+                                function(mod){length(intersect(gene.sig, network$modules[[mod]]$nodes))>0})
+        mod.mutual <- mod.candidate[!mod.intersect]
+        mod.signal.2nd <- sample(mod.mutual, 1)
+        mod.sig = c(mod.sig, mod.signal.2nd)
+        gene.sig <- c(gene.sig, network$modules[[mod.signal.2nd]]$nodes)
+        
+        # third module
+        mod.intersect <- sapply(mod.candidate,
+                                function(mod){length(intersect(gene.sig, network$modules[[mod]]$nodes))>0})
+        mod.mutual <- mod.candidate[!mod.intersect]
+        mod.signal.3rd <- sample(mod.mutual, 1)
+        mod.sig = c(mod.sig, mod.signal.3rd)
+        gene.sig <- c(gene.sig, network$modules[[mod.signal.3rd]]$nodes)
+        
+        # collect modules
+        disease.module <- list(first = NULL, second = NULL, third = NULL)
+        disease.module$first <- list(mod = mod.signal.1st, gene = network$modules[[mod.signal.1st]]$nodes)
+        disease.module$second <- list(mod = mod.signal.2nd, gene = network$modules[[mod.signal.2nd]]$nodes)
+        disease.module$third <- list(mod = mod.signal.3rd, gene = network$modules[[mod.signal.3rd]]$nodes)
+        
+        # read disease gene data
+        x.disease <- lapply(disease.module,
+                            function(m) rowMeans(x.total[, m$gene]))
+        x.disease <- as.data.frame(x.disease)
+        
+        # regression phenotype
+        pheno <- 0.25 * exp(4*x.disease[, 1]) + 4 / (1+exp(-20*(x.disease[, 2]-0.5))) + 3*x.disease[, 3] + e
+        
+        # return
+        return(list(
+          data = cbind(pheno, as.data.frame(x.total)),
+          modules = lapply(network$modules, function(x) x$nodes),
+          causal_modules = mod.sig,
+          causal_genes = gene.sig
+        ))
+      } else {
+        # random data not from the gene network
+        x.disease <- matrix(runif(n_samples*3, 0, 1), ncol = 3)
+        
+        # regression phenotype
+        pheno <- 0.25 * exp(4*x.disease[, 1]) + 4 / (1+exp(-20*(x.disease[, 2]-0.5))) + 3*x.disease[, 3] + e
+        
+        # return
+        return(list(
+          data = cbind(pheno, as.data.frame(x.total)),
+          modules = lapply(network$modules, function(x) x$nodes),
+          causal_modules = c(),
+          causal_genes = c()
+        ))
+      }
     },
     mc.cores = num_threads
   )
