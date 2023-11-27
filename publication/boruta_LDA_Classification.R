@@ -38,12 +38,12 @@ for (i in 1:nrow(scenarios)) {
   # load data
   datroot = paste0(
     "./data/ndclassif",
-    "_nn", n_networks,
-    "_ng", n_genes,
-    "_ns", n_samples,
-    "_ndm", n_disease_modules,
-    "_mdg", main_disease_gene,
-    "_ab", average_beta,
+    "_nn", scenario$n_networks,
+    "_ng", scenario$n_genes,
+    "_ns", scenario$n_samples,
+    "_ndm", scenario$n_disease_modules,
+    "_mdg", scenario$main_disease_gene,
+    "_ab", scenario$average_beta,
     ".Rdata"
   )
   print(getwd())
@@ -54,13 +54,13 @@ for (i in 1:nrow(scenarios)) {
   saveroot = paste0(
     "./results/resclassif_",
     method,
-    "_ni", n_iterations,
-    "_nn", n_networks,
-    "_ng", n_genes,
-    "_ns", n_samples,
-    "_ndm", n_disease_modules,
-    "_mdg", main_disease_gene,
-    "_ab", average_beta,
+    "_ni", scenario$n_iterations,
+    "_nn", scenario$n_networks,
+    "_ng", scenario$n_genes,
+    "_ns", scenario$n_samples,
+    "_ndm", scenario$n_disease_modules,
+    "_mdg", scenario$main_disease_gene,
+    "_ab", scenario$average_beta,
     ".Rdata"
   )
   borutares = list()
