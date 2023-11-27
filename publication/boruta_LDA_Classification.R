@@ -46,6 +46,8 @@ for (i in 1:nrow(scenarios)) {
     "_ab", average_beta,
     ".Rdata"
   )
+  print(getwd())
+  print(datroot)
   load(datroot)
   
   # save root
@@ -78,4 +80,3 @@ for (i in 1:nrow(scenarios)) {
   # clear dat
   rm(dat)
 }
-
