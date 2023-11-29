@@ -69,14 +69,16 @@ for (i in 1:nrow(scenarios)) {
   save(borutares, file = saveroot)
   
   # run boruta
-  borutares = lapply(
+  borutares = mclapply(
     1:length(dat),
     function(i) {
       tic()
-      print(paste("Boruta for Network Nr", i))
-      boruta(dat[[i]], method, importance, 500, 64, n_iterations, i, saveroot)
+      print(paste("Boruta for Network Nr", i, "started."))
+      boruta(dat[[i]], method, importance, 500, 1, n_iterations, i, saveroot)
+      print(paste("Boruta for Network Nr", i, "finished!"))
       toc()
-    }
+    },
+    mc.cores = 64
   )
   
   # clear dat
