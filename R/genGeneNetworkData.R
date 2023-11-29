@@ -43,7 +43,7 @@
 ##' }
 ##' 
 ##' @author Johannes Tillil
-##' atexport
+##' @export
 genGeneNetworkData <- function(
   num_networks,
   num_genes,
