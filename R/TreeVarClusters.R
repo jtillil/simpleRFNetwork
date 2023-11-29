@@ -402,6 +402,22 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         })
         return(res)
         
+      } else if (type == "Gini") {
+        
+        ## For each variable, node-size-weighted sum of impurity decrease
+        res <- rep(0, length(varclusters))
+        for (nodeID in 1:length(split_clusterIDs)) {
+          if (!is.na(split_clusterIDs[[nodeID]])) {
+            current_impurity <- impurities[nodeID]
+            childrenIDs <- child_nodeIDs[[nodeID]]
+            impurity_1 <- impurities[childrenIDs[1]]
+            impurity_2 <- impurities[childrenIDs[2]]
+            impurity_decrease <- current_impurity - (impurities[childrenIDs[1]] * sizes[childrenIDs[1]] / sizes[nodeID] + impurities[childrenIDs[2]] * sizes[childrenIDs[2]] / sizes[nodeID])
+            res[split_clusterIDs[[nodeID]]] <- res[split_clusterIDs[[nodeID]]] + (impurity_decrease / length(sampleIDs[[nodeID]]))
+          }
+        }
+        return(res)
+        
       } else if (type == "surrogate_splits") {
         
         ## Todo
