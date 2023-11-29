@@ -11,7 +11,11 @@ ForestRegression <- setRefClass("ForestRegression",
       treetype <<- "Regression"
       
       ## Create trees
-      trees <<- replicate(num_trees, TreeRegression$new())
+      if (splitobject == "module") {
+        trees <<- replicate(num_trees, TreeVarClustersRegression$new())
+      } else {
+        trees <<- replicate(num_trees, TreeRegression$new())
+      }
 
       ## Call parent method
       callSuper(num_threads)

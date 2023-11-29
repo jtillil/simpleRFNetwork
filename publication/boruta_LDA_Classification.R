@@ -23,6 +23,7 @@ scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0))
 # scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0))
 
 method = "LDA"
+importance = "Gini"
 n_iterations = 20
 
 # scenarios = scenarios[1,]
@@ -52,8 +53,9 @@ for (i in 1:nrow(scenarios)) {
   
   # save root
   saveroot = paste0(
-    "./results/resclassif_",
-    method,
+    "./results/resclassif",
+    "_", method,
+    "_", importance,
     "_ni", n_iterations,
     "_nn", scenario$n_networks,
     "_ng", scenario$n_genes,
@@ -72,7 +74,7 @@ for (i in 1:nrow(scenarios)) {
     function(i) {
       tic()
       print(paste("Boruta for Network Nr", i))
-      boruta(dat[[i]], method, 500, 64, n_iterations, i, saveroot)
+      boruta(dat[[i]], method, importance, 500, 64, n_iterations, i, saveroot)
       toc()
     }
   )

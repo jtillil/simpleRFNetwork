@@ -1,4 +1,4 @@
-boruta <- function(dat, splitmethod, num_trees, num_threads, num_iterations, seed, saveroot) {
+boruta <- function(dat, splitmethod, importance, num_trees, num_threads, num_iterations, seed, saveroot) {
   # seed
   set.seed(seed)
   
@@ -46,7 +46,7 @@ boruta <- function(dat, splitmethod, num_trees, num_threads, num_iterations, see
     )
     
     # run var importance
-    varimp = rf$variableImportance(num_threads = num_threads)
+    varimp = rf$variableImportance(type = importance, num_threads = num_threads)
     
     # get max var imp of shadow modules
     shadow_varimp = varimp[(length(dat$modules)+1):length(varimp)]
