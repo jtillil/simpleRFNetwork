@@ -6,6 +6,7 @@ library(pracma)
 library(tictoc)
 library(Rfast)
 library(matrixcalc)
+library(e1071)
 
 library(simpleRFNetwork)
 
