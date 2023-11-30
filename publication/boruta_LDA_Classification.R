@@ -74,7 +74,7 @@ for (i in 1:nrow(scenarios)) {
     function(i) {
       tic()
       print(paste("Boruta for Network Nr", i, "started."))
-      boruta(dat[[i]], method, importance, 500, 1, n_iterations, i, saveroot)
+      boruta(dat[[i]], i, method, importance, 500, 1, n_iterations, i, saveroot)
       print(paste("Boruta for Network Nr", i, "finished!"))
       toc()
     },

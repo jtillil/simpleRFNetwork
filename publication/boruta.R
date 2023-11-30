@@ -1,4 +1,4 @@
-boruta <- function(dat, splitmethod, importance, num_trees, num_threads, num_iterations, seed, saveroot) {
+boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threads, num_iterations, seed, saveroot) {
   # seed
   set.seed(seed)
   
@@ -78,14 +78,19 @@ boruta <- function(dat, splitmethod, importance, num_trees, num_threads, num_ite
   
   # save results
   load(file = saveroot)
-  borutares = c(borutares, list(
+  borutares[[networkID]] = list(
+    networkID = networkID,
+    bernresults = bernresults,
     binomresults = binomresults,
-    classification = module_classifications
-  ))
+    classification = module_classifications,
+    causalmodules = dat$causal_modules
+  )
   save(borutares, file = saveroot)
   
   return(list(
+    bernresults = bernresults,
     binomresults = binomresults,
-    classification = module_classifications
+    classification = module_classifications,
+    causalmodules = dat$causal_modules
   ))
 }
