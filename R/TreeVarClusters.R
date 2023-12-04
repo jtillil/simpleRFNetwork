@@ -313,6 +313,9 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       num_samples_predict <- length(oob_sampleIDs)
       predictions <- list()
       
+      ## Initialize costly data
+      data_subset <- as.matrix(data$data[oob_sampleIDs, 2:data$ncol])
+      
       ## For each OOB sample start in root and drop down tree
       for (i in 1:num_samples_predict) {
         nodeID <- 1
@@ -323,11 +326,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           }
           
           ## Move to child
-          if (varselection == "none") {
-            value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
-          } else {
-            value <- as.matrix(data$subset(oob_sampleIDs[i], split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
-          }
+          value <- data_subset[i, varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
           
           if (value <= split_values[nodeID]) {
             nodeID <- child_nodeIDs[[nodeID]][1]
@@ -354,7 +353,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       ## Initialize costly data
       data_subset <- as.matrix(data$data[oob_sampleIDs, 2:data$ncol])
       
-      print("New permute and predict oob")
+      # print("New permute and predict oob")
       
       ## For each OOB sample start in root and drop down tree
       for (i in 1:num_samples_predict) {
@@ -423,18 +422,18 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       if (type == "permutation") {
         
         ## Prediction error without any permutation
-        tic()
+        # tic()
         oob_error <- OOBPredictionErrorTree()
-        print(paste("oob prediction tree finished in:", toc(quiet=T)$callback_msg))
+        # print(paste("oob prediction tree finished in:", toc(quiet=T)$callback_msg))
         
         ## For each variable, prediction error after permutation
         res <- sapply(1:length(varclusters), function(clusterID) {
-          tic()
+          # tic()
           pred <- permuteAndPredictOOB(clusterID)
-          print(paste("permuted oob prediction of module", as.character(clusterID), "finished in:", toc(quiet=T)$callback_msg))
-          tic()
+          # print(paste("permuted oob prediction of module", as.character(clusterID), "finished in:", toc(quiet=T)$callback_msg))
+          # tic()
           oob_error_perm <- OOBPredictionErrorTree(pred)
-          print(paste("oob prediction error finished in:", toc(quiet=T)$callback_msg))
+          # print(paste("oob prediction error finished in:", toc(quiet=T)$callback_msg))
           oob_error_perm - oob_error
         })
         return(res)
