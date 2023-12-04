@@ -399,7 +399,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         ## For each variable, prediction error after permutation
         res <- sapply(1:length(varclusters), function(clusterID) {
           tic()
-          pred <- permuteAndPredictOOB_batch(clusterID)
+          pred <- permuteAndPredictOOB(clusterID)
           print(paste("permuted oob prediction of module", as.character(clusterID), "finished in:", toc(quiet=T)$callback_msg))
           tic()
           oob_error_perm <- OOBPredictionErrorTree(pred)
