@@ -354,6 +354,8 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       ## Initialize costly data
       data_subset <- as.matrix(data$data[oob_sampleIDs, 2:data$ncol])
       
+      print("New permute and predict oob")
+      
       ## For each OOB sample start in root and drop down tree
       for (i in 1:num_samples_predict) {
         nodeID <- 1
@@ -424,7 +426,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         tic()
         oob_error <- OOBPredictionErrorTree()
         print(paste("oob prediction tree finished in:", toc(quiet=T)$callback_msg))
-
+        
         ## For each variable, prediction error after permutation
         res <- sapply(1:length(varclusters), function(clusterID) {
           tic()
