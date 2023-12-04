@@ -157,114 +157,6 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
     getNodePrediction = function(nodeID) {
       ## references subclass
     },
-    
-    ## predict on data with the tree
-    ## @getNodePrediction
-    predict = function(predict_data) {
-      ## Initialize
-      num_samples_predict <- predict_data$nrow
-      predictions <- list()
-      
-      ## For each sample start in root and drop down tree
-      for (i in 1:num_samples_predict) {
-        nodeID <- 1
-        while(TRUE) {
-          ## Break if terminal node
-          if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
-            break
-          }
-
-          ## Move to child
-          if (varselection == "none") {
-            value <- as.matrix(predict_data$subset(i, varclusters[[split_clusterIDs[nodeID]]])) %*% split_coefficients[[nodeID]]
-          } else {
-            value <- as.matrix(predict_data$subset(i, split_selectedVarIDs[[nodeID]])) %*% split_coefficients[[nodeID]]
-          }
-          if (value <= split_values[nodeID]) {
-            nodeID <- child_nodeIDs[[nodeID]][1]
-          } else {
-            nodeID <- child_nodeIDs[[nodeID]][2]
-          }
-        }
-        
-        ## Add to prediction
-        predictions[[i]] <- getNodePrediction(nodeID)
-      }
-      return(simplify2array(predictions))
-    }, 
-    
-    ## predict OOB data with the tree
-    ## @getNodePrediction
-    predictOOB = function() {
-      ## Initialize
-      num_samples_predict <- length(oob_sampleIDs)
-      predictions <- list()
-      
-      ## For each OOB sample start in root and drop down tree
-      for (i in 1:num_samples_predict) {
-        nodeID <- 1
-        while(TRUE) {
-          ## Break if terminal node
-          if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
-            break
-          }
-          
-          ## Move to child
-          if (varselection == "none") {
-            value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
-          } else {
-            value <- as.matrix(data$subset(oob_sampleIDs[i], split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
-          }
-
-          if (value <= split_values[nodeID]) {
-            nodeID <- child_nodeIDs[[nodeID]][1]
-          } else {
-            nodeID <- child_nodeIDs[[nodeID]][2]
-          }
-        }
-        
-        ## Add to prediction
-        predictions[[i]] <- getNodePrediction(nodeID)
-      }
-
-      return(simplify2array(predictions))
-    },
-
-    ## permute and predict OOB data with the tree
-    ## @getNodePrediction
-    permuteAndPredictOOB = function(permuted_clusterID) {
-      ## Initialize
-      num_samples_predict <- length(oob_sampleIDs)
-      predictions <- list()
-      permutations <- sample(num_samples_predict)
-
-      ## For each OOB sample start in root and drop down tree
-      for (i in 1:num_samples_predict) {
-        nodeID <- 1
-        while(TRUE) {
-          ## Break if terminal node
-          if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
-            break
-          }
-
-          ## Move to child
-          if (split_clusterIDs[nodeID] == permuted_clusterID) {
-            value <- as.matrix(data$subset(oob_sampleIDs[permutations[i]], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
-          } else {
-            value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
-          }
-          if (value <= split_values[nodeID]) {
-            nodeID <- child_nodeIDs[[nodeID]][1]
-          } else {
-            nodeID <- child_nodeIDs[[nodeID]][2]
-          }
-        }
-
-        ## Add to prediction
-        predictions[[i]] <- getNodePrediction(nodeID)
-      }
-      return(simplify2array(predictions))
-    },
 
     ## predict on data with the tree
     ## @getNodePrediction
@@ -377,6 +269,143 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       }
 
       return(split_values[nodeIDs])
+    },
+    
+    ## predict on data with the tree
+    ## @getNodePrediction
+    predict = function(predict_data) {
+      ## Initialize
+      num_samples_predict <- predict_data$nrow
+      predictions <- list()
+      
+      ## For each sample start in root and drop down tree
+      for (i in 1:num_samples_predict) {
+        nodeID <- 1
+        while(TRUE) {
+          ## Break if terminal node
+          if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
+            break
+          }
+          
+          ## Move to child
+          if (varselection == "none") {
+            value <- as.matrix(predict_data$subset(i, varclusters[[split_clusterIDs[nodeID]]])) %*% split_coefficients[[nodeID]]
+          } else {
+            value <- as.matrix(predict_data$subset(i, split_selectedVarIDs[[nodeID]])) %*% split_coefficients[[nodeID]]
+          }
+          if (value <= split_values[nodeID]) {
+            nodeID <- child_nodeIDs[[nodeID]][1]
+          } else {
+            nodeID <- child_nodeIDs[[nodeID]][2]
+          }
+        }
+        
+        ## Add to prediction
+        predictions[[i]] <- getNodePrediction(nodeID)
+      }
+      return(simplify2array(predictions))
+    }, 
+    
+    ## predict OOB data with the tree
+    ## @getNodePrediction
+    predictOOB = function() {
+      ## Initialize
+      num_samples_predict <- length(oob_sampleIDs)
+      predictions <- list()
+      
+      ## For each OOB sample start in root and drop down tree
+      for (i in 1:num_samples_predict) {
+        nodeID <- 1
+        while(TRUE) {
+          ## Break if terminal node
+          if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
+            break
+          }
+          
+          ## Move to child
+          if (varselection == "none") {
+            value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
+          } else {
+            value <- as.matrix(data$subset(oob_sampleIDs[i], split_selectedVarIDs[[nodeID]] + 1)) %*% split_coefficients[[nodeID]]
+          }
+          
+          if (value <= split_values[nodeID]) {
+            nodeID <- child_nodeIDs[[nodeID]][1]
+          } else {
+            nodeID <- child_nodeIDs[[nodeID]][2]
+          }
+        }
+        
+        ## Add to prediction
+        predictions[[i]] <- getNodePrediction(nodeID)
+      }
+      
+      return(simplify2array(predictions))
+    },
+    
+    ## permute and predict OOB data with the tree
+    ## @getNodePrediction
+    permuteAndPredictOOB = function(permuted_clusterID) {
+      ## Initialize
+      num_samples_predict <- length(oob_sampleIDs)
+      predictions <- list()
+      permutations <- sample(num_samples_predict)
+      
+      ## Initialize costly data
+      data_subset <- as.matrix(data$data[oob_sampleIDs, 2:data$ncol])
+      
+      ## For each OOB sample start in root and drop down tree
+      for (i in 1:num_samples_predict) {
+        nodeID <- 1
+        while(TRUE) {
+          ## Break if terminal node
+          if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
+            break
+          }
+          
+          ## Move to child
+          if (split_clusterIDs[nodeID] == permuted_clusterID) {
+            value <- data_subset[permutations[i], varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
+          } else {
+            value <- data_subset[i, varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
+          }
+          if (value <= split_values[nodeID]) {
+            nodeID <- child_nodeIDs[[nodeID]][1]
+          } else {
+            nodeID <- child_nodeIDs[[nodeID]][2]
+          }
+        }
+        
+        ## Add to prediction
+        predictions[[i]] <- getNodePrediction(nodeID)
+      }
+      
+      ## For each OOB sample start in root and drop down tree
+      # for (i in 1:num_samples_predict) {
+      #   nodeID <- 1
+      #   while(TRUE) {
+      #     ## Break if terminal node
+      #     if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
+      #       break
+      #     }
+      #     
+      #     ## Move to child
+      #     if (split_clusterIDs[nodeID] == permuted_clusterID) {
+      #       value <- as.matrix(data$subset(oob_sampleIDs[permutations[i]], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
+      #     } else {
+      #       value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
+      #     }
+      #     if (value <= split_values[nodeID]) {
+      #       nodeID <- child_nodeIDs[[nodeID]][1]
+      #     } else {
+      #       nodeID <- child_nodeIDs[[nodeID]][2]
+      #     }
+      #   }
+      #   
+      #   ## Add to prediction
+      #   predictions[[i]] <- getNodePrediction(nodeID)
+      # }
+      return(simplify2array(predictions))
     },
     
     ## virtual

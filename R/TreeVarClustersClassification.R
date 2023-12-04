@@ -325,7 +325,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
     ## @predictOOB
     OOBPredictionErrorTree = function(pred = NULL) {
       if (is.null(pred)) {
-        pred <- predictOOB_batch()
+        pred <- predictOOB()
       }
       sum(pred != as.numeric(data$subset(oob_sampleIDs, 1)), na.rm = TRUE) / length(oob_sampleIDs)
     }
