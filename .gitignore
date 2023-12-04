@@ -2,4 +2,6 @@
 .Rhistory
 simpleRFNetwork.Rproj
 .Rbuildignore
+.Rdata
 *.Rdata
+.DS_Store
