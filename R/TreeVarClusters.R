@@ -230,76 +230,6 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
       return(split_values[nodeIDs])
     },
     
-    ## permute and predict OOB data with the tree
-    ## @getNodePrediction
-    permuteAndPredictOOB_batch = function(permuted_clusterID) {
-      ## Initialize
-      num_samples_predict <- length(oob_sampleIDs)
-      permutations <- sample(num_samples_predict)
-      
-      ## Initialize costly data
-      data_subset <- as.matrix(data$data[oob_sampleIDs, 2:data$ncol])
-      lcnIDs <- length(child_nodeIDs)
-      samples_predict <- 1:num_samples_predict
-      split_clusters <- 1:length(varclusters)
-      
-      ## For all OOB samples in batch, start in root and drop down tree
-      nodeIDs <- numeric(num_samples_predict) + 1
-      not_yet_terminal <- rep(T, num_samples_predict)
-      while(TRUE) {
-        ## Check if samples in terminal node
-        not_yet_terminal[nodeIDs > lcnIDs | lengths(child_nodeIDs[nodeIDs]) == 0] <- F
- 
-        ## Break if all samples in terminal node
-        if (!any(not_yet_terminal)) {
-          break
-        }
-        
-        ## Find used split_clusters
-        # split_clusters_used <- split_clusterIDs[nodeIDs[not_yet_terminal]]
-        
-        ## Loop through unique tree nodes currently in use
-        unique_nodeIDs <- unique(nodeIDs[not_yet_terminal])
-        for (nodeID in unique_nodeIDs) {
-          ## get samples corresponding to nodeID
-          samples_in_current_node <- samples_predict[nodeIDs == nodeID]
-          
-          ## Batch calculate sample values
-          if (split_clusterIDs[nodeID] == permuted_clusterID) {
-            values <- data_subset[permutations[samples_in_current_node], varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
-          } else {
-            values <- data_subset[samples_in_current_node, varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
-          }
-          
-          ## Batch update child nodes
-          leqidx <- (values <= split_values[nodeID])
-          nodeIDs[leqidx] <- child_nodeIDs[[nodeID]][1]
-          nodeIDs[!leqidx] <- child_nodeIDs[[nodeID]][2]
-        }
-        
-        # new_nodeIDs <- sapply(samples_predict[not_yet_terminal], function(id) {
-        #   nodeID <- nodeIDs[id]
-        #   ## Batch calculate sample values
-        #   if (split_clusterIDs[nodeID] == permuted_clusterID) {
-        #     value <- data_subset[permutations[id], varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
-        #   } else {
-        #     value <- data_subset[id, varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
-        #   }
-        # 
-        #   ## Batch update child nodes
-        #   if (value <= split_values[nodeID) {
-        #     return(child_nodeIDs[[nodeID]][1])
-        #   } else {
-        #     return(child_nodeIDs[[nodeID]][2])
-        #   }
-        # })
-        # 
-        # nodeIDs[not_yet_terminal] <- new_nodeIDs
-      }
-
-      return(split_values[nodeIDs])
-    },
-    
     ## predict on data with the tree
     ## @getNodePrediction
     predict = function(predict_data) {
@@ -410,32 +340,96 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         predictions[[i]] <- getNodePrediction(nodeID)
       }
       
-      ## For each OOB sample start in root and drop down tree
-      # for (i in 1:num_samples_predict) {
-      #   nodeID <- 1
-      #   while(TRUE) {
-      #     ## Break if terminal node
-      #     if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
-      #       break
-      #     }
-      #     
-      #     ## Move to child
-      #     if (split_clusterIDs[nodeID] == permuted_clusterID) {
-      #       value <- as.matrix(data$subset(oob_sampleIDs[permutations[i]], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
-      #     } else {
-      #       value <- as.matrix(data$subset(oob_sampleIDs[i], varclusters[[split_clusterIDs[nodeID]]] + 1)) %*% split_coefficients[[nodeID]]
-      #     }
-      #     if (value <= split_values[nodeID]) {
-      #       nodeID <- child_nodeIDs[[nodeID]][1]
-      #     } else {
-      #       nodeID <- child_nodeIDs[[nodeID]][2]
-      #     }
-      #   }
-      #   
-      #   ## Add to prediction
-      #   predictions[[i]] <- getNodePrediction(nodeID)
-      # }
       return(simplify2array(predictions))
+    },
+    
+    ## permute and predict OOB data with the tree
+    ## @getNodePrediction
+    permuteAndPredictOOB_batch = function(permuted_clusterID) {
+      ## Initialize
+      num_samples_predict <- length(oob_sampleIDs)
+      permutations <- sample(num_samples_predict)
+      
+      ## Initialize costly data
+      data_subset <- as.matrix(data$data[oob_sampleIDs, 2:data$ncol])
+      lcnIDs <- length(child_nodeIDs)
+      samples_predict <- 1:num_samples_predict
+      split_clusters <- 1:length(varclusters)
+      
+      ## For all OOB samples in batch, start in root and drop down tree
+      nodeIDs <- numeric(num_samples_predict) + 1
+      not_yet_terminal <- rep(T, num_samples_predict)
+      while(TRUE) {
+        print("#### NEW WHILE TRUE ITERATION ####")
+        ## Check if samples in terminal node
+        not_yet_terminal[nodeIDs > lcnIDs | lengths(child_nodeIDs[nodeIDs]) == 0] <- F
+        
+        print("not_yet_terminal")
+        print(not_yet_terminal)
+        
+        ## Break if all samples in terminal node
+        if (!any(not_yet_terminal)) {
+          print("#### BREAK ####")
+          break
+        }
+        
+        ## Find used split_clusters
+        # split_clusters_used <- split_clusterIDs[nodeIDs[not_yet_terminal]]
+        
+        ## Loop through unique tree nodes currently in use
+        unique_nodeIDs <- unique(nodeIDs[not_yet_terminal])
+        print("unique_nodeIDs")
+        print(unique_nodeIDs)
+        for (nodeID in unique_nodeIDs) {
+          ## get samples corresponding to nodeID
+          samples_in_current_node <- samples_predict[nodeIDs == nodeID]
+          
+          print("nodeID")
+          print(nodeID)
+          
+          print("samples_in_current_node")
+          print(samples_in_current_node)
+          
+          ## Batch calculate sample values
+          if (split_clusterIDs[nodeID] == permuted_clusterID) {
+            values <- data_subset[permutations[samples_in_current_node], varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
+          } else {
+            values <- data_subset[samples_in_current_node, varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
+          }
+          
+          print("values")
+          print(values)
+          
+          ## Batch update child nodes
+          leqidx <- (values <= split_values[nodeID])
+          nodeIDs[leqidx] <- child_nodeIDs[[nodeID]][1]
+          nodeIDs[!leqidx] <- child_nodeIDs[[nodeID]][2]
+          
+          print("leqidx")
+          print(leqidx)
+        }
+        
+        # new_nodeIDs <- sapply(samples_predict[not_yet_terminal], function(id) {
+        #   nodeID <- nodeIDs[id]
+        #   ## Batch calculate sample values
+        #   if (split_clusterIDs[nodeID] == permuted_clusterID) {
+        #     value <- data_subset[permutations[id], varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
+        #   } else {
+        #     value <- data_subset[id, varclusters[[split_clusterIDs[nodeID]]] ] %*% split_coefficients[[nodeID]]
+        #   }
+        # 
+        #   ## Batch update child nodes
+        #   if (value <= split_values[nodeID) {
+        #     return(child_nodeIDs[[nodeID]][1])
+        #   } else {
+        #     return(child_nodeIDs[[nodeID]][2])
+        #   }
+        # })
+        # 
+        # nodeIDs[not_yet_terminal] <- new_nodeIDs
+      }
+      
+      return(split_values[nodeIDs])
     },
     
     ## permute and predict OOB data with the tree
@@ -505,7 +499,12 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         ## For each variable, prediction error after permutation
         res <- sapply(1:length(varclusters), function(clusterID) {
           pred <- permuteAndPredictOOB_batch(clusterID)
+          print("#### PRED #####")
+          print(pred)
           oob_error_perm <- OOBPredictionErrorTree(pred)
+          print("#### ERROR ####")
+          print(oob_error_perm)
+          print(oob_error_perm - oob_error)
           oob_error_perm - oob_error
         })
         return(res)
