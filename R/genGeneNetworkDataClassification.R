@@ -94,7 +94,7 @@ genGeneNetworkDataClassification <- function(
       
       # generate RNA-Seq data and take log-transformation
       x.total <- gen_rnaseq(n_samples, network)
-      x.total <- log2(x.total$x + 1)
+      x.total <- log(x.total$x + 1)
       x.total <- scale(x.total, center = TRUE, scale = TRUE)
       
       # read disease gene data

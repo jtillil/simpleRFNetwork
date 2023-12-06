@@ -61,16 +61,12 @@ genGeneNetworkData <- function(
   num_threads = 1,
   seed = 1
 ) {
-
-  ## Set up parallel reproducibility
-  RNGkind("L'Ecuyer-CMRG")
-  set.seed(seed)
-  mc.reset.stream()
-  
   ## Start parallel computing
   return(mclapply(
     1:num_networks,
     function(i) {
+      set.seed(i)
+      
       ## Generate networks, modules and associations between genes
       if (is.null(num_modules)) {
         rn <- random_network(
