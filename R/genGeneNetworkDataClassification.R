@@ -101,7 +101,7 @@ genGeneNetworkDataClassification <- function(
       x.disease = x.total[, gene.sig]
       
       # binary phenotype
-      pheno = as.factor(rbinom(n_samples, 1, sigmoid(average_beta*rowMeans(x.disease))))
+      pheno = as.factor(rbinom(n_samples, 1, sigmoid(average_beta*rowMeans(x.disease) - 1)))
       
       # return
       return(list(
