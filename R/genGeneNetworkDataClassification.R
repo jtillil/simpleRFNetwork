@@ -70,6 +70,11 @@ genGeneNetworkDataClassification <- function(
       )
       network <- gen_partial_correlations(network)
       
+      # generate RNA-Seq data and take log-transformation
+      x.total <- gen_rnaseq(n_samples, network)
+      x.total <- log(x.total$x + 1)
+      x.total <- scale(x.total, center = TRUE, scale = TRUE)
+      
       # disease module candidates
       module.length <- sapply(network$modules, function(module) length(module$nodes))
       mod.len.q1 <- floor(quantile(module.length, probs = 0.25))
@@ -90,12 +95,7 @@ genGeneNetworkDataClassification <- function(
         gene.sig <- c(gene.sig, network$modules[[mod.signal.2nd]]$nodes)
       }
       
-      #### RNA-Seq ####
-      
-      # generate RNA-Seq data and take log-transformation
-      x.total <- gen_rnaseq(n_samples, network)
-      x.total <- log(x.total$x + 1)
-      x.total <- scale(x.total, center = TRUE, scale = TRUE)
+      #### sample phenotype ####
       
       # read disease gene data
       x.disease = x.total[, gene.sig]

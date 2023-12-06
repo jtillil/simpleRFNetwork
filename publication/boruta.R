@@ -27,7 +27,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     # add shadow variables
     rfdat = dat$data[1:500,]
     rfdat = cbind(rfdat, rfdat[,-1])
-    colnames(rfdat)[-1] = 1:(ncol(rfdat)-1)
+    colnames(rfdat)[-1] = paste0("X", 1:(ncol(rfdat)-1))
     # print(colnames(rfdat))
     for (col in (((ncol(rfdat)-1)/2)+1):ncol(rfdat)) {
       rfdat[,col] = sample(rfdat[,col])
