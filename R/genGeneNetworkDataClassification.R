@@ -48,6 +48,8 @@ genGeneNetworkDataClassification <- function(
     n_networks = 1,
     n_genes = 1000,
     n_samples = 1000,
+    max_genes_per_module = 100,
+    sd_genes_per_module = 25,
     n_disease_modules = 2,
     main_disease_gene = F,
     average_beta = 1,
@@ -61,7 +63,11 @@ genGeneNetworkDataClassification <- function(
       set.seed(i)
       
       # generate network
-      network <- random_network(n_genes)
+      network <- random_network(
+        n_genes,
+        max_module_size = max_genes_per_module,
+        sd_module_size = sd_genes_per_module
+      )
       network <- gen_partial_correlations(network)
       
       # disease module candidates
