@@ -84,6 +84,7 @@ genGeneNetworkDataClassification <- function(
       mod.signal.1st <- sample(mod.candidate, 1)
       mod.sig = mod.signal.1st
       gene.sig <- network$modules[[mod.signal.1st]]$nodes
+      actual.gene.sig <- sort(sample(network$modules[[mod.signal.1st]]$nodes, round(length(network$modules[[mod.signal.1st]]$nodes))))
       
       # second module
       if(n_disease_modules > 1) {
@@ -93,12 +94,14 @@ genGeneNetworkDataClassification <- function(
         mod.signal.2nd <- sample(mod.mutual, 1)
         mod.sig = c(mod.sig, mod.signal.2nd)
         gene.sig <- c(gene.sig, network$modules[[mod.signal.2nd]]$nodes)
+        actual.gene.sig <- c(actual.gene.sig, sort(sample(network$modules[[mod.signal.2nd]]$nodes, round(length(network$modules[[mod.signal.2nd]]$nodes)))))
       }
       
       #### sample phenotype ####
       
       # read disease gene data
-      x.disease = x.total[, gene.sig]
+      # x.disease = x.total[, gene.sig]
+      x.disease = x.total[, actual.gene.sig]
       
       # binary phenotype
       pheno = as.factor(rbinom(n_samples, 1, sigmoid(average_beta*rowMeans(x.disease) - 1)))
