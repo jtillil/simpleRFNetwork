@@ -59,8 +59,13 @@ genGeneNetworkData <- function(
   # effect_error_sd = 0,
   causal_genes_randomly_distributed = FALSE,
   num_threads = 1,
-  seed = 1
+  seed # DEPRECATED, NOT USED
 ) {
+  ## Set up parallel reproducibility
+  RNGkind("L'Ecuyer-CMRG")
+  set.seed(1)
+  mc.reset.stream()
+  
   ## Start parallel computing
   return(mclapply(
     1:num_networks,

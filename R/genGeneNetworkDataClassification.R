@@ -55,6 +55,11 @@ genGeneNetworkDataClassification <- function(
     average_beta = 1,
     num_threads = 1
 ) {
+  ## Set up parallel reproducibility
+  RNGkind("L'Ecuyer-CMRG")
+  set.seed(1)
+  mc.reset.stream()
+  
   ## Start parallel computing
   networks = mclapply(
     1:n_networks,
