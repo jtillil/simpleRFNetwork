@@ -62,6 +62,8 @@ genGeneNetworkDataClassification <- function(
       # seed
       set.seed(i)
       
+      print(.Random.seed)
+      
       # generate network
       network <- random_network(
         n_genes,
@@ -74,6 +76,8 @@ genGeneNetworkDataClassification <- function(
       x.total <- gen_rnaseq(n_samples, network)
       x.total <- log(x.total$x + 1)
       x.total <- scale(x.total, center = TRUE, scale = TRUE)
+      
+      print(.Random.seed)
       
       # disease module candidates
       module.length <- sapply(network$modules, function(module) length(module$nodes))
@@ -97,6 +101,8 @@ genGeneNetworkDataClassification <- function(
         actual.gene.sig <- c(actual.gene.sig, sort(sample(network$modules[[mod.signal.2nd]]$nodes, round(0.5*length(network$modules[[mod.signal.2nd]]$nodes)))))
       }
       
+      print(.Random.seed)
+      
       #### sample phenotype ####
       
       # read disease gene data
@@ -105,6 +111,8 @@ genGeneNetworkDataClassification <- function(
       
       # binary phenotype
       pheno = as.factor(rbinom(n_samples, 1, sigmoid(average_beta*rowMeans(x.disease) - 1)))
+      
+      print(.Random.seed)
       
       # return
       return(list(
