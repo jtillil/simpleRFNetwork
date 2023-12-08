@@ -162,7 +162,7 @@ genGeneNetworkData <- function(
       ## Sample causal genes
       causal_genes <- NULL
       sapply(
-        1:min(num_causal_modules, num_modules),
+        1:min(n_disease_modules, num_modules),
         function(j) {
           ## Read required amount of genes
           num_required_genes <- ceiling(prop_disease_genes*length(modules[[causal_modules[j]]]))
