@@ -15,6 +15,7 @@ main_disease_gene = c(F)
 # main_disease_gene = c(T, F)
 # average_beta = c(1)
 average_beta = c(0.5, 1, 2)
+prop_disease_genes = c(0.5, 1)
 
 scenarios = expand.grid(
   n_networks = n_networks,
@@ -22,10 +23,11 @@ scenarios = expand.grid(
   n_samples = n_samples,
   n_disease_modules = n_disease_modules,
   main_disease_gene = main_disease_gene,
-  average_beta = average_beta
+  average_beta = average_beta,
+  prop_disease_genes = prop_disease_genes
 )
-scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0))
-# scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0))
+scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0, 1))
+# scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0, 1))
 
 # scenarios = scenarios[1,]
 
@@ -44,6 +46,7 @@ for (i in 1:nrow(scenarios)) {
     n_samples = scenario$n_samples,
     n_disease_modules = scenario$n_disease_modules,
     main_disease_gene = scenario$main_disease_gene,
+    prop_disease_genes = scenario$prop_disease_genes,
     average_beta = scenario$average_beta,
     num_threads = 60
   )
@@ -56,6 +59,7 @@ for (i in 1:nrow(scenarios)) {
     "_ns", scenario$n_samples,
     "_ndm", scenario$n_disease_modules,
     "_mdg", scenario$main_disease_gene,
+    "_pdg", scenario$prop_disease_genes,
     "_ab", scenario$average_beta,
     ".Rdata"
   )

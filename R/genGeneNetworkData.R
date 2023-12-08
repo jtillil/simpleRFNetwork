@@ -69,6 +69,7 @@ genGeneNetworkData <- function(
   sd_genes_per_module = 25,
   n_disease_modules = 2,
   main_disease_gene = F,
+  prop_disease_genes = 1,
   average_beta = 1,
   effect_intercept = -1,
   num_threads = 1
@@ -164,7 +165,7 @@ genGeneNetworkData <- function(
         1:min(num_causal_modules, num_modules),
         function(j) {
           ## Read required amount of genes
-          num_required_genes <- ceiling(prop_causal_genes*length(modules[[causal_modules[j]]]))
+          num_required_genes <- ceiling(prop_disease_genes*length(modules[[causal_modules[j]]]))
           ## Sample first causal gene
           sampled_genes <- sample(
             x = 1:length(modules[[causal_modules[j]]]),

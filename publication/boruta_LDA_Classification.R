@@ -1,7 +1,7 @@
 setwd(getSrcDirectory(function(){})[1])
 source("./source_files.R")
 
-data_scenario = 1
+prop_disease_genes = 1
 
 # set scenarios
 n_networks = c(100)
@@ -25,10 +25,10 @@ scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0))
 # scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0))
 
 method = "LDA"
-importance = "Gini"
+importance = "permutation"
 n_iterations = 20
 
-# scenarios = scenarios[1,]
+scenarios = scenarios[6,]
 
 print(paste0("This is run ", method, " Classification"))
 # generate networks
@@ -41,12 +41,13 @@ for (i in 1:nrow(scenarios)) {
   # load data
   datroot = paste0(
     "./data/ndclassif",
-    "_datasc", data_scenario,
+    # "_datasc", data_scenario,
     "_nn", scenario$n_networks,
     "_ng", scenario$n_genes,
     "_ns", scenario$n_samples,
     "_ndm", scenario$n_disease_modules,
     "_mdg", scenario$main_disease_gene,
+    "_pdg", prop_disease_genes,
     "_ab", scenario$average_beta,
     ".Rdata"
   )
@@ -57,7 +58,7 @@ for (i in 1:nrow(scenarios)) {
   # save root
   saveroot = paste0(
     "./results/resclassif",
-    "_datasc", data_scenario,
+    # "_datasc", data_scenario,
     "_", method,
     "_", importance,
     "_ni", n_iterations,
@@ -66,6 +67,7 @@ for (i in 1:nrow(scenarios)) {
     "_ns", scenario$n_samples,
     "_ndm", scenario$n_disease_modules,
     "_mdg", scenario$main_disease_gene,
+    "_pdg", prop_disease_genes,
     "_ab", scenario$average_beta,
     ".Rdata"
   )
