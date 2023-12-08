@@ -124,7 +124,8 @@ genGeneNetworkDataClassification <- function(
         data = cbind(pheno, as.data.frame(x.total)),
         modules = lapply(network$modules, function(x) x$nodes),
         causal_modules = mod.sig,
-        causal_genes = gene.sig
+        causal_genes = actual.gene.sig,
+        causal_module_genes = gene.sig
       ))
     },
     mc.cores = num_threads

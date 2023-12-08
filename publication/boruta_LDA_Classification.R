@@ -1,6 +1,8 @@
 setwd(getSrcDirectory(function(){})[1])
 source("./source_files.R")
 
+data_scenario = 1
+
 # set scenarios
 n_networks = c(100)
 n_genes = c(1000)
@@ -39,6 +41,7 @@ for (i in 1:nrow(scenarios)) {
   # load data
   datroot = paste0(
     "./data/ndclassif",
+    "_datasc", data_scenario,
     "_nn", scenario$n_networks,
     "_ng", scenario$n_genes,
     "_ns", scenario$n_samples,
@@ -54,6 +57,7 @@ for (i in 1:nrow(scenarios)) {
   # save root
   saveroot = paste0(
     "./results/resclassif",
+    "_datasc", data_scenario,
     "_", method,
     "_", importance,
     "_ni", n_iterations,
