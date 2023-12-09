@@ -28,7 +28,7 @@ method = "LDA"
 importance = "permutation"
 n_iterations = 20
 
-scenarios = scenarios[12,]
+scenarios = scenarios[6,]
 
 print(paste0("This is run ", method, " Classification"))
 # generate networks
@@ -67,7 +67,7 @@ for (i in 1:nrow(scenarios)) {
     "_ns", scenario$n_samples,
     "_ndm", scenario$n_disease_modules,
     "_mdg", scenario$main_disease_gene,
-    "_pdg", prop_disease_genes,
+    "_pdg", scenario$prop_disease_genes,
     "_ab", scenario$average_beta,
     ".Rdata"
   )
