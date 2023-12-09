@@ -28,7 +28,7 @@ method = "LDA"
 importance = "permutation"
 n_iterations = 20
 
-scenarios = scenarios[6,]
+scenarios = scenarios[12,]
 
 print(paste0("This is run ", method, " Classification"))
 # generate networks
