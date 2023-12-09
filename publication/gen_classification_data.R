@@ -40,7 +40,8 @@ for (i in 1:nrow(scenarios)) {
   scenario = scenarios[i,]
   
   # generate networkdat
-  dat = genGeneNetworkDataClassification(
+  
+  dat <- genGeneNetworkData(
     n_networks = scenario$n_networks,
     n_genes = scenario$n_genes,
     n_samples = scenario$n_samples,
@@ -50,6 +51,16 @@ for (i in 1:nrow(scenarios)) {
     average_beta = scenario$average_beta,
     num_threads = 60
   )
+  # dat = genGeneNetworkDataClassification(
+  #   n_networks = scenario$n_networks,
+  #   n_genes = scenario$n_genes,
+  #   n_samples = scenario$n_samples,
+  #   n_disease_modules = scenario$n_disease_modules,
+  #   main_disease_gene = scenario$main_disease_gene,
+  #   prop_disease_genes = scenario$prop_disease_genes,
+  #   average_beta = scenario$average_beta,
+  #   num_threads = 60
+  # )
   
   # build saveroot
   saveroot = paste0(
