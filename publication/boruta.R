@@ -45,7 +45,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
       varselection="none",
       mtry="root",
       varclusters = original_and_shadow_modules,
-      seed = iteration
+      seed = as.integer(iteration)
     )
     
     # run var importance
@@ -132,7 +132,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
                          varselection="none",
                          mtry="root",
                          varclusters = original_and_shadow_modules,
-                         seed = iteration
+                         seed = as.integer(iteration)
     )
     
     # run var importance
