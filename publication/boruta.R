@@ -56,7 +56,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     shadow_varimp = varimp[(length(dat$modules)+1):length(varimp)]
     max_shadow_varimp = max(shadow_varimp)
     
-    # classify modules
+    # save results
     for (i in 1:length(dat$modules) ) {
       if (varimp[i] > max_shadow_varimp) {
         first_binomresults[i] = first_binomresults[i] + 1
@@ -79,7 +79,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     if (first_binomresults[i] > upcutoff) {
       first_classifications[i] = 1
     }
-    if (first_binomresults[i] > downcutoff) {
+    if (first_binomresults[i] < downcutoff) {
       first_classifications[i] = -1
     }
   }
@@ -143,7 +143,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     shadow_varimp = varimp[(length(updated_modules)+1):length(varimp)]
     max_shadow_varimp = max(shadow_varimp)
     
-    # classify modules
+    # save results
     for (i in 1:length(updated_modules) ) {
       if (varimp[i] > max_shadow_varimp) {
         second_binomresults[(first_classifications != -1)][i] = second_binomresults[(first_classifications != -1)][i] + 1
@@ -162,7 +162,8 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
   second_classifications = rep(0, length(dat$modules))
   second_classifications[(first_classifications != -1)] = NA
   upcutoff = qbinom(0.95, num_iterations, 0.5)
-  for (i in 1:length(dat$modules) ) {
+  
+  for (i in 1:length(updated_modules) ) {
     if (second_binomresults[(first_classifications != -1)][i] > upcutoff) {
       second_classifications[(first_classifications != -1)][i] = 1
     }
