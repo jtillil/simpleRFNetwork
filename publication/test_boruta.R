@@ -16,7 +16,7 @@ library(matrixcalc)
 dat <- genGeneNetworkData(
   n_networks = 1,
   n_genes = 1000,
-  n_samples = 1000,
+  n_samples = 500,
   n_disease_modules = 2,
   main_disease_gene = F,
   prop_disease_genes = 0.5,
@@ -42,6 +42,7 @@ saveroot = "./file.Rdata"
 
 print(paste0("This is test run"))
 borutares = list()
+save(borutares, file = saveroot)
 
 # run boruta
 borutares = mclapply(
@@ -49,7 +50,7 @@ borutares = mclapply(
   function(i) {
     tic()
     print(paste("Boruta for Network Nr", i, "started."))
-    boruta(dat[[i]], i, method, importance, 500, 4, n_iterations, i, saveroot)
+    boruta(dat[[i]], i, method, importance, 50, 4, n_iterations, i, saveroot)
     print(paste("Boruta for Network Nr", i, "finished!"))
     toc()
   },
