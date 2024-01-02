@@ -85,7 +85,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
   }
   
   # remove unimportant modules
-  updated_modules = dat$modules[(first_classifications != -1)]
+  updated_modules2 = dat$modules[(first_classifications != -1)]
   
   print("Second run!")
   
@@ -108,8 +108,8 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     # tic()
     
     # add shadow modules
-    original_and_shadow_modules = updated_modules
-    for (module in updated_modules) {
+    original_and_shadow_modules = updated_modules2
+    for (module in updated_modules2) {
       original_and_shadow_modules = c(original_and_shadow_modules, list(module+1000))
     }
     
@@ -140,11 +140,96 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     second_vim[iteration, (first_classifications != -1)] = varimp
     
     # get max var imp of shadow modules
-    shadow_varimp = varimp[(length(updated_modules)+1):length(varimp)]
+    shadow_varimp = varimp[(length(updated_modules2)+1):length(varimp)]
     max_shadow_varimp = max(shadow_varimp)
     
     # save results
-    for (i in 1:length(updated_modules) ) {
+    for (i in 1:length(updated_modules2) ) {
+      if (varimp[i] > max_shadow_varimp) {
+        second_binomresults[(first_classifications != -1)][i] = second_binomresults[(first_classifications != -1)][i] + 1
+        second_bernresults[iteration, (first_classifications != -1)][i] = 1
+      }
+    }
+    
+    # clean variables
+    rm(rf)
+    rm(rfdat)
+    
+    # toc()
+  }
+  
+  # classify modules
+  second_classifications = rep(0, length(dat$modules))
+  second_classifications[(first_classifications == -1)] = NA
+  upcutoff = qbinom(0.95, num_iterations, 0.5)
+  
+  for (i in 1:length(updated_modules2) ) {
+    if (second_binomresults[(first_classifications != -1)][i] > upcutoff) {
+      second_classifications[(first_classifications != -1)][i] = 1
+    }
+  }
+  
+  # remove unimportant modules
+  updated_modules2 = dat$modules[(first_classifications != -1)]
+  
+  print("Third run!")
+  
+  # initiate
+  second_binomresults = rep(0, length(dat$modules))
+  second_bernresults = zeros(num_iterations, length(dat$modules))
+  second_vim = zeros(num_iterations, 2*length(dat$modules))
+  iteration = 0
+  
+  # prepare
+  second_binomresults[(first_classifications == -1)] = NA
+  second_bernresults[, (first_classifications == -1)] = NA
+  
+  # boruta loop
+  while (iteration < num_iterations) {
+    # advance iteration
+    iteration = iteration + 1
+    print(paste("Iteration:", iteration))
+    
+    # tic()
+    
+    # add shadow modules
+    original_and_shadow_modules = updated_modules2
+    for (module in updated_modules2) {
+      original_and_shadow_modules = c(original_and_shadow_modules, list(module+1000))
+    }
+    
+    # add shadow variables
+    rfdat = dat$data[1:500,]
+    rfdat = cbind(rfdat, rfdat[,-1])
+    colnames(rfdat)[-1] = paste0("X", 1:(ncol(rfdat)-1))
+    # print(colnames(rfdat))
+    for (col in (((ncol(rfdat)-1)/2)+1):ncol(rfdat)) {
+      rfdat[,col] = sample(rfdat[,col])
+    }
+    
+    # run rf
+    rf = simpleRFNetwork(pheno ~ .,
+                         data = rfdat,
+                         num_trees=num_trees,
+                         num_threads=num_threads,
+                         splitobject="module",
+                         splitmethod=splitmethod,
+                         varselection="none",
+                         mtry="root",
+                         varclusters = original_and_shadow_modules,
+                         seed = as.integer(iteration)
+    )
+    
+    # run var importance
+    varimp = rf$variableImportance(type = importance, num_threads = num_threads)
+    second_vim[iteration, (first_classifications != -1)] = varimp
+    
+    # get max var imp of shadow modules
+    shadow_varimp = varimp[(length(updated_modules2)+1):length(varimp)]
+    max_shadow_varimp = max(shadow_varimp)
+    
+    # save results
+    for (i in 1:length(updated_modules2) ) {
       if (varimp[i] > max_shadow_varimp) {
         second_binomresults[(first_classifications != -1)][i] = second_binomresults[(first_classifications != -1)][i] + 1
         second_bernresults[iteration, (first_classifications != -1)][i] = 1
@@ -163,7 +248,92 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
   second_classifications[(first_classifications != -1)] = NA
   upcutoff = qbinom(0.95, num_iterations, 0.5)
   
-  for (i in 1:length(updated_modules) ) {
+  for (i in 1:length(updated_modules2) ) {
+    if (second_binomresults[(first_classifications != -1)][i] > upcutoff) {
+      second_classifications[(first_classifications != -1)][i] = 1
+    }
+  }
+  
+  # remove unimportant modules
+  updated_modules2 = dat$modules[(first_classifications != -1)]
+  
+  print("Fourth run!")
+  
+  # initiate
+  second_binomresults = rep(0, length(dat$modules))
+  second_bernresults = zeros(num_iterations, length(dat$modules))
+  second_vim = zeros(num_iterations, 2*length(dat$modules))
+  iteration = 0
+  
+  # prepare
+  second_binomresults[(first_classifications == -1)] = NA
+  second_bernresults[, (first_classifications == -1)] = NA
+  
+  # boruta loop
+  while (iteration < num_iterations) {
+    # advance iteration
+    iteration = iteration + 1
+    print(paste("Iteration:", iteration))
+    
+    # tic()
+    
+    # add shadow modules
+    original_and_shadow_modules = updated_modules2
+    for (module in updated_modules2) {
+      original_and_shadow_modules = c(original_and_shadow_modules, list(module+1000))
+    }
+    
+    # add shadow variables
+    rfdat = dat$data[1:500,]
+    rfdat = cbind(rfdat, rfdat[,-1])
+    colnames(rfdat)[-1] = paste0("X", 1:(ncol(rfdat)-1))
+    # print(colnames(rfdat))
+    for (col in (((ncol(rfdat)-1)/2)+1):ncol(rfdat)) {
+      rfdat[,col] = sample(rfdat[,col])
+    }
+    
+    # run rf
+    rf = simpleRFNetwork(pheno ~ .,
+                         data = rfdat,
+                         num_trees=num_trees,
+                         num_threads=num_threads,
+                         splitobject="module",
+                         splitmethod=splitmethod,
+                         varselection="none",
+                         mtry="root",
+                         varclusters = original_and_shadow_modules,
+                         seed = as.integer(iteration)
+    )
+    
+    # run var importance
+    varimp = rf$variableImportance(type = importance, num_threads = num_threads)
+    second_vim[iteration, (first_classifications != -1)] = varimp
+    
+    # get max var imp of shadow modules
+    shadow_varimp = varimp[(length(updated_modules2)+1):length(varimp)]
+    max_shadow_varimp = max(shadow_varimp)
+    
+    # save results
+    for (i in 1:length(updated_modules2) ) {
+      if (varimp[i] > max_shadow_varimp) {
+        second_binomresults[(first_classifications != -1)][i] = second_binomresults[(first_classifications != -1)][i] + 1
+        second_bernresults[iteration, (first_classifications != -1)][i] = 1
+      }
+    }
+    
+    # clean variables
+    rm(rf)
+    rm(rfdat)
+    
+    # toc()
+  }
+  
+  # classify modules
+  second_classifications = rep(0, length(dat$modules))
+  second_classifications[(first_classifications != -1)] = NA
+  upcutoff = qbinom(0.95, num_iterations, 0.5)
+  
+  for (i in 1:length(updated_modules2) ) {
     if (second_binomresults[(first_classifications != -1)][i] > upcutoff) {
       second_classifications[(first_classifications != -1)][i] = 1
     }
@@ -177,7 +347,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     first_bernresults = first_bernresults,
     first_binomresults = first_binomresults,
     first_classification = first_classifications,
-    updated_modules = updated_modules,
+    updated_modules2 = updated_modules2,
     second_vim = second_vim,
     second_bernresults = second_bernresults,
     second_binomresults = second_binomresults,
@@ -192,7 +362,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     first_bernresults = first_bernresults,
     first_binomresults = first_binomresults,
     first_classification = first_classifications,
-    updated_modules = updated_modules,
+    updated_modules2 = updated_modules2,
     second_vim = second_vim,
     second_bernresults = second_bernresults,
     second_binomresults = second_binomresults,
