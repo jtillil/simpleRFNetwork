@@ -84,10 +84,10 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     }
   }
   
+  print("Second run!")
+  
   # remove unimportant modules
   updated_modules2 = dat$modules[(first_classifications != -1)]
-  
-  print("Second run!")
   
   # initiate
   second_binomresults = rep(0, length(dat$modules))
@@ -169,20 +169,20 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     }
   }
   
-  # remove unimportant modules
-  updated_modules2 = dat$modules[(first_classifications != -1)]
-  
   print("Third run!")
   
+  # remove unimportant modules
+  updated_modules3 = dat$modules[(first_classifications != -1)]
+  
   # initiate
-  second_binomresults = rep(0, length(dat$modules))
-  second_bernresults = zeros(num_iterations, length(dat$modules))
-  second_vim = zeros(num_iterations, 2*length(dat$modules))
+  third_binomresults = rep(0, length(dat$modules))
+  third_bernresults = zeros(num_iterations, length(dat$modules))
+  third_vim = zeros(num_iterations, 2*length(dat$modules))
   iteration = 0
   
   # prepare
-  second_binomresults[(first_classifications == -1)] = NA
-  second_bernresults[, (first_classifications == -1)] = NA
+  third_binomresults[(second_classifications == -1)] = NA
+  third_bernresults[, (second_classifications == -1)] = NA
   
   # boruta loop
   while (iteration < num_iterations) {
