@@ -50,9 +50,10 @@ borutares = mclapply(
   function(i) {
     tic()
     print(paste("Boruta for Network Nr", i, "started."))
-    boruta(dat[[i]], i, method, importance, 50, 4, n_iterations, i, saveroot)
+    res = boruta(dat[[i]], i, method, importance, 50, 4, n_iterations, i, saveroot)
     print(paste("Boruta for Network Nr", i, "finished!"))
     toc()
+    return(res)
   },
   mc.cores = 1
 )
