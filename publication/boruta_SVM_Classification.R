@@ -83,7 +83,7 @@ for (i in 1:2) {
       toc()
       return(res)
     },
-    mc.cores = 2
+    mc.cores = 1
   )
   
   # clear dat
