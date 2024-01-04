@@ -16,26 +16,26 @@ library(matrixcalc)
 dat <- genGeneNetworkData(
   n_networks = 1,
   n_genes = 1000,
-  n_samples = 500,
-  n_disease_modules = 2,
+  n_samples = 1000,
+  n_disease_modules = 1,
   main_disease_gene = F,
   prop_disease_genes = 0.5,
-  average_beta = 2,
+  average_beta = 1,
   num_threads = 4
 )
 
 # set scenarios
-n_networks = c(100)
-n_genes = c(1000)
-n_samples = c(1000)
-n_disease_modules = c(1, 2)
-main_disease_gene = c(F)
-# main_disease_gene = c(T, F)
-# average_beta = c(1)
-average_beta = c(0.5, 1, 2)
+# n_networks = c(100)
+# n_genes = c(1000)
+# n_samples = c(1000)
+# n_disease_modules = c(1, 2)
+# main_disease_gene = c(F)
+# # main_disease_gene = c(T, F)
+# # average_beta = c(1)
+# average_beta = c(0.5, 1, 2)
 
 method = "LDA"
-importance = "Gini"
+importance = "permutation"
 n_iterations = 20
 
 saveroot = "./file.Rdata"
