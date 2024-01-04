@@ -41,7 +41,7 @@ for (i in 1:nrow(scenarios)) {
   
   # generate networkdat
   
-  dat <- genGeneNetworkData(
+  dat <- genGeneNetworkDataClassification(
     n_networks = scenario$n_networks,
     n_genes = scenario$n_genes,
     n_samples = scenario$n_samples,

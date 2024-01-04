@@ -161,7 +161,6 @@ genGeneNetworkData <- function(
       
       ## Sample causal genes
       if (n_disease_modules > 0) {
-        print(n_disease_modules)
         causal_genes <- NULL
         sapply(
           1:min(n_disease_modules, num_modules),
@@ -197,7 +196,6 @@ genGeneNetworkData <- function(
         causal_genes <- unique(causal_genes)
         effects <- numeric(n_genes)
         effects[causal_genes] <- average_beta
-      
       } else {
         causal_modules <- NULL
         causal_genes <- NULL
