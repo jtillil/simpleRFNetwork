@@ -199,7 +199,7 @@ genGeneNetworkDataClassification <- function(
       } else {
         causal_modules <- NULL
         causal_genes <- NULL
-        effects <- numeric(num_genes)
+        effects <- numeric(n_genes)
       }
       
       ## LEGACY Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
