@@ -15,7 +15,7 @@ main_disease_gene = c(F)
 # main_disease_gene = c(T, F)
 # average_beta = c(1)
 average_beta = c(0.5, 1, 2)
-prop_disease_genes = c(0.5, 1)
+prop_disease_genes = c(1)
 
 scenarios = expand.grid(
   n_networks = n_networks,
