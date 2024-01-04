@@ -160,7 +160,8 @@ genGeneNetworkData <- function(
       # }
       
       ## Sample causal genes
-      if (n_disease_modules != 0) {
+      if (n_disease_modules > 0) {
+        print(n_disease_modules)
         causal_genes <- NULL
         sapply(
           1:min(n_disease_modules, num_modules),
