@@ -30,7 +30,7 @@ n_iterations = 20
 
 print(paste0("This is run ", method, " Classification"))
 # generate networks
-for (i in 1:nrow(scenarios)) {
+for (i in 1:2) {
   print(i)
   
   # read scenario
@@ -83,7 +83,7 @@ for (i in 1:nrow(scenarios)) {
       toc()
       return(res)
     },
-    mc.cores = 64
+    mc.cores = 2
   )
   
   # clear dat
