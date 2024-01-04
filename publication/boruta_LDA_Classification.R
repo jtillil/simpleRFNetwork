@@ -10,7 +10,7 @@ main_disease_gene = c(F)
 # main_disease_gene = c(T, F)
 # average_beta = c(1)
 average_beta = c(0.5, 1, 2)
-prop_disease_genes = c(0.5, 1)
+prop_disease_genes = c(0.5)
 
 scenarios = expand.grid(
   n_networks = n_networks,
@@ -21,14 +21,12 @@ scenarios = expand.grid(
   average_beta = average_beta,
   prop_disease_genes = prop_disease_genes
 )
-scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0, 1))
+scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0, 0.5))
 # scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0, 1))
 
 method = "LDA"
 importance = "permutation"
 n_iterations = 20
-
-scenarios = scenarios[12,]
 
 print(paste0("This is run ", method, " Classification"))
 # generate networks

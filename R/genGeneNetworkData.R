@@ -160,47 +160,48 @@ genGeneNetworkData <- function(
       # }
       
       ## Sample causal genes
-      causal_genes <- NULL
-      sapply(
-        1:min(n_disease_modules, num_modules),
-        function(j) {
-          ## Read required amount of genes
-          num_required_genes <- ceiling(prop_disease_genes*length(modules[[causal_modules[j]]]))
-          ## Sample first causal gene
-          sampled_genes <- sample(
-            x = 1:length(modules[[causal_modules[j]]]),
-            size = 1,
-            replace = FALSE
-          )
-          ## Read adjacency matrix for module
-          adj_mat <- get_adjacency_matrix(rn)[modules[[causal_modules[j]]], modules[[causal_modules[j]]]]
-          ## Search for associated genes in the module
-          while (length(sampled_genes) < num_required_genes) {
-            ## For all candidates not yet added to causal genes
-            for (candidate_id in sample((1:nrow(adj_mat))[-sampled_genes])) {
-              ## If still required AND connected to sampled_genes
-              if (
-                length(sampled_genes) < num_required_genes &
-                sum(adj_mat[candidate_id, sampled_genes]) > 0
-              ) {
-                sampled_genes <- c(sampled_genes, candidate_id)
+      if (n_disease_modules != 0) {
+        causal_genes <- NULL
+        sapply(
+          1:min(n_disease_modules, num_modules),
+          function(j) {
+            ## Read required amount of genes
+            num_required_genes <- ceiling(prop_disease_genes*length(modules[[causal_modules[j]]]))
+            ## Sample first causal gene
+            sampled_genes <- sample(
+              x = 1:length(modules[[causal_modules[j]]]),
+              size = 1,
+              replace = FALSE
+            )
+            ## Read adjacency matrix for module
+            adj_mat <- get_adjacency_matrix(rn)[modules[[causal_modules[j]]], modules[[causal_modules[j]]]]
+            ## Search for associated genes in the module
+            while (length(sampled_genes) < num_required_genes) {
+              ## For all candidates not yet added to causal genes
+              for (candidate_id in sample((1:nrow(adj_mat))[-sampled_genes])) {
+                ## If still required AND connected to sampled_genes
+                if (
+                  length(sampled_genes) < num_required_genes &
+                  sum(adj_mat[candidate_id, sampled_genes]) > 0
+                ) {
+                  sampled_genes <- c(sampled_genes, candidate_id)
+                }
               }
             }
+            causal_genes <<- c(causal_genes, modules[[causal_modules[j]]][sampled_genes])
           }
-          causal_genes <<- c(causal_genes, modules[[causal_modules[j]]][sampled_genes])
-        }
-      )
+        )
+        
+        ## Save sampled values
+        causal_genes <- unique(causal_genes)
+        effects <- numeric(n_genes)
+        effects[causal_genes] <- average_beta
       
-      ## Save sampled values
-      causal_genes <- unique(causal_genes)
-      effects <- numeric(n_genes)
-      effects[causal_genes] <- average_beta
-      
-      # } else {
-      #   causal_modules <- NULL
-      #   causal_genes <- NULL
-      #   effects <- numeric(num_genes)
-      # }
+      } else {
+        causal_modules <- NULL
+        causal_genes <- NULL
+        effects <- numeric(num_genes)
+      }
       
       ## LEGACY Sample phenotype from gene effects and combine phenotype and expression data into one data frame for training
       # if (sum(effects) != 0) {

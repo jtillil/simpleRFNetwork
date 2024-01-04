@@ -26,10 +26,10 @@ scenarios = expand.grid(
   average_beta = average_beta,
   prop_disease_genes = prop_disease_genes
 )
-scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0, 1))
+scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0, 0.5))
 # scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0, 1))
 
-# scenarios = scenarios[1,]
+scenarios = scenarios[7,]
 
 tic()
 # generate networks
