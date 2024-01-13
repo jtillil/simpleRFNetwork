@@ -134,7 +134,7 @@ TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression",
       
       if (splitrule == "Variance") {
         ## Decrease of impurity TODO
-        decrease <- 
+        decrease <- var(response) - (1/length(response)) * (class_counts_left * var(response[idx] + class_counts_right * var(response[!idx])))
       } else {
         stop("Unknown splitrule for regression var cluster trees.")
       }
