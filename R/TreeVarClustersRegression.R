@@ -2,7 +2,7 @@
 ##' @title Regression tree class
 ##' @description Subclass for regression tree.
 ##' Contains all fields and methods used special for regression trees.
-TreeRegression <- setRefClass("TreeRegression", 
+TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression", 
   contains = "TreeVarClusters",
   fields = list(),
   methods = list(
@@ -15,100 +15,52 @@ TreeRegression <- setRefClass("TreeRegression",
         return(NULL)
       }
       
-      ## Stop if node is pure      
-      unique_response <- unique(data$subset(sampleIDs[[nodeID]], 1))
-      if (length(unique_response) == 1) {
+      ## Get response
+      response <- data$subset(sampleIDs[[nodeID]], 1)
+      
+      ## Stop if node is pure
+      if (var(response) == 0) {
         return(NULL)
       }
       
       ## IF LDA: stop if node has only one observation left for one class
-      if (splitmethod == "LDA" & (length(response[response == 1]) <= 1 | length(response[response == 0]) <= 1)) {
-        return(NULL)
-      }
+      # if (splitmethod == "LDA" & (length(response[response == 1]) <= 1 | length(response[response == 0]) <= 1)) {
+      #   return(NULL)
+      # }
       
       ## Find best split
       return(findBestSplit(nodeID, possible_split_clusterIDs, response))
     },
     
-    splitNodeInternal = function(nodeID, possible_split_varIDs) {
-      ## Check node size, stop if maximum reached
-      if (length(sampleIDs[[nodeID]]) <= min_node_size) {
-        return(NULL)
-      }
+    ## Find best split
+    ## @findBestSplitCoefs
+    findBestSplit = function(nodeID, possible_split_clusterIDs, response) {
       
-      ## Stop if node is pure      
-      unique_response <- unique(data$subset(sampleIDs[[nodeID]], 1))
-      if (length(unique_response) == 1) {
-        return(NULL)
-      }
-      
-      ## Find best split, stop if no decrease of impurity
-      return(findBestSplit(nodeID, possible_split_varIDs))
-    }, 
-    
-    findBestSplit = function(nodeID, possible_split_varIDs) {
       ## Initialize
       best_split <- NULL
-      best_split$decrease <- -1
-      best_split$varID <- -1
+      best_split$clusterID <- -1
+      best_split$coefficients <- -1
       best_split$value <- -1
+      best_split$decrease <- -1
+      best_split$linearcomb_time <- -1
       
-      ## Get response
-      response <- data$subset(sampleIDs[[nodeID]], 1)
+      ## Initialize array for individual linear combination time measurement
+      linearcomb_times <- c()
       
-      ## For all possible variables
-      for (i in 1:length(possible_split_varIDs)) {
-        split_varID <- possible_split_varIDs[i]
-        data_values <- data$subset(sampleIDs[[nodeID]], split_varID)
+      ## Start timing for node splitting time measurement
+      tic()
+      
+      ## For all possible variable clusters
+      for (split_clusterID in possible_split_clusterIDs) {
         
-        ## Handle ordered factors
-        if (!is.numeric(data_values) & !is.ordered(data_values) & unordered_factors == "order_split") {
-          ## Order factor levels
-          num.response <- as.numeric(response)
-          means <- sapply(levels(data_values), function(x) {
-            mean(num.response[data_values == x])
-          })
-          levels.ordered <- as.character(levels(data_values)[order(means)])
-          
-          ## Get all levels not in node
-          levels.missing <- setdiff(levels(data_values), levels.ordered)
-          levels.ordered <- c(levels.missing, levels.ordered)
-          
-          ## Return reordered factor
-          data_values <- factor(data_values, levels = levels.ordered, ordered = TRUE)
-        }
+        ## Read data values from samples in current node
+        data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
         
-        ## If still not ordered, use partition splitting
-        if (!is.numeric(data_values) & !is.ordered(data_values)) {
-          best_split = findBestSplitValuePartition(split_varID, data_values, best_split, response)
-          
-          ## Set split levels left
-          if (best_split$varID == split_varID) {
-            split_levels_left[[nodeID]] <<- best_split$values_left
-          }
-        } else {
-          best_split = findBestSplitValueOrdered(split_varID, data_values, best_split, response)
-          
-          ## Set split levels left (empty if ordered splitting)
-          if (unordered_factors == "order_split") {
-            if (best_split$varID == split_varID) {
-              split_levels_left[[nodeID]] <<- unique(data_values[data_values <= best_split$value])
-
-              if (is.factor(data_values)) {
-                ## Use same splits as in partition
-                ints <- as.integer(factor(split_levels_left[[nodeID]], levels = levels(data$subset(sampleIDs[[nodeID]], split_varID))))
-                if (sum(2^(ints-1)) >= 2^(max(as.numeric(data$subset(sampleIDs[[nodeID]], split_varID))) - 1)) {
-                  split_levels_left[[nodeID]] <<- unique(data_values[data_values > best_split$value])
-                }
-              }
-            }
-          } else {
-            if (best_split$varID == split_varID) {
-              split_levels_left[[nodeID]] <<- list()
-            }
-          }
-          
-        }
+        ## Find best split
+        best_split = findBestSplitCoefs(split_clusterID, best_split, data_values, response, mat)
+        
+        ## Save time measurement for single linear combination
+        linearcomb_times <- c(linearcomb_times, best_split$linearcomb_time)
       }
       
       if (best_split$varID < 0) {
@@ -121,78 +73,83 @@ TreeRegression <- setRefClass("TreeRegression",
         result$value <- best_split$value
         return(result)
       }      
-    }, 
-    
-    findBestSplitValueOrdered = function(split_varID, data_values, best_split, response) {
-      ## For all possible splits
-      possible_split_values <- unique(data_values)
-      for (j in 1:length(possible_split_values)) {
-        split_value <- possible_split_values[j]
-
-        ## Sum responses in childs
-        idx <- data_values <= split_value
-        response_left <- response[idx]
-        response_right <- response[!idx]
-        
-        ## Skip if one child empty
-        if (length(response_left) == 0 | length(response_right) == 0) {
-          next
-        }
-        
-        if (splitrule == "Variance") {
-          ## Decrease of impurity
-          decrease <- sum(response_left)^2/length(response_left) + 
-            sum(response_right)^2/length(response_right)
-        } else {
-          stop("Unknown splitrule.")
-        }
-
-        ## Use this split if better than before
-        if (decrease > best_split$decrease) {
-          best_split$value <- split_value
-          best_split$varID <- split_varID
-          best_split$decrease <- decrease
-        }
-      }
-      return(best_split)
     },
     
-    findBestSplitValuePartition = function(split_varID, data_values, best_split, response) {
-      ## For all possible splits
-      possible_split_values <- sort(unique(data_values))
-
-      ## For all 2^(n-1)-1 2-partitions
-      num_partitions <- 2^(length(possible_split_values) - 1) - 1
-      for (j in 1:num_partitions) {
-        ## Convert number to logic vector
-        left_idx <- as.bitvect(j, length = length(possible_split_values))
-        values_left <- possible_split_values[left_idx]
+    ## Find coefficients for linear combination of variables
+    findBestSplitCoefs = function(split_clusterID, best_split, data_values, IQR_data_values, response, mat=NULL) {
+      
+      ## Coerce all but the most frequent factor level to a single one
+      ## Irrelevant, if exactly two factors
+      ## Skip cluster if less than two levels in response
+      # if (nlevels(droplevels(response)) < 2) {
+      #   return(best_split)
+      # } else {
+      #   bin_response <- response
+      #   most_freq_idx <- response==names(which.max.random(summary(response)))
+      #   bin_response[!most_freq_idx] <- response[!most_freq_idx][1]
+      # }
+      
+      ## Start timing for individual linear combination time measurement
+      tic()
+      
+      ## Find a linear combination
+      if (splitmethod == "ride0") {
         
-        ## Sum responses in childs
-        idx <- data_values %in% values_left
-        response_left <- response[idx]
-        response_right <- response[!idx]
+        res <- ride0(data_values, response)
         
-        ## Skip if one child empty
-        if (length(response_left) == 0 | length(response_right) == 0) {
-          next
-        }
+      } else if (splitmethod == "ridgeauto") {
         
-        if (splitrule == "Variance") {
-          ## Decrease of impurity
-          decrease <- sum(response_left)^2/length(response_left) + 
-            sum(response_right)^2/length(response_right)
-        } else {
-          stop("Unknown splitrule.")
-        }
+        res <- ridgeauto(data_values, response)
         
-        ## Use this split if better than before
-        if (decrease > best_split$decrease) {
-          best_split$values_left <- values_left
-          best_split$varID <- split_varID
-          best_split$decrease <- decrease
-        }
+      } else if (splitmethod == "ridge1e10") {
+        
+        res <- ridge1e10(data_values, response)
+        
       }
+      
+      ## Restrict coefficients to norm 1 for a unique solution up to factor -1
+      coef_norm <- norm(as.matrix(res[-1]), "F")
+      value <- res[1]/coef_norm
+      coefficients <- res[-1]/coef_norm
+      
+      ## Restrict coefficients to positive split value for a completely unique solution
+      if (value < 0) {
+        value <- -value
+        coefficients <- -coefficients
+      }
+      
+      ## Stop timing for individual linear combination time measurement
+      linearcomb_time <- toc(quiet = TRUE)
+      
+      ## Count classes in childs
+      idx <- as.matrix(data_values)%*%coefficients <= value
+      class_counts_left <- tabulate(response[idx])
+      class_counts_right <- tabulate(response[!idx])
+      
+      ## Skip cluster if one child empty
+      if (sum(class_counts_left) == 0 | sum(class_counts_right) == 0) {
+        best_split$linearcomb_time <- as.numeric(linearcomb_time$toc - linearcomb_time$tic)
+        return(best_split)
+      }
+      
+      if (splitrule == "Variance") {
+        ## Decrease of impurity TODO
+        decrease <- 
+      } else {
+        stop("Unknown splitrule for regression var cluster trees.")
+      }
+      
+      ## Use this cluster for the split if decrease better than from earlier clusters
+      if (decrease > best_split$decrease) {
+        best_split$clusterID <- split_clusterID
+        best_split$coefficients <- coefficients
+        best_split$value <- value
+        best_split$decrease <- decrease
+        best_split$linearcomb_time <- as.numeric(linearcomb_time$toc - linearcomb_time$tic)
+      } else {
+        best_split$linearcomb_time <- as.numeric(linearcomb_time$toc - linearcomb_time$tic)
+      }
+      
       return(best_split)
     },
     
@@ -205,7 +162,8 @@ TreeRegression <- setRefClass("TreeRegression",
       return(split_values[nodeID])
     }, 
     
-    predictionError = function(pred = NULL) {
+    # ATTENTION: renamed from predictionError
+    OOBpredictionError = function(pred = NULL) {
       if (is.null(pred)) {
         pred <- predictOOB()
       }

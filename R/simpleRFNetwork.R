@@ -275,7 +275,13 @@ simpleRFNetwork <- function(
                                    data = Data$new(data = model.data), 
                                    formula = formula, unordered_factors = unordered_factors,
                                    covariate_levels = covariate_levels,
-                                   response_levels = levels(model.data[, 1]))
+                                   response_levels = levels(model.data[, 1]),
+                                   ## Module Parameters
+                                   varclusters = varclusters,
+                                   splitobject = splitobject,
+                                   splitmethod = splitmethod,
+                                   varselection = varselection,
+                                   seed = seed)
   } else if (treetype == "Regression") {
     forest <- ForestRegression$new(num_trees = as.integer(num_trees), mtry = as.integer(mtry), 
                                    min_node_size = as.integer(min_node_size), 

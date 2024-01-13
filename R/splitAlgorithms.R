@@ -1,3 +1,36 @@
+ridge0 <- function(data_values, response) {
+  ## Compute
+  ridres = logisticRidge((as.numeric(response)-1) ~ data_values, lambda = 0, scaling = "none")
+  
+  ## Coefficients
+  coef = ridres$coef
+  
+  ## Return
+  return(c(coef[1,1], coef[-1,1]))
+}
+
+ridgeauto <- function(data_values, response) {
+  ## Compute
+  ridres = logisticRidge((as.numeric(response)-1) ~ data_values, lambda = "automatic")
+  
+  ## Coefficients
+  coef = ridres$coef
+  
+  ## Return
+  return(c(coef[1,1], coef[-1,1]))
+}
+
+ridge1e10 <- function(data_values, response) {
+  ## Compute
+  ridres = logisticRidge((as.numeric(response)-1) ~ data_values, lambda = 1e10, scaling = "none")
+  
+  ## Coefficients
+  coef = ridres$coef
+  
+  ## Return
+  return(c(coef[1,1], coef[-1,1]))
+}
+
 univariate_split <- function(data_values, response) {
   ## Initiate
   Gini_impurity_start <- 9999

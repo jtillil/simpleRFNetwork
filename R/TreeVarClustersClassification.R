@@ -33,8 +33,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
     }, 
     
     ## Find best split
-    ## @findBestSplitValuePartition
-    ## @findBestSplitValueOrdered
+    ## @findBestSplitCoefs
     findBestSplit = function(nodeID, possible_split_clusterIDs, response) {
       
       ## Initialize

@@ -46,5 +46,3 @@ ForestRegression <- setRefClass("ForestRegression",
       return(sum((predicted_response - data$column(1))^2, na.rm = TRUE) / data$nrow)
     })
 )
-
-
