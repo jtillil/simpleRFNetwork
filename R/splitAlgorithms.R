@@ -42,7 +42,6 @@ logridge1e10 <- function(data_values, response) {
   return(c(coef[1,1], coef[-1,1]))
 }
 
-# TODO pca
 PCA <- function(data_values, response) {
   ## Compute
   pca = prcomp(as.matrix(data_values))
@@ -52,7 +51,7 @@ PCA <- function(data_values, response) {
   coef = coef / sum(coef)
   
   ## Optimize Value
-  value = optimize(fun(x) {gini_ipurity(data_values, response, c(x, coef))}, lower = -10, upper = 10)
+  value = optimize(function(x) {gini_ipurity(data_values, response, c(x, coef))}, lower = -10, upper = 10)
 
   ## Return
   return(c(value, coef))
