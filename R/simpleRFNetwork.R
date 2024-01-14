@@ -187,6 +187,7 @@ simpleRFNetwork <- function(
                            "CART_fast",
                            ## REGRESSION
                            "logridge0",
+                           "logridge1",
                            "logridgeauto",
                            "logridge1e10",
                            "ridge0",

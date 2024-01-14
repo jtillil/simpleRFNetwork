@@ -265,15 +265,19 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
       } else if (splitmethod == "logridge0") {
         
-        res <- ridge0(data_values, response)
+        res <- logridge0(data_values, response)
+        
+      } else if (splitmethod == "logridge1") {
+        
+        res <- logridge1(data_values, response)
         
       } else if (splitmethod == "logridgeauto") {
         
-        res <- ridgeauto(data_values, response)
+        res <- logridgeauto(data_values, response)
         
       } else if (splitmethod == "logridge1e10") {
         
-        res <- ridge1e10(data_values, response)
+        res <- logridge1e10(data_values, response)
         
       }
       

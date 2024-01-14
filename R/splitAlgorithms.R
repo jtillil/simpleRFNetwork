@@ -11,6 +11,19 @@ logridge0 <- function(data_values, response) {
   return(c(coef[1,1], coef[-1,1]))
 }
 
+logridge1 <- function(data_values, response) {
+  ## Compute
+  ridres = logisticRidge((as.numeric(response)-1) ~ as.matrix(data_values), lambda = 1, scaling = "none")
+  
+  ## Coefficients
+  coef = ridres$coef
+  
+  print(coef)
+  
+  ## Return
+  return(c(coef[1,1], coef[-1,1]))
+}
+
 logridgeauto <- function(data_values, response) {
   ## Compute
   ridres = logisticRidge((as.numeric(response)-1) ~ as.matrix(data_values), lambda = "automatic")
