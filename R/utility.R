@@ -139,7 +139,7 @@ as.bitvect <- function(x, length = 32) {
 ##' @title Gini impurity of linear split
 ##' @param dat Data frame of predictors.
 ##' @param label Vector of labels.
-##' @param par Vector of coefficients of split.
+##' @param par Vector of [value, coefficients] of split.
 ##' @return Gini impurity.
 ##' @author Johannes Tillil
 gini_impurity <- function(dat, label, par) {

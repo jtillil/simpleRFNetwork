@@ -45,13 +45,17 @@ logridge1e10 <- function(data_values, response) {
 # TODO pca
 PCA <- function(data_values, response) {
   ## Compute
-  res = PCA()
-
+  pca = prcomp(as.matrix(data_values))
+  
   ## Coefficients
-  coef = res$coef
+  coef = pca$rotation[, 1]
+  coef = coef / sum(coef)
+  
+  ## Optimize Value
+  value = optimize(fun(x) {gini_ipurity(data_values, response, c(x, coef))}, lower = -10, upper = 10)
 
   ## Return
-  return(c(coef[1,1], coef[-1,1]))
+  return(c(value, coef))
 }
 
 univariate_split <- function(data_values, response) {
