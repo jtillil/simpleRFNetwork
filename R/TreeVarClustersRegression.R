@@ -57,7 +57,7 @@ TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression",
         data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
         
         ## Find best split
-        best_split = findBestSplitCoefs(split_clusterID, best_split, data_values, response, mat)
+        best_split = findBestSplitCoefs(split_clusterID, best_split, data_values, response)
         
         ## Save time measurement for single linear combination
         linearcomb_times <- c(linearcomb_times, best_split$linearcomb_time)

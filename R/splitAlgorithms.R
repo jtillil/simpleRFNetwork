@@ -1,5 +1,4 @@
 ridge0 <- function(data_values, response) {
-  browser()
   ## Compute
   ridres = logisticRidge((as.numeric(response)-1) ~ data_values, lambda = 0, scaling = "none")
   
