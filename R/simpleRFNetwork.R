@@ -293,7 +293,13 @@ simpleRFNetwork <- function(
                                    replace = replace, splitrule = splitrule,
                                    data = Data$new(data = model.data), 
                                    formula = formula, unordered_factors = unordered_factors, 
-                                   covariate_levels = covariate_levels)
+                                   covariate_levels = covariate_levels,
+                                   ## Module Parameters
+                                   varclusters = varclusters,
+                                   splitobject = splitobject,
+                                   splitmethod = splitmethod,
+                                   varselection = varselection,
+                                   seed = seed)
   } else if (treetype == "Survival") {
     idx.death <- model.data[, 1][, 2] == 1
     timepoints <- sort(unique(model.data[idx.death, 1][, 1]))
