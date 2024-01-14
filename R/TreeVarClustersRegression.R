@@ -76,7 +76,7 @@ TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression",
     },
     
     ## Find coefficients for linear combination of variables
-    findBestSplitCoefs = function(split_clusterID, best_split, data_values, IQR_data_values, response, mat=NULL) {
+    findBestSplitCoefs = function(split_clusterID, best_split, data_values, response) {
       
       ## Coerce all but the most frequent factor level to a single one
       ## Irrelevant, if exactly two factors
