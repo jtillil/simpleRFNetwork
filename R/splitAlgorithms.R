@@ -51,7 +51,7 @@ PCA <- function(data_values, response) {
   coef = coef / sum(coef)
   
   ## Optimize Value
-  value = optimize(function(x) {gini_ipurity(data_values, response, c(x, coef))}, lower = -10, upper = 10)
+  value = optimize(function(x) {gini_impurity(data_values, response, c(x, coef))}, lower = -10, upper = 10)
 
   ## Return
   return(c(value, coef))
