@@ -192,7 +192,9 @@ simpleRFNetwork <- function(
                            "logridge1e10",
                            "ridge0",
                            "ridge1",
-                           "ridge1e10"))) {
+                           "ridge1e10",
+                           "PCA",
+                           "SVR"))) {
     stop("Unknown value for splitmethod.")
   }
   
