@@ -106,6 +106,10 @@ TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression",
         
         res <- ridge1e10(data_values, response)
         
+      } else if (splitmethod == "SVR") {
+        
+        res <- SVR(data_values, response)
+        
       }
       
       ## Restrict coefficients to norm 1 for a unique solution up to factor -1
