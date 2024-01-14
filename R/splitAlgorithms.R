@@ -1,4 +1,4 @@
-ridge0 <- function(data_values, response) {
+logridge0 <- function(data_values, response) {
   ## Compute
   ridres = logisticRidge((as.numeric(response)-1) ~ as.matrix(data_values), lambda = 0, scaling = "none")
   
@@ -11,7 +11,7 @@ ridge0 <- function(data_values, response) {
   return(c(coef[1,1], coef[-1,1]))
 }
 
-ridgeauto <- function(data_values, response) {
+logridgeauto <- function(data_values, response) {
   ## Compute
   ridres = logisticRidge((as.numeric(response)-1) ~ as.matrix(data_values), lambda = "automatic")
   
@@ -22,13 +22,25 @@ ridgeauto <- function(data_values, response) {
   return(c(coef[1,1], coef[-1,1]))
 }
 
-ridge1e10 <- function(data_values, response) {
+logridge1e10 <- function(data_values, response) {
   ## Compute
   ridres = logisticRidge((as.numeric(response)-1) ~ as.matrix(data_values), lambda = 1e10, scaling = "none")
   
   ## Coefficients
   coef = ridres$coef
   
+  ## Return
+  return(c(coef[1,1], coef[-1,1]))
+}
+
+# TODO pca
+PCA <- function(data_values, response) {
+  ## Compute
+  res = PCA()
+
+  ## Coefficients
+  coef = res$coef
+
   ## Return
   return(c(coef[1,1], coef[-1,1]))
 }

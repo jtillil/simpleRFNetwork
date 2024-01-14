@@ -186,8 +186,11 @@ simpleRFNetwork <- function(
                            "CART",
                            "CART_fast",
                            ## REGRESSION
+                           "logridge0",
+                           "logridgeauto",
+                           "logridge1e10",
                            "ridge0",
-                           "ridgeauto",
+                           "ridge1",
                            "ridge1e10"))) {
     stop("Unknown value for splitmethod.")
   }

@@ -19,7 +19,7 @@ TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression",
       response <- data$subset(sampleIDs[[nodeID]], 1)
       
       ## Stop if node is pure
-      if (var(response) == 0) {
+      if (var(response) <= 0) {
         return(NULL)
       }
       

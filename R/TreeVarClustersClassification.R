@@ -19,7 +19,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
       response <- data$subset(sampleIDs[[nodeID]], 1)
       
       ## Stop if node is pure
-      if (length(unique(response)) == 1) {
+      if (length(unique(response)) <= 1) {
         return(NULL)
       }
 
@@ -198,7 +198,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
     },
     
     ## Find coefficients for linear combination of variables
-    findBestSplitCoefs = function(split_clusterID, best_split, data_values, IQR_data_values, response, mat=NULL) {
+    findBestSplitCoefs = function(split_clusterID, best_split, data_values, IQR_data_values, response, mat) {
       
       ## Coerce all but the most frequent factor level to a single one
       ## Irrelevant, if exactly two factors
