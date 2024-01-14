@@ -7,6 +7,8 @@ library(tictoc)
 library(Rfast)
 library(matrixcalc)
 library(e1071)
+library(ridge)
+library(glmnet)
 
 library(simpleRFNetwork)
 
