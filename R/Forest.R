@@ -32,6 +32,8 @@ Forest <- setRefClass("Forest",
       ## Start timing for forest growth
       tic()
       
+      browser()
+      
       ## Init trees
       temp <- lapply(trees, function(x) {
         ## Standard parameters
