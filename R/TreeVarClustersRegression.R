@@ -92,9 +92,10 @@ TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression",
       ## Start timing for individual linear combination time measurement
       tic()
       
+      print(splitmethod)
       ## Find a linear combination
       if (splitmethod == "ride0") {
-        
+        print(1)
         res <- ride0(data_values, response)
         
       } else if (splitmethod == "ridgeauto") {

@@ -5,6 +5,8 @@ ridge0 <- function(data_values, response) {
   ## Coefficients
   coef = ridres$coef
   
+  print(coef)
+  
   ## Return
   return(c(coef[1,1], coef[-1,1]))
 }
