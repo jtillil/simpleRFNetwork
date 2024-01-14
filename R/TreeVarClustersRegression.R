@@ -96,7 +96,7 @@ TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression",
       ## Find a linear combination
       if (splitmethod == "ridge0") {
         print(1)
-        res <- ride0(data_values, response)
+        res <- ridge0(data_values, response)
         
       } else if (splitmethod == "ridgeauto") {
         
