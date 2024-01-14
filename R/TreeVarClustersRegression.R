@@ -98,7 +98,7 @@ TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression",
         print(1)
         res <- ridge0(data_values, response)
         
-      } else if (splitmethod == "ridgeauto") {
+      } else if (splitmethod == "ridge1") {
         
         res <- ridgeauto(data_values, response)
         

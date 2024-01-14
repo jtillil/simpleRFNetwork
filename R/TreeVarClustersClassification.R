@@ -263,6 +263,18 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
         
         res <- CART_fast(IQR_data_values, data_values, response)
         
+      } else if (splitmethod == "logridge0") {
+        
+        res <- ridge0(data_values, response)
+        
+      } else if (splitmethod == "logridgeauto") {
+        
+        res <- ridgeauto(data_values, response)
+        
+      } else if (splitmethod == "logridge1e10") {
+        
+        res <- ridge1e10(data_values, response)
+        
       }
       
       ## Restrict coefficients to norm 1 for a unique solution up to factor -1
