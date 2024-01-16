@@ -48,12 +48,20 @@ genGeneNetworkDataRegression <- function(
     n_networks = 1,
     n_genes = 1000,
     n_samples = 1000,
+    max_genes_per_module = 100,
+    sd_genes_per_module = 25,
     disease_modules = T,
     # n_disease_modules = 2,  ALWAYS 3 DISEASE MODULES
     # main_disease_gene = F,  NO MAIN DISEASE GENES
     # average_beta = 1,       PARAMETERS PRE-SPECIFIED
+    prop_disease_genes = 1,
     num_threads = 1
 ) {
+  ## Set up parallel reproducibility
+  RNGkind("L'Ecuyer-CMRG")
+  set.seed(1)
+  mc.reset.stream()
+  
   ## Start parallel computing
   networks = mclapply(
     1:n_networks,
@@ -73,16 +81,23 @@ genGeneNetworkDataRegression <- function(
         # ensure enough modules
         while (TRUE) {
           # generate network
-          network <- random_network(n_genes)
+          network <- random_network(
+            n_genes, 
+            max_module_size = max_genes_per_module,
+            sd_module_size = sd_genes_per_module)
           network <- gen_partial_correlations(network)
           
           # generate RNA-Seq data and take log-transformation
           x.total <- gen_rnaseq(n_samples, network)
-          x.total <- log2(x.total$x + 1)
+          # TODO: log2??? changed from log2 to log
+          x.total <- log(x.total$x + 1)
           x.total <- scale(x.total, center = TRUE, scale = TRUE)
           
+          modules <- lapply(network$modules, function(x){x$nodes})
+          num_modules <- length(modules)
+          
           # disease module candidates
-          module.length <- sapply(network$modules, function(module) length(module$nodes))
+          module.length <- lengths(modules)
           mod.len.q1 <- floor(quantile(module.length, probs = 0.25))
           mod.candidate <- which(module.length <= mod.len.q1)
           if (length(mod.candidate) < 3) {
@@ -93,7 +108,7 @@ genGeneNetworkDataRegression <- function(
           
           # first module
           mod.signal.1st <- sample(mod.candidate, 1)
-          mod.sig = mod.signal.1st
+          causal_modules = mod.signal.1st
           gene.sig <- network$modules[[mod.signal.1st]]$nodes
           
           # second module
@@ -106,7 +121,7 @@ genGeneNetworkDataRegression <- function(
             next
           }
           mod.signal.2nd <- sample(mod.mutual, 1)
-          mod.sig = c(mod.sig, mod.signal.2nd)
+          causal_modules = c(causal_modules, mod.signal.2nd)
           gene.sig <- c(gene.sig, network$modules[[mod.signal.2nd]]$nodes)
           
           # third module
@@ -119,21 +134,46 @@ genGeneNetworkDataRegression <- function(
             next
           }
           mod.signal.3rd <- sample(mod.mutual, 1)
-          mod.sig = c(mod.sig, mod.signal.3rd)
+          causal_modules = c(causal_modules, mod.signal.3rd)
           gene.sig <- c(gene.sig, network$modules[[mod.signal.3rd]]$nodes)
           
           break
         }
         
-        # collect modules
-        disease.module <- list(first = NULL, second = NULL, third = NULL)
-        disease.module$first <- list(mod = mod.signal.1st, gene = network$modules[[mod.signal.1st]]$nodes)
-        disease.module$second <- list(mod = mod.signal.2nd, gene = network$modules[[mod.signal.2nd]]$nodes)
-        disease.module$third <- list(mod = mod.signal.3rd, gene = network$modules[[mod.signal.3rd]]$nodes)
+        # sample causal genes
+        causal_genes = lapply(
+          1:3,
+          function(j) {
+            ## Read required amount of genes
+            num_required_genes <- ceiling(prop_disease_genes*length(modules[[causal_modules[j]]]))
+            ## Sample first causal gene
+            sampled_genes <- sample(
+              x = 1:length(modules[[causal_modules[j]]]),
+              size = 1,
+              replace = FALSE
+            )
+            ## Read adjacency matrix for module
+            adj_mat <- get_adjacency_matrix(network)[modules[[causal_modules[j]]], modules[[causal_modules[j]]]]
+            ## Search for associated genes in the module
+            while (length(sampled_genes) < num_required_genes) {
+              ## For all candidates not yet added to causal genes
+              for (candidate_id in sample((1:nrow(adj_mat))[-sampled_genes])) {
+                ## If still required AND connected to sampled_genes
+                if (
+                  length(sampled_genes) < num_required_genes &
+                  sum(adj_mat[candidate_id, sampled_genes]) > 0
+                ) {
+                  sampled_genes <- c(sampled_genes, candidate_id)
+                }
+              }
+            }
+            return(modules[[causal_modules[j]]][sampled_genes])
+          }
+        )
         
         # read disease gene data
-        x.disease <- lapply(disease.module,
-                            function(m) rowMeans(x.total[, m$gene]))
+        x.disease <- lapply(causal_genes,
+                            function(genes) rowMeans(x.total[, genes]))
         x.disease <- as.data.frame(x.disease)
         
         # regression phenotype
@@ -142,9 +182,9 @@ genGeneNetworkDataRegression <- function(
         # return
         return(list(
           data = cbind(pheno, as.data.frame(x.total)),
-          modules = lapply(network$modules, function(x) x$nodes),
-          causal_modules = mod.sig,
-          causal_genes = gene.sig
+          modules = modules,
+          causal_modules = causal_modules,
+          causal_genes = causal_genes
         ))
       } else {
         # generate network

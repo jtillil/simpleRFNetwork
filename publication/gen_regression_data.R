@@ -11,12 +11,14 @@ n_networks = c(100)
 n_genes = c(1000)
 n_samples = c(1000)
 disease_modules = c(T, F)
+prop_disease_genes = c(0.5)
 
 scenarios = expand.grid(
   n_networks = n_networks,
   n_genes = n_genes,
   n_samples = n_samples,
-  disease_modules = disease_modules
+  disease_modules = disease_modules,
+  prop_disease_genes = prop_disease_genes
 )
 
 # scenarios = scenarios[1,]
@@ -35,7 +37,8 @@ for (i in 1:nrow(scenarios)) {
     n_genes = scenario$n_genes,
     n_samples = scenario$n_samples,
     disease_modules = scenario$disease_modules,
-    num_threads = 60
+    prop_disease_genes = scenario$prop_disease_genes,
+    num_threads = 2
   )
   
   # build saveroot
@@ -45,6 +48,7 @@ for (i in 1:nrow(scenarios)) {
     "_ng", scenario$n_genes,
     "_ns", scenario$n_samples,
     "_dm", scenario$disease_modules,
+    "_pdg", scenario$prop_disease_genes,
     ".Rdata"
   )
   
