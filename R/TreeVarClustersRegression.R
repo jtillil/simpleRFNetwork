@@ -112,7 +112,7 @@ TreeVarClustersRegression <- setRefClass("TreeVarClustersRegression",
         
       } else if (splitmethod == "PCA") {
         
-        res <- SVR(data_values, response)
+        res <- PCA(data_values, response)
         
       }
       

@@ -57,6 +57,20 @@ PCA <- function(data_values, response) {
   return(c(value, coef))
 }
 
+SVR <- function(data_values, response) {
+  ## Calculate SVM plane
+  svmfit <- svm(y=response,
+                x=data_values,
+                kernel="linear",
+                scale=FALSE)
+  
+  ## Read coefficients and value
+  coefficients <- drop(t(svmfit$coefs)%*%as.matrix(data_values)[svmfit$index,])
+  value <- svmfit$rho
+  
+  return(c(value, coefficients))
+}
+
 univariate_split <- function(data_values, response) {
   ## Initiate
   Gini_impurity_start <- 9999

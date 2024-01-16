@@ -7,7 +7,7 @@ library(simpleRFNetwork)
 setwd(getSrcDirectory(function(){})[1])
 
 # set scenarios
-n_networks = c(100)
+n_networks = c(2)
 n_genes = c(1000)
 n_samples = c(1000)
 disease_modules = c(T, F)
@@ -21,7 +21,7 @@ scenarios = expand.grid(
   prop_disease_genes = prop_disease_genes
 )
 
-# scenarios = scenarios[1,]
+scenarios = scenarios[1,]
 
 tic()
 # generate networks
