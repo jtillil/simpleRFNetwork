@@ -16,7 +16,7 @@ library(matrixcalc)
 dat <- genGeneNetworkData(
   n_networks = 1,
   n_genes = 1000,
-  n_samples = 1000,
+  n_samples = 520,
   n_disease_modules = 1,
   main_disease_gene = F,
   prop_disease_genes = 0.5,
