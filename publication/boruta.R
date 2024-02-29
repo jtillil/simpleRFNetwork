@@ -105,7 +105,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
   second_bernresults[, (aggregated_classifications == -1)] = NA
   
   if (isempty(updated_modules2)) {
-    return(list(
+    local_borutares = list(
       networkID = networkID,
       causalmodules = dat$causal_modules,
       aggregated_classifications = aggregated_classifications,
@@ -128,7 +128,14 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
       fourth_bernresults = zeros(num_iterations, length(dat$modules)),
       fourth_binomresults = rep(0, length(dat$modules)),
       fourth_classifications = rep(-1, length(dat$modules))
-    ))
+    )
+    
+    # save results
+    load(file = saveroot)
+    borutares[[networkID]] = local_borutares
+    save(borutares, file = saveroot)
+    
+    return(local_borutares)
   }
   
   # boruta loop
@@ -233,7 +240,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
   third_bernresults[, (aggregated_classifications == -1)] = NA
   
   if (isempty(updated_modules3)) {
-    return(list(
+    local_borutares = list(
       networkID = networkID,
       causalmodules = dat$causal_modules,
       aggregated_classifications = aggregated_classifications,
@@ -256,7 +263,14 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
       fourth_bernresults = zeros(num_iterations, length(dat$modules)),
       fourth_binomresults = rep(0, length(dat$modules)),
       fourth_classifications = rep(-1, length(dat$modules))
-    ))
+    )
+
+    # save results
+    load(file = saveroot)
+    borutares[[networkID]] = local_borutares
+    save(borutares, file = saveroot)
+    
+    return(local_borutares)
   }
   
   # boruta loop
@@ -361,7 +375,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
   fourth_bernresults[, (aggregated_classifications == -1)] = NA
   
   if (isempty(updated_modules4)) {
-    return(list(
+    local_borutares = list(
       networkID = networkID,
       causalmodules = dat$causal_modules,
       aggregated_classifications = aggregated_classifications,
@@ -384,7 +398,14 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
       fourth_bernresults = fourth_bernresults,
       fourth_binomresults = fourth_binomresults,
       fourth_classifications = rep(-1, length(dat$modules))
-    ))
+    )
+    
+    # save results
+    load(file = saveroot)
+    borutares[[networkID]] = local_borutares
+    save(borutares, file = saveroot)
+    
+    return(local_borutares)
   }
   
   # boruta loop
@@ -472,24 +493,7 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
   }
   aggregated_classifications = interim_classifications
   
-  # save results
-  load(file = saveroot)
-  borutares[[networkID]] = list(
-    networkID = networkID,
-    first_vim = first_vim,
-    first_bernresults = first_bernresults,
-    first_binomresults = first_binomresults,
-    first_classification = first_classifications,
-    updated_modules2 = updated_modules2,
-    second_vim = second_vim,
-    second_bernresults = second_bernresults,
-    second_binomresults = second_binomresults,
-    second_classification = second_classifications,
-    causalmodules = dat$causal_modules
-  )
-  save(borutares, file = saveroot)
-  
-  return(list(
+  local_borutares = list(
     networkID = networkID,
     causalmodules = dat$causal_modules,
     aggregated_classifications = aggregated_classifications,
@@ -512,5 +516,12 @@ boruta <- function(dat, networkID, splitmethod, importance, num_trees, num_threa
     fourth_bernresults = fourth_bernresults,
     fourth_binomresults = fourth_binomresults,
     fourth_classifications = fourth_classifications
-  ))
+  )
+  
+  # save results
+  load(file = saveroot)
+  borutares[[networkID]] = local_borutares
+  save(borutares, file = saveroot)
+  
+  return(local_borutares)
 }
