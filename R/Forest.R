@@ -110,12 +110,12 @@ Forest <- setRefClass("Forest",
         ## On Windows
         cl <- makeCluster(num_threads)
         predictions <- parLapply(cl, X=trees, fun=function(x) {
-          x$predict_batch(predict_data)
+          x$predict(predict_data)
         })
       } else {
         ## On Unix
         predictions <- simplify2array(mclapply(trees, function(x) {
-          x$predict_batch(predict_data)
+          x$predict(predict_data)
         }, mc.cores = num_threads))
       }
       
