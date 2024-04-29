@@ -63,7 +63,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
           print(data_values[response == 0,])
           print(as.matrix(data_values[response == 0,])
           print(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE))
-          ..
+          
           ## Calculate mean of both covariance matrices due to homoscedasticity
           mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
                         cova(as.matrix(data_values[response == 1,]), center=TRUE, large=FALSE))
