@@ -243,7 +243,7 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
         nodeID <- 1
         while(TRUE) {
           ## Break if terminal node
-          if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]])) {
+          if (nodeID > length(child_nodeIDs) || is.null(child_nodeIDs[[nodeID]]) || is.na(split_clusterIDs[nodeID])) {
             break
           }
           
