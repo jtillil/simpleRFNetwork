@@ -31,7 +31,8 @@ pred_err = function(network) {
   # 
   # network = dat[[ID_network]]
   rfdat = network$data[1:500,]
-  preddat = network$data[501:1000,]
+  preddat = as.matrix(network$data[501:1000,-1])
+  predlabel = network$data[501:1000,1]
   modules = network$modules
   
   rf = simpleRFNetwork(
@@ -47,14 +48,13 @@ pred_err = function(network) {
     seed = 1L
   )
   
-  print("done")
+  print(length(rf$trees[[1]]$split_clusterIDs))
   
   res = list()
-  err = rf$predictionErrorForestAndTrees()
-  err = rf$predictionErrorForest()
-  predData = Data$new(data = preddat)
-  prediction = rf$trees[[1]]$predict(predData)
-  prediction = rf$predict(preddat)
+  # err = rf$predictionErrorForestAndTrees()
+  # err = rf$predictionErrorForest()
+  pred = rf$predict(preddat)
+  res$prederr = sum(pred != predlabel) / 500
   
   split_counts = numeric(length(modules))
   for (treeID in 1:length(rf$trees)) {
@@ -73,13 +73,13 @@ pred_err = function(network) {
   return(res)
 }
 
-for (i in 1:1) {
-# for (i in 1:nrow(scenarios)) {
+# for (i in 1:1) {
+for (i in 1:nrow(scenarios)) {
   # read scenario
   scenario = scenarios[i,]
   
-  # for (method in c("LDA", "PCA", "logridge1")) {
-  for (method in c("LDA")) {
+  for (method in c("LDA", "PCA", "logridge1")) {
+  # for (method in c("LDA")) {
     datroot = paste0(
       # "./resclassif",
       "./data/ndclassif",
@@ -98,9 +98,13 @@ for (i in 1:1) {
     
     prederr_res = mclapply(dat[1:1], pred_err, mc.cores = 1)
     
-    # for (j in 1:length(dat)) {
-    #   network = dat[[j]]
-    #   
-    # }
+    saveroot = paste0(
+      "./results/prederrres_",
+      splitmethod,
+      "_ndm", scenario$n_disease_modules,
+      "_ab", scenario$average_beta,
+      ".Rdata"
+    )
+    save(prederr_res, file = saveroot)
   }
 }
