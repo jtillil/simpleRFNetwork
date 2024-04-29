@@ -103,19 +103,19 @@ Forest <- setRefClass("Forest",
     
     predict = function(newdata = data, num_threads = 1) {
       ## Save prediction data in model
-      predict_data <<- Data$new(data = newdata)
+      # predict_data <<- Data$new(data = newdata)
       
       ## Predict in trees
       if (Sys.info()["sysname"]=="Windows") {
         ## On Windows
         cl <- makeCluster(num_threads)
         predictions <- parLapply(cl, X=trees, fun=function(x) {
-          x$predict(predict_data)
+          x$predict(newdata)
         })
       } else {
         ## On Unix
         predictions <- simplify2array(mclapply(trees, function(x) {
-          x$predict(predict_data)
+          x$predict(newdata)
         }, mc.cores = num_threads))
       }
       

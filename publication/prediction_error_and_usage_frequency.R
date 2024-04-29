@@ -92,6 +92,7 @@ for (i in 1:1) {
       "_ab", scenario$average_beta,
       ".Rdata"
     )
+    load()
     
     splitmethod = method
     
