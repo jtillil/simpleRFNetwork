@@ -58,13 +58,13 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
           ## Read data values from samples in current node
           data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
           
-          print(varclusters[[split_clusterID]] + 1)
-          print(response)
-          print(response == 0)
-          print(data_values)
-          print(data_values[response == 0,])
-          print(as.matrix(data_values[response == 0,]))
-          print(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE))
+          # print(varclusters[[split_clusterID]] + 1)
+          # print(response)
+          # print(response == 0)
+          # print(data_values)
+          # print(data_values[response == 0,])
+          # print(as.matrix(data_values[response == 0,]))
+          # print(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE))
           
           ## Calculate mean of both covariance matrices due to homoscedasticity
           mat <- 0.5*(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE) +
