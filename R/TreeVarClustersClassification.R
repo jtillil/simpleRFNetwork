@@ -58,6 +58,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
           ## Read data values from samples in current node
           data_values <- data$subset(sampleIDs[[nodeID]], varclusters[[split_clusterID]] + 1)
           
+          print(varclusters[[split_clusterID]] + 1)
           print(response)
           print(response == 0)
           print(data_values)
