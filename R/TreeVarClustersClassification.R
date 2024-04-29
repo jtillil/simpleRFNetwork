@@ -60,7 +60,7 @@ TreeVarClustersClassification <- setRefClass("TreeVarClustersClassification",
           
           print(response)
           print(response == 0)
-          print(data_values[,1])
+          print(data_values)
           print(data_values[response == 0,])
           print(as.matrix(data_values[response == 0,]))
           print(cova(as.matrix(data_values[response == 0,]), center=TRUE, large=FALSE))
