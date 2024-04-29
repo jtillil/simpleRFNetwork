@@ -249,6 +249,12 @@ TreeVarClusters <- setRefClass("TreeVarClusters",
           
           ## Move to child
           if (varselection == "none") {
+            print(i)
+            print(nodeID)
+            print(split_clusterIDs[nodeID])
+            print(varclusters[[split_clusterIDs[nodeID]]])
+            print(predict_data[i, varclusters[[split_clusterIDs[nodeID]]]])
+            print(split_coefficients[[nodeID]])
             # value <- as.matrix(predict_data$subset(i, varclusters[[split_clusterIDs[nodeID]]])) %*% split_coefficients[[nodeID]]
             value <- predict_data[i, varclusters[[split_clusterIDs[nodeID]]]] %*% split_coefficients[[nodeID]]
           } else {
