@@ -14,8 +14,12 @@ pheno = as.numeric(pheno)
 microarray = data.frame(pheno = as.factor(pheno))
 microarray = cbind(microarray, tcga_breast_pr$microarray$geno)
 
-# rna_seq = data.frame(pheno = as.factor(tcga_breast_pr$rna_seq$pheno))
-# rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
+pheno = tcga_breast_pr$rna_seq$pheno
+pheno[pheno == "Positive"] = 1
+pheno[pheno == "Negative"] = 0
+pheno = as.numeric(pheno)
+rna_seq = data.frame(pheno = as.factor(pheno))
+rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
 
 ## build modules
 igraph_network = tcga_breast_pr$network
@@ -32,13 +36,20 @@ for (i in 1:length(igraph_modules$membership)) {
   membership = igraph_modules$membership[i]
   modules[[membership]] = c(modules[[membership]], i)
 }
+for (i in length(modules):1) {
+  if (length(modules[[i]]) < 10 ) {
+    modules = modules[-i]
+  }
+}
 lengths(modules)
 
-## run rf
+## run rf on rna-seq data
+predlabel_micro = microarray$pheno
+
 rf = simpleRFNetwork(
   pheno ~ .,
-  data = microarray,
-  num_trees=2,
+  data = rna_seq,
+  num_trees=500,
   num_threads=1,
   splitobject="module",
   splitmethod="LDA",
@@ -47,3 +58,37 @@ rf = simpleRFNetwork(
   varclusters = modules,
   seed = 1L
 )
+pred_micro_LDA = rf$predict(as.matrix(microarray[, -1]))
+prederr_micro_LDA = sum(pred_micro_LDA != predlabel_micro) / 283
+
+
+rf = simpleRFNetwork(
+  pheno ~ .,
+  data = rna_seq,
+  num_trees=500,
+  num_threads=1,
+  splitobject="module",
+  splitmethod="logridge1",
+  varselection="none",
+  mtry="root",
+  varclusters = modules,
+  seed = 1L
+)
+pred_micro_Ridge = rf$predict(as.matrix(microarray[, -1]))
+prederr_micro_Ridge = sum(pred_micro_Ridge != predlabel_micro) / 283
+
+
+rf = simpleRFNetwork(
+  pheno ~ .,
+  data = rna_seq,
+  num_trees=500,
+  num_threads=1,
+  splitobject="module",
+  splitmethod="PCA",
+  varselection="none",
+  mtry="root",
+  varclusters = modules,
+  seed = 1L
+)
+pred_micro_PCA = rf$predict(as.matrix(microarray[, -1]))
+prederr_micro_PCA = sum(pred_micro_PCA != predlabel_micro) / 283
