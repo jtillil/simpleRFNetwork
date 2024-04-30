@@ -56,9 +56,9 @@ lengths(modules)
 
 ## run rf on rna-seq data
 predlabel_micro = microarray$pheno
-res = list()
+tcgares = list()
 
-res$prederr_micro_LDA = c()
+tcgares$prederr_micro_LDA = c()
 for (i in 1:100) {
   rf = simpleRFNetwork(
     pheno ~ .,
@@ -75,10 +75,10 @@ for (i in 1:100) {
   )
   pred_micro_LDA = rf$predict(as.matrix(microarray[, -1]))
   prederr_micro_LDA = sum(pred_micro_LDA != predlabel_micro) / 283
-  res$prederr_micro_LDA = c(res$prederr_micro_LDA, prederr_micro_LDA)
+  tcgares$prederr_micro_LDA = c(tcgares$prederr_micro_LDA, prederr_micro_LDA)
 }
 
-res$prederr_micro_Ridge = c()
+tcgares$prederr_micro_Ridge = c()
 for (i in 1:100) {
   rf = simpleRFNetwork(
     pheno ~ .,
@@ -95,10 +95,10 @@ for (i in 1:100) {
   )
   pred_micro_Ridge = rf$predict(as.matrix(microarray[, -1]))
   prederr_micro_Ridge = sum(pred_micro_Ridge != predlabel_micro) / 283
-  res$prederr_micro_Ridge = c(res$prederr_micro_Ridge, prederr_micro_Ridge)
+  tcgares$prederr_micro_Ridge = c(tcgares$prederr_micro_Ridge, prederr_micro_Ridge)
 }
 
-res$prederr_micro_PCA = c()
+tcgares$prederr_micro_PCA = c()
 for (i in 1:100) {
   rf = simpleRFNetwork(
     pheno ~ .,
@@ -115,5 +115,11 @@ for (i in 1:100) {
   )
   pred_micro_PCA = rf$predict(as.matrix(microarray[, -1]))
   prederr_micro_PCA = sum(pred_micro_PCA != predlabel_micro) / 283
-  res$prederr_micro_PCA = c(res$prederr_micro_PCA, prederr_micro_PCA)
+  tcgares$prederr_micro_PCA = c(tcgares$prederr_micro_PCA, prederr_micro_PCA)
 }
+
+saveroot = paste0(
+  "./results/tcgares_micro.Rdata"
+)
+tcgares_micro = tcgares
+save(tcgares_micro, file = saveroot)
