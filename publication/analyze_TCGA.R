@@ -3,6 +3,17 @@ source("./source_files.R")
 
 library(igraph)
 
+library(simpleRFNetwork)
+library(SeqNet)
+library(parallel)
+library(pracma)
+library(tictoc)
+library(Rfast)
+library(matrixcalc)
+
+library(ridge)
+library(glmnet)
+
 ## load and extract tcga data
 datroot = "./data/tcga_breast_pr.rdata"
 load(datroot)
@@ -45,50 +56,64 @@ lengths(modules)
 
 ## run rf on rna-seq data
 predlabel_micro = microarray$pheno
+res = list()
 
-rf = simpleRFNetwork(
-  pheno ~ .,
-  data = rna_seq,
-  num_trees=500,
-  num_threads=1,
-  splitobject="module",
-  splitmethod="LDA",
-  varselection="none",
-  mtry="root",
-  varclusters = modules,
-  seed = 1L
-)
-pred_micro_LDA = rf$predict(as.matrix(microarray[, -1]))
-prederr_micro_LDA = sum(pred_micro_LDA != predlabel_micro) / 283
+res$prederr_micro_LDA = c()
+for (i in 1:100) {
+  rf = simpleRFNetwork(
+    pheno ~ .,
+    data = rna_seq,
+    num_trees=500,
+    num_threads=1,
+    splitobject="module",
+    splitmethod="LDA",
+    varselection="none",
+    mtry="root",
+    varclusters = modules,
+    seed = as.integer(i),
+    num_threads = 60
+  )
+  pred_micro_LDA = rf$predict(as.matrix(microarray[, -1]))
+  prederr_micro_LDA = sum(pred_micro_LDA != predlabel_micro) / 283
+  res$prederr_micro_LDA = c(res$prederr_micro_LDA, prederr_micro_LDA)
+}
 
+res$prederr_micro_Ridge = c()
+for (i in 1:100) {
+  rf = simpleRFNetwork(
+    pheno ~ .,
+    data = rna_seq,
+    num_trees=500,
+    num_threads=1,
+    splitobject="module",
+    splitmethod="logridge1",
+    varselection="none",
+    mtry="root",
+    varclusters = modules,
+    seed = as.integer(i),
+    num_threads = 60
+  )
+  pred_micro_Ridge = rf$predict(as.matrix(microarray[, -1]))
+  prederr_micro_Ridge = sum(pred_micro_Ridge != predlabel_micro) / 283
+  res$prederr_micro_Ridge = c(res$prederr_micro_Ridge, prederr_micro_Ridge)
+}
 
-rf = simpleRFNetwork(
-  pheno ~ .,
-  data = rna_seq,
-  num_trees=500,
-  num_threads=1,
-  splitobject="module",
-  splitmethod="logridge1",
-  varselection="none",
-  mtry="root",
-  varclusters = modules,
-  seed = 1L
-)
-pred_micro_Ridge = rf$predict(as.matrix(microarray[, -1]))
-prederr_micro_Ridge = sum(pred_micro_Ridge != predlabel_micro) / 283
-
-
-rf = simpleRFNetwork(
-  pheno ~ .,
-  data = rna_seq,
-  num_trees=500,
-  num_threads=1,
-  splitobject="module",
-  splitmethod="PCA",
-  varselection="none",
-  mtry="root",
-  varclusters = modules,
-  seed = 1L
-)
-pred_micro_PCA = rf$predict(as.matrix(microarray[, -1]))
-prederr_micro_PCA = sum(pred_micro_PCA != predlabel_micro) / 283
+res$prederr_micro_PCA = c()
+for (i in 1:100) {
+  rf = simpleRFNetwork(
+    pheno ~ .,
+    data = rna_seq,
+    num_trees=500,
+    num_threads=1,
+    splitobject="module",
+    splitmethod="PCA",
+    varselection="none",
+    mtry="root",
+    varclusters = modules,
+    seed = as.integer(i),
+    num_threads = 60
+  )
+  pred_micro_PCA = rf$predict(as.matrix(microarray[, -1]))
+  prederr_micro_PCA = sum(pred_micro_PCA != predlabel_micro) / 283
+  res$prederr_micro_PCA = c(res$prederr_micro_PCA, prederr_micro_PCA)
+}
