@@ -60,6 +60,8 @@ tcgares = list()
 
 tcgares$prederr_micro_LDA = c()
 for (i in 1:100) {
+  print("LDA")
+  print(i)
   rf = simpleRFNetwork(
     pheno ~ .,
     data = rna_seq,
@@ -79,6 +81,8 @@ for (i in 1:100) {
 
 tcgares$prederr_micro_Ridge = c()
 for (i in 1:100) {
+  print("Ridge")
+  print(i)
   rf = simpleRFNetwork(
     pheno ~ .,
     data = rna_seq,
@@ -98,6 +102,8 @@ for (i in 1:100) {
 
 tcgares$prederr_micro_PCA = c()
 for (i in 1:100) {
+  print("PCA")
+  print(i)
   rf = simpleRFNetwork(
     pheno ~ .,
     data = rna_seq,
