@@ -1,7 +1,16 @@
 setwd(getSrcDirectory(function(){})[1])
 source("./source_files.R")
 
+library(simpleRFNetwork)
+library(SeqNet)
 library(parallel)
+library(pracma)
+library(tictoc)
+library(Rfast)
+library(matrixcalc)
+
+library(ridge)
+library(glmnet)
 
 # set scenarios
 n_networks = c(100)
@@ -51,6 +60,7 @@ pred_err = function(network) {
   print(length(rf$trees[[1]]$split_clusterIDs))
   
   res = list()
+  res$method = splitmethod
   # err = rf$predictionErrorForestAndTrees()
   # err = rf$predictionErrorForest()
   pred = rf$predict(preddat)
@@ -77,8 +87,10 @@ pred_err = function(network) {
 for (i in 1:nrow(scenarios)) {
   # read scenario
   scenario = scenarios[i,]
+  print(scenario)
   
   for (method in c("LDA", "PCA", "logridge1")) {
+    print(method)
   # for (method in c("LDA")) {
     datroot = paste0(
       # "./resclassif",
@@ -92,11 +104,11 @@ for (i in 1:nrow(scenarios)) {
       "_ab", scenario$average_beta,
       ".Rdata"
     )
-    load()
+    load(datroot)
     
     splitmethod = method
     
-    prederr_res = mclapply(dat[1:1], pred_err, mc.cores = 1)
+    prederr_res = mclapply(dat, pred_err, mc.cores = 60)
     
     saveroot = paste0(
       "./results/prederrres_",
