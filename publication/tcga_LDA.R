@@ -55,11 +55,11 @@ for (i in length(modules):1) {
 lengths(modules)
 
 tcgadat_rnaseq = list()
-tcgadat_rnaseq$dat = rna_seq
+tcgadat_rnaseq$data = rna_seq
 tcgadat_rnaseq$modules = modules
 
 tcgadat_micro = list()
-tcgadat_micro$dat = microarray
+tcgadat_micro$data = microarray
 tcgadat_micro$modules = modules
 
 #### start calculations
