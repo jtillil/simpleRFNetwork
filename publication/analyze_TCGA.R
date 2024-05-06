@@ -15,77 +15,77 @@ library(ridge)
 library(glmnet)
 
 ## load and extract tcga data
-datroot = "./data/tcga_breast_pr.rdata"
-load(datroot)
+# datroot = "./data/tcga_breast_pr.rdata"
+# load(datroot)
+# 
+# pheno = tcga_breast_pr$microarray$pheno
+# pheno[pheno == "Positive"] = 1
+# pheno[pheno == "Negative"] = 0
+# pheno = as.numeric(pheno)
+# microarray = data.frame(pheno = as.factor(pheno))
+# microarray = cbind(microarray, tcga_breast_pr$microarray$geno)
+# 
+# pheno = tcga_breast_pr$rna_seq$pheno
+# pheno[pheno == "Positive"] = 1
+# pheno[pheno == "Negative"] = 0
+# pheno = as.numeric(pheno)
+# rna_seq = data.frame(pheno = as.factor(pheno))
+# rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
+# 
+# ## build modules
+# igraph_network = tcga_breast_pr$network
+# set.seed(1)
+# igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 4)
+# sizes(igraph_modules)
+# # sum(sizes(igraph_modules) >= 10)
+# # mean(sizes(igraph_modules))
+# modules = list()
+# for (i in 1:max(igraph_modules$membership)) {
+#   modules[[i]] = numeric()
+# }
+# for (i in 1:length(igraph_modules$membership)) {
+#   membership = igraph_modules$membership[i]
+#   modules[[membership]] = c(modules[[membership]], i)
+# }
+# for (i in length(modules):1) {
+#   if (length(modules[[i]]) < 10 ) {
+#     modules = modules[-i]
+#   }
+# }
+# lengths(modules)
 
-pheno = tcga_breast_pr$microarray$pheno
-pheno[pheno == "Positive"] = 1
-pheno[pheno == "Negative"] = 0
-pheno = as.numeric(pheno)
-microarray = data.frame(pheno = as.factor(pheno))
-microarray = cbind(microarray, tcga_breast_pr$microarray$geno)
+## run rf on microarray data
+# predlabel_rnaseq = rna_seq$pheno
+# tcgares = list()
+# 
+# tcgares$prederr_rnaseq_LDA = c()
+# for (i in 1:100) {
+#   print("LDA")
+#   print(i)
+#   rf = simpleRFNetwork(
+#     pheno ~ .,
+#     data = microarray,
+#     num_trees=500,
+#     splitobject="module",
+#     splitmethod="LDA",
+#     varselection="none",
+#     mtry="root",
+#     varclusters = modules,
+#     seed = as.integer(i),
+#     num_threads = 2
+#   )
+#   pred_rnaseq_LDA = rf$predict(as.matrix(rna_seq[, -1]))
+#   prederr_rnaseq_LDA = sum(pred_rnaseq_LDA != predlabel_rnaseq) / 284
+#   tcgares$prederr_rnaseq_LDA = c(tcgares$prederr_rnaseq_LDA, prederr_rnaseq_LDA)
+# }
 
-pheno = tcga_breast_pr$rna_seq$pheno
-pheno[pheno == "Positive"] = 1
-pheno[pheno == "Negative"] = 0
-pheno = as.numeric(pheno)
-rna_seq = data.frame(pheno = as.factor(pheno))
-rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
-
-## build modules
-igraph_network = tcga_breast_pr$network
-set.seed(1)
-igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 4)
-sizes(igraph_modules)
-# sum(sizes(igraph_modules) >= 10)
-# mean(sizes(igraph_modules))
-modules = list()
-for (i in 1:max(igraph_modules$membership)) {
-  modules[[i]] = numeric()
-}
-for (i in 1:length(igraph_modules$membership)) {
-  membership = igraph_modules$membership[i]
-  modules[[membership]] = c(modules[[membership]], i)
-}
-for (i in length(modules):1) {
-  if (length(modules[[i]]) < 10 ) {
-    modules = modules[-i]
-  }
-}
-lengths(modules)
-
-## run rf on rna-seq data
-predlabel_micro = microarray$pheno
-tcgares = list()
-
-tcgares$prederr_micro_LDA = c()
-for (i in 1:100) {
-  print("LDA")
-  print(i)
-  rf = simpleRFNetwork(
-    pheno ~ .,
-    data = rna_seq,
-    num_trees=500,
-    splitobject="module",
-    splitmethod="LDA",
-    varselection="none",
-    mtry="root",
-    varclusters = modules,
-    seed = as.integer(i),
-    num_threads = 60
-  )
-  pred_micro_LDA = rf$predict(as.matrix(microarray[, -1]))
-  prederr_micro_LDA = sum(pred_micro_LDA != predlabel_micro) / 283
-  tcgares$prederr_micro_LDA = c(tcgares$prederr_micro_LDA, prederr_micro_LDA)
-}
-
-tcgares$prederr_micro_Ridge = c()
+tcgares$prederr_rnaseq_Ridge = c()
 for (i in 1:100) {
   print("Ridge")
   print(i)
   rf = simpleRFNetwork(
     pheno ~ .,
-    data = rna_seq,
+    data = microarray,
     num_trees=500,
     splitobject="module",
     splitmethod="logridge1",
@@ -93,20 +93,20 @@ for (i in 1:100) {
     mtry="root",
     varclusters = modules,
     seed = as.integer(i),
-    num_threads = 60
+    num_threads = 2
   )
-  pred_micro_Ridge = rf$predict(as.matrix(microarray[, -1]))
-  prederr_micro_Ridge = sum(pred_micro_Ridge != predlabel_micro) / 283
-  tcgares$prederr_micro_Ridge = c(tcgares$prederr_micro_Ridge, prederr_micro_Ridge)
+  pred_rnaseq_Ridge = rf$predict(as.matrix(rna_seq[, -1]))
+  prederr_rnaseq_Ridge = sum(pred_rnaseq_Ridge != predlabel_rnaseq) / 284
+  tcgares$prederr_rnaseq_Ridge = c(tcgares$prederr_rnaseq_Ridge, prederr_rnaseq_Ridge)
 }
 
-tcgares$prederr_micro_PCA = c()
+tcgares$prederr_rnaseq_PCA = c()
 for (i in 1:100) {
   print("PCA")
   print(i)
   rf = simpleRFNetwork(
     pheno ~ .,
-    data = rna_seq,
+    data = microarray,
     num_trees=500,
     splitobject="module",
     splitmethod="PCA",
@@ -114,15 +114,186 @@ for (i in 1:100) {
     mtry="root",
     varclusters = modules,
     seed = as.integer(i),
-    num_threads = 60
+    num_threads = 2
   )
-  pred_micro_PCA = rf$predict(as.matrix(microarray[, -1]))
-  prederr_micro_PCA = sum(pred_micro_PCA != predlabel_micro) / 283
-  tcgares$prederr_micro_PCA = c(tcgares$prederr_micro_PCA, prederr_micro_PCA)
+  pred_rnaseq_PCA = rf$predict(as.matrix(rna_seq[, -1]))
+  prederr_rnaseq_PCA = sum(pred_rnaseq_PCA != predlabel_rnaseq) / 284
+  tcgares$prederr_rnaseq_PCA = c(tcgares$prederr_rnaseq_PCA, prederr_rnaseq_PCA)
 }
 
 saveroot = paste0(
-  "./results/tcgares_micro.Rdata"
+  "./results/tcgares_rnaseq.Rdata"
 )
-tcgares_micro = tcgares
-save(tcgares_micro, file = saveroot)
+tcgares_rnaseq = tcgares
+save(tcgares_rnaseq, file = saveroot)
+
+# ## run rf on rna-seq data## run rf on rna-seq data
+# predlabel_micro = microarray$pheno
+# tcgares = list()
+# 
+# tcgares$prederr_micro_LDA = c()
+# for (i in 1:100) {
+#   print("LDA")
+#   print(i)
+#   rf = simpleRFNetwork(
+#     pheno ~ .,
+#     data = rna_seq,
+#     num_trees=500,
+#     splitobject="module",
+#     splitmethod="LDA",
+#     varselection="none",
+#     mtry="root",
+#     varclusters = modules,
+#     seed = as.integer(i),
+#     num_threads = 2
+#   )
+#   pred_micro_LDA = rf$predict(as.matrix(microarray[, -1]))
+#   prederr_micro_LDA = sum(pred_micro_LDA != predlabel_micro) / 283
+#   tcgares$prederr_micro_LDA = c(tcgares$prederr_micro_LDA, prederr_micro_LDA)
+# }
+# 
+# tcgares$prederr_micro_Ridge = c()
+# for (i in 1:100) {
+#   print("Ridge")
+#   print(i)
+#   rf = simpleRFNetwork(
+#     pheno ~ .,
+#     data = rna_seq,
+#     num_trees=500,
+#     splitobject="module",
+#     splitmethod="logridge1",
+#     varselection="none",
+#     mtry="root",
+#     varclusters = modules,
+#     seed = as.integer(i),
+#     num_threads = 2
+#   )
+#   pred_micro_Ridge = rf$predict(as.matrix(microarray[, -1]))
+#   prederr_micro_Ridge = sum(pred_micro_Ridge != predlabel_micro) / 283
+#   tcgares$prederr_micro_Ridge = c(tcgares$prederr_micro_Ridge, prederr_micro_Ridge)
+# }
+# 
+# tcgares$prederr_micro_PCA = c()
+# for (i in 1:100) {
+#   print("PCA")
+#   print(i)
+#   rf = simpleRFNetwork(
+#     pheno ~ .,
+#     data = rna_seq,
+#     num_trees=500,
+#     splitobject="module",
+#     splitmethod="PCA",
+#     varselection="none",
+#     mtry="root",
+#     varclusters = modules,
+#     seed = as.integer(i),
+#     num_threads = 2
+#   )
+#   pred_micro_PCA = rf$predict(as.matrix(microarray[, -1]))
+#   prederr_micro_PCA = sum(pred_micro_PCA != predlabel_micro) / 283
+#   tcgares$prederr_micro_PCA = c(tcgares$prederr_micro_PCA, prederr_micro_PCA)
+# }
+# 
+# saveroot = paste0(
+#   "./results/tcgares_micro.Rdata"
+# )
+# tcgares_micro = tcgares
+# save(tcgares_micro, file = saveroot)
+
+#### ranger
+
+devtools::install_github("silkeszy/Pomona")
+
+library(ranger)
+library(Pomona)
+
+rangerrf = ranger(
+  dependent.variable.name = "pheno",
+  data = rna_seq,
+  num.trees = 500,
+  seed = 10
+)
+rangerrf$predict(as.matrix(microarray[, -1]))
+
+rangerpred = predict(rangerrf, microarray[,-1])$predictions
+
+set.seed(1)
+vita_rnaseq = var.sel.vita(
+  x = rna_seq[, -1],
+  y = rna_seq[, 1],
+  type = "classification"
+)
+sum(vita_rnaseq$info$selected)
+
+tcganames[12442]
+vita_rnaseq$info$selected[12442]
+tcganames[9898]
+vita_rnaseq$info$selected[9898]
+
+set.seed(1)
+vita_microarray = var.sel.vita(
+  x = microarray[, -1],
+  y = microarray[, 1],
+  type = "classification"
+)
+sum(vita_microarray$info$selected)
+
+tcganames[12442]
+vita_microarray$info$selected[12442]
+tcganames[9898]
+vita_microarray$info$selected[9898]
+
+prederr_micro_ranger = c()
+for (i in 1:100) {
+  print("ranger")
+  print(i)
+  
+  rangerrf = ranger(
+    dependent.variable.name = "pheno",
+    data = rna_seq,
+    num.trees = 500,
+    seed = i
+  )
+  pred_micro_ranger = predict(rangerrf, microarray[, -1])$predictions
+  prederr = sum(pred_micro_ranger != predlabel_micro) / 283
+  prederr_micro_ranger = c(prederr_micro_ranger, prederr)
+}
+
+prederr_rnaseq_ranger = c()
+for (i in 1:100) {
+  print("ranger")
+  print(i)
+  
+  rangerrf = ranger(
+    dependent.variable.name = "pheno",
+    data = microarray,
+    num.trees = 500,
+    seed = i
+  )
+  pred_rnaseq_ranger = predict(rangerrf, rna_seq[, -1])$predictions
+  prederr = sum(pred_rnaseq_ranger != predlabel_rnaseq) / 284
+  prederr_rnaseq_ranger = c(prederr_rnaseq_ranger, prederr)
+}
+
+
+#### plotting
+
+library(ggplot2)
+
+tcgares_dat = data.frame(
+  evaldata = c(rep("Rna-Seq", 400), rep("Microarray", 400)),
+  prederr = c(prederr_rnaseq_ranger, tcgares_rnaseq$prederr_rnaseq_LDA, tcgares_rnaseq$prederr_rnaseq_Ridge, tcgares_rnaseq$prederr_rnaseq_PCA, prederr_micro_ranger, tcgares_micro$prederr_micro_LDA, tcgares_micro$prederr_micro_Ridge, tcgares_micro$prederr_micro_PCA),
+  method = factor(c(rep("RF", 100), rep("Group LDA", 100), rep("Group Ridge", 100), rep("Group PCA", 100), rep("RF", 100), rep("Group LDA", 100), rep("Group Ridge", 100), rep("Group PCA", 100)), levels = c("RF", "Group LDA", "Group Ridge", "Group PCA"), ordered = TRUE)
+)
+colnames(tcgares_dat) = c("evaldata", "prederr", "Method")
+
+ggplot(tcgares_dat, aes(x = evaldata, y = prederr, fill = Method)) +
+  geom_boxplot() +
+  theme_bw() +
+  ylab("Prediction error") +
+  xlab("Evaluation dataset") +
+  scale_fill_hue()
+
+# scale_fill_discrete(name = "Splitmethod", labels = c("LDA", "Ridge", "PCA"))
+
+ggsave("box_prederr_micro_rnaseq.pdf", width = 7, height = 4)

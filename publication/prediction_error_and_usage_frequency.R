@@ -120,3 +120,47 @@ for (i in 1:nrow(scenarios)) {
     save(prederr_res, file = saveroot)
   }
 }
+
+#### plot prediction errors
+
+predictiondat <- data.frame(
+  Method = rep(rep(c("LDA", "logridge1", "PCA"), each = 100), 6),
+  ID = rep(rep(1:100, times = 3), 6),
+  Prederr = rep(0, 1800),
+  ndm = c(rep(1, 900), rep(2, 900)),
+  ndm_plot = c(rep("1 disease module per network", 900), rep("2 disease modules per network", 900)),
+  ab = rep(c(rep(0.5, 300), rep(1, 300), rep(2, 300)), times = 2),
+  ab_plot = rep(c(rep("beta = 0.5", 300), rep("beta = 1", 300), rep("beta = 2", 300)), times = 2)
+)
+
+for (Method in c("LDA", "Ridge", "PCA")) {
+  for (ndm in c(1, 2)) {
+    for (ab in c(0.5, 1, 2)) {
+      # load prederr_res
+      load(paste0(
+        "results/prederrres_",
+        Method,
+        "_ndm", ndm,
+        "_ab", ab,
+        ".Rdata"
+      ))
+      
+      for (ID in 1:100) {
+        detectiondat[
+          , "Prederr"] = prederr_res[[ID]]$prederr
+      }
+    }
+  }
+}
+
+ggplot(detectiondat, aes(x = Number, y = PercentWithinGroup, fill = Method)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.8) +
+  labs(
+    # title = "Number of detected disease modules per network",
+    x = "Number of disease modules detected",
+    y = "Percentage of replications") +
+  theme_bw() +
+  scale_fill_discrete(name = "Splitmethod", labels = c("LDA", "Ridge", "PCA")) +
+  # legend(c("LDA", "Ridge", "PCA")) +
+  facet_grid(ab_plot ~ ndm_plot, scales = "free")
+

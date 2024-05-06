@@ -132,15 +132,15 @@ GIMdistributiondat$Method = factor(GIMdistributiondat$Method, levels = c("LDA", 
 GIMdistributiondat$Size = as.numeric(GIMdistributiondat$Size)
 GIMdistributiondat$GIM = as.numeric(GIMdistributiondat$GIM)
 
-LDAdat = GIMdistributiondat[GIMdistributiondat$Method == "LDA", ]
+# LDAdat = GIMdistributiondat[GIMdistributiondat$Method == "LDA", ]
 
-p = ggplot(GIMdistributiondat, aes(Size, GIM))
-p = p + geom_point()
-p = p + scale_x_continuous(breaks = 25*(0:4))
-p = p + theme_bw()
-p = p + xlab("Module size")
-p = p + ylab("Group permutation importance")
-p = p + facet_grid(rows = vars(Method), scales = "free")
+p = ggplot(GIMdistributiondat, aes(Size, GIM)) +
+  geom_point() +
+  scale_x_continuous(breaks = 25*(0:4)) +
+  theme_bw() +
+  xlab("Module size") +
+  ylab("Group permutation importance") +
+  facet_grid(rows = vars(Method), scales = "free")
 plot(p)
 
 ggsave("scatter_GIM_Size_Null.pdf", width = 7, height = 7)
