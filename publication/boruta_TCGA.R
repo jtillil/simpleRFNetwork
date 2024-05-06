@@ -29,7 +29,7 @@ boruta_TCGA <- function(dat, networkID, splitmethod, importance, num_trees, num_
     
     # add shadow variables
     rfdat = dat$data
-    rfdat = cbind(dat, dat[,-1])
+    rfdat = cbind(rfdat, rfdat[,-1])
     colnames(rfdat)[-1] = paste0("X", 1:(ncol(rfdat)-1))
     # print(colnames(rfdat))
     for (col in (((ncol(rfdat)-1)/2)+1):ncol(rfdat)) {
