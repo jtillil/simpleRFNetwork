@@ -12,6 +12,8 @@ library(matrixcalc)
 library(ridge)
 library(glmnet)
 
+library(ggplot2)
+
 # set scenarios
 n_networks = c(100)
 n_genes = c(1000)
@@ -121,24 +123,74 @@ for (i in 1:nrow(scenarios)) {
   }
 }
 
+#### calculate ranger prediction errors
+
+for (i in 1:nrow(scenarios)) {
+  # read scenario
+  scenario = scenarios[i,]
+  print(scenario)
+  
+  for (method in c("ranger")) {
+    print(method)
+    datroot = paste0(
+      "./data/ndclassif",
+      "_nn", 100,
+      "_ng", 1000,
+      "_ns", 1000,
+      "_ndm", scenario$n_disease_modules,
+      "_mdg", 0,
+      "_pdg", 0.5,
+      "_ab", scenario$average_beta,
+      ".Rdata"
+    )
+    load(datroot)
+    
+    prederr_res = list()
+    for (i in 1:100) {
+      print(i)
+      network = dat[[i]]
+      rangerrf = ranger(
+        dependent.variable.name = "pheno",
+        data = network$data[1:500, ],
+        num.trees = 500,
+        seed = i
+      )
+      pred = predict(rangerrf, network$data[501:1000, -1])$predictions
+      prederr = sum(pred != network$data[501:1000, 1]) / 500
+      res = list()
+      res$prederr = prederr
+      prederr_res[[i]] = res
+    }
+    
+    saveroot = paste0(
+      "./results/prederrres_",
+      method,
+      "_ndm", scenario$n_disease_modules,
+      "_ab", scenario$average_beta,
+      ".Rdata"
+    )
+    save(prederr_res, file = saveroot)
+  }
+}
+
 #### plot prediction errors
 
 predictiondat <- data.frame(
-  Method = rep(rep(c("LDA", "logridge1", "PCA"), each = 100), 6),
-  ID = rep(rep(1:100, times = 3), 6),
-  Prederr = rep(0, 1800),
-  ndm = c(rep(1, 900), rep(2, 900)),
-  ndm_plot = c(rep("1 disease module per network", 900), rep("2 disease modules per network", 900)),
-  ab = rep(c(rep(0.5, 300), rep(1, 300), rep(2, 300)), times = 2),
-  ab_plot = rep(c(rep("beta = 0.5", 300), rep("beta = 1", 300), rep("beta = 2", 300)), times = 2)
+  Method = rep(rep(c("ranger", "LDA", "logridge1", "PCA"), each = 100), 6),
+  ID = rep(rep(1:100, times = 4), 6),
+  Prederr = rep(0, 2400),
+  ndm = c(rep(1, 1200), rep(2, 1200)),
+  ndm_plot = c(rep("1 disease module per network", 1200), rep("2 disease modules per network", 1200)),
+  ab = rep(c(rep(0.5, 400), rep(1, 400), rep(2, 400)), times = 2),
+  ab_plot = rep(c(rep("beta = 0.5", 400), rep("beta = 1", 400), rep("beta = 2", 400)), times = 2)
 )
 
-for (Method in c("LDA", "Ridge", "PCA")) {
+for (Method in c("ranger", "LDA", "logridge1", "PCA")) {
   for (ndm in c(1, 2)) {
     for (ab in c(0.5, 1, 2)) {
       # load prederr_res
       load(paste0(
-        "results/prederrres_",
+        "./results/prederrres_",
         Method,
         "_ndm", ndm,
         "_ab", ab,
@@ -146,21 +198,91 @@ for (Method in c("LDA", "Ridge", "PCA")) {
       ))
       
       for (ID in 1:100) {
-        detectiondat[
-          , "Prederr"] = prederr_res[[ID]]$prederr
+        predictiondat[
+          predictiondat$Method == Method &
+          predictiondat$ab == ab &
+          predictiondat$ndm == ndm &
+          predictiondat$ID == ID, "Prederr"] = prederr_res[[ID]]$prederr
       }
     }
   }
 }
+predictiondat$Method[predictiondat$Method == "ranger"] = "RF"
+predictiondat$Method[predictiondat$Method == "logridge1"] = "Group Ridge"
+predictiondat$Method[predictiondat$Method == "LDA"] = "Group LDA"
+predictiondat$Method[predictiondat$Method == "PCA"] = "Group PCA"
+predictiondat$Method = factor(predictiondat$Method, levels = c("RF", "Group LDA", "Group Ridge", "Group PCA"), ordered = TRUE)
 
-ggplot(detectiondat, aes(x = Number, y = PercentWithinGroup, fill = Method)) +
-  geom_bar(stat = "identity", position = "dodge", width = 0.8) +
+library(gridExtra)
+
+ggplot(predictiondat, aes(x = Method, y = Prederr, fill = Method)) +
+  # geom_bar(stat = "identity", position = "dodge", width = 0.8) +
+  geom_boxplot() +
   labs(
     # title = "Number of detected disease modules per network",
-    x = "Number of disease modules detected",
-    y = "Percentage of replications") +
+    x = "Method",
+    y = "Prediction error") +
   theme_bw() +
-  scale_fill_discrete(name = "Splitmethod", labels = c("LDA", "Ridge", "PCA")) +
+  theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1)) +
+  # scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  scale_fill_discrete(name = "Splitmethod", labels = c("LDA", "Ridge", "PCA"), guide = "none") +
   # legend(c("LDA", "Ridge", "PCA")) +
-  facet_grid(ab_plot ~ ndm_plot, scales = "free")
+  facet_grid(ndm_plot ~ ab_plot, scales = "free")
 
+ggsave("boxplot_Prediction_Error.pdf", width = 7, height = 5)
+
+#### plot usage frequency by module size
+
+Usagedat <- data.frame(
+  Method = character(),
+  Size = double(),
+  Usagepercent = double()
+)
+
+for (method in c("LDA", "logridge1", "PCA")) {
+  print(method)
+  load(paste0(
+    "results/prederrres_",
+    method,
+    "_ndm", 0,
+    "_ab", 0,
+    ".Rdata"
+  ))
+  datroot = paste0(
+    "./data/ndclassif",
+    "_nn", 100,
+    "_ng", 1000,
+    "_ns", 1000,
+    "_ndm", 0,
+    "_mdg", 0,
+    "_pdg", 0.5,
+    "_ab", 0,
+    ".Rdata"
+  )
+  load(datroot)
+  
+  for (i in 1:length(borutares)) {
+    print(i)
+    res = prederr_res[[i]]
+    network = dat[[i]]
+    for (j in 1:length(network$modules)) {
+      # Usagedat[nrow(Usagedat) + 1,] = c(method, as.numeric(lengths(network$modules)[j]), res$split_group_counts[j] * length(network$modules) / 500)
+      Usagedat[nrow(Usagedat) + 1,] = c(method, as.numeric(lengths(network$modules)[j]), res$split_group_counts[j] / 500)
+    }
+  }
+}
+Usagedat$Method[Usagedat$Method == "logridge1"] = "Ridge"
+Usagedat$Method = factor(Usagedat$Method, levels = c("LDA", "Ridge", "PCA"))
+Usagedat$Size = as.numeric(Usagedat$Size)
+Usagedat$Usagepercent = as.numeric(Usagedat$Usagepercent)
+
+p = ggplot(Usagedat, aes(Size, Usagepercent)) +
+  geom_point() +
+  scale_x_continuous(breaks = 25*(0:4)) +
+  theme_bw() +
+  xlab("Module size") +
+  ylab("Average number of times a module is used per tree") +
+  facet_grid(rows = vars(Method), scales = "free")
+plot(p)
+
+ggsave("scatter_Usage_Null.pdf", width = 7, height = 5)

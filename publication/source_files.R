@@ -9,7 +9,6 @@ library(matrixcalc)
 library(e1071)
 library(ridge)
 library(glmnet)
-
 library(simpleRFNetwork)
 
 # source("../R/utility.R")
@@ -26,3 +25,4 @@ library(simpleRFNetwork)
 # source("../R/genGeneNetworkDataRegression.R")
 
 source("./boruta.R")
+source("./boruta_TCGA.R")
