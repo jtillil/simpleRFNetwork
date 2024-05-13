@@ -35,7 +35,7 @@ rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
 ## build modules
 igraph_network = tcga_breast_pr$network
 set.seed(1)
-igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 4)
+igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 10)
 sizes(igraph_modules)
 # sum(sizes(igraph_modules) >= 10)
 # mean(sizes(igraph_modules))
@@ -52,7 +52,7 @@ for (i in length(modules):1) {
     modules = modules[-i]
   }
 }
-lengths(modules)
+sort(lengths(modules))
 
 tcgadat_rnaseq = list()
 tcgadat_rnaseq$dat = rna_seq
@@ -232,11 +232,15 @@ vita_rnaseq = var.sel.vita(
   type = "classification"
 )
 sum(vita_rnaseq$info$selected)
+length(vita_rnaseq$info$selected)
 
-tcganames[12442]
-vita_rnaseq$info$selected[12442]
-tcganames[9898]
-vita_rnaseq$info$selected[9898]
+tcganames = colnames(rna_seq[, -1])
+brca1 = (1:14167)[tcganames == "BRCA1"]
+brca2 = (1:14167)[tcganames == "BRCA2"]
+tcganames[brca1]
+vita_rnaseq$info$selected[brca1]
+tcganames[brca2]
+vita_rnaseq$info$selected[brca2]
 
 set.seed(1)
 vita_microarray = var.sel.vita(
@@ -305,3 +309,49 @@ ggplot(tcgares_dat, aes(x = evaldata, y = prederr, fill = Method)) +
 # scale_fill_discrete(name = "Splitmethod", labels = c("LDA", "Ridge", "PCA"))
 
 ggsave("box_prederr_micro_rnaseq.pdf", width = 7, height = 4)
+
+#### TCGA module selection results
+
+containing_modules = c()
+for (i in 1:66) {
+  if (brca1 %in% modules[[i]] | brca2 %in% modules[[i]]) {
+    containing_modules = c(containing_modules, i)
+  }
+}
+
+selected = borutares[[1]]$aggregated_classifications == 1
+selected_modules = (1:66)[selected]
+
+binomres = borutares[[1]]$first_binomresults
+binomres
+binomres[[28]]
+
+vim = borutares[[1]]$first_vim
+vim = colsums(vim)
+vim[1:66][28]
+
+#### p = 0.05
+
+## good module
+# 28
+## LDA micro
+# -
+# b = 0
+## LDA rnaseq
+# 22
+# b = 0
+## Ridge micro
+# 47 59 61
+# b = 0
+## Ridge rnaseq
+# 43
+# b = 0
+## PCA micro
+# 53 55
+# b = 0
+## PCA rnaseq
+# 12
+# b = 0
+
+
+
