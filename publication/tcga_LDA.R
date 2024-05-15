@@ -35,7 +35,7 @@ rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
 ## build modules
 igraph_network = tcga_breast_pr$network
 set.seed(1)
-igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 10)
+igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 15)
 sizes(igraph_modules)
 # sum(sizes(igraph_modules) >= 10)
 # mean(sizes(igraph_modules))
@@ -52,7 +52,7 @@ for (i in length(modules):1) {
     modules = modules[-i]
   }
 }
-lengths(modules)
+sort(lengths(modules))
 
 tcgadat_rnaseq = list()
 tcgadat_rnaseq$data = rna_seq
