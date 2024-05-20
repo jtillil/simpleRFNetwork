@@ -319,6 +319,7 @@ for (i in 1:66) {
   }
 }
 containing_modules
+lengths(modules)[containing_modules]
 
 selected = borutares[[1]]$aggregated_classifications == 1
 selected_modules = (1:length(modules))[selected]
@@ -327,7 +328,7 @@ lengths(modules)[selected_modules]
 
 binomres = borutares[[1]]$first_binomresults
 binomres
-binomres[[39]]
+binomres[[37]]
 
 vim = borutares[[1]]$first_vim
 vimsum = colsums(vim)
@@ -337,10 +338,33 @@ vim[,1:(ncol(vim)/2)][,selected_modules]
 vimsum[1:(length(vim)/2)][containing_modules]
 vim[,1:(ncol(vim)/2)][,containing_modules]
 
+#### resolution = 15
+
+## good module
+# 37, length 134
+## LDA micro
+# 71
+# b = 0
+## LDA rnaseq
+# -
+# b = 0
+## Ridge micro
+# -
+# b = 0
+## Ridge rnaseq
+# -
+# b = 0
+## PCA micro
+# -
+# b = 0
+## PCA rnaseq
+# 4 64 104 145 241
+# b = 0
+
 #### resolution = 10
 
 ## good module
-# 39
+# 39, length 189
 ## LDA micro
 # -
 # b = 0
@@ -363,7 +387,7 @@ vim[,1:(ncol(vim)/2)][,containing_modules]
 #### resolution = 4
 
 ## good module
-# 28
+# 28, length 479
 ## LDA micro
 # -
 # b = 0
@@ -382,6 +406,4 @@ vim[,1:(ncol(vim)/2)][,containing_modules]
 ## PCA rnaseq
 # 12
 # b = 0
-
-
 
