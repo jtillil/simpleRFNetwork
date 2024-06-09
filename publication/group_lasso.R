@@ -1,7 +1,8 @@
 setwd(getSrcDirectory(function(){})[1])
 source("./source_files.R")
 
-library(MLGL)
+library(gglasso)
+# library(MLGL)
 
 # set scenarios
 n_networks = c(100)
@@ -27,7 +28,7 @@ scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0, 0.5))
 # scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0, 1))
 
 # go through scenarios
-for (i in 1:nrow(scenarios)) {
+for (i in 3:nrow(scenarios)) {
   print(i)
   
   # read scenario
@@ -72,8 +73,11 @@ for (i in 1:nrow(scenarios)) {
       tic()
       print(paste("GRP lasso for Network Nr", i, "started."))
       
-      netdat = dat[[i]]$data[, -1]
+      # read X and y
+      X = as.matrix(dat[[i]]$data[, -1])
+      y = 2*as.numeric(dat[[i]]$data[, 1]) - 3
       
+      # create var and group vectors
       var_gglasso = c()
       group_gglasso = c()
       for (nmodule in 1:length(dat[[i]]$modules)) {
@@ -83,21 +87,53 @@ for (i in 1:nrow(scenarios)) {
         }
       }
       
-      gr = overlapgglasso(X = as.matrix(dat[[i]]$data[, -1]),
-            y = 2*as.numeric(dat[[i]]$data[, 1]) - 3,
+      # order group (for gglasso)
+      ord <- order(group_gglasso)
+      groupord <- group_gglasso[ord]
+      # order var according to group
+      varord <- var_gglasso[ord]
+      
+      # transform group to have consecutive numbers (for gglasso)
+      groupb <- cumsum(!duplicated(groupord))
+      
+      # new data
+      Xb <- X[, varord]
+      
+      # optimize lambda
+      gr_cv <- gglasso::cv.gglasso(x=Xb, y=y, group=groupb, 
+                          pred.loss="L2", 
+                          intercept = F, nfolds=5)
+      # x11(); plot(gr_cv)
+      # paste(gr_cv$lambda.min, gr_cv$lambda.1se)
+      
+      # calc weight
+      weight <- as.numeric(sqrt(table(groupb)))
+      
+      # perform gglasso
+      # gr = gglasso(Xb, y, groupb, pf = weight, lambda = gr_cv$lambda.1se+0.1, intercept = F, loss = "logit")
+      gr = overlapgglasso(X = X,
+            y = y,
             var = var_gglasso,
             group = group_gglasso,
-            # lambda = 1,
+            lambda = gr_cv$lambda.1se,
             loss="logit",
             intercept = F)
+      
+      # print(gr$non0)
       
       print(paste("GRP lasso for Network Nr", i, "finished!"))
       toc()
       
+      selected = unique(unlist(gr$group))
+      # selected = unique(gr$group[[1]])
+      
       return(list(
-        selected = unique(gr$group$s20),
+        # selecteds10 = unique(gr$group$s10),
+        # selecteds30 = unique(gr$group$s30),
+        # selecteds20 = unique(gr$group$s20),
+        selected = selected,
         causal = dat[[i]]$causal_modules,
-        number_correctly_selected = sum(dat[[i]]$causal_modules %in% unique(gr$group$s50))
+        number_correctly_selected = sum(dat[[i]]$causal_modules %in% selected)
       ))
     }
   )
