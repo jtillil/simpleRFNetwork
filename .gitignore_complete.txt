@@ -3,6 +3,6 @@
 simpleRFNetwork.Rproj
 .Rbuildignore
 .Rdata
+*.Rdata
 .DS_Store
-/publication/data/*
-/publication/serverresults/*
+.pdf

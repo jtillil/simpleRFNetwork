@@ -310,6 +310,21 @@ ggplot(tcgares_dat, aes(x = evaldata, y = prederr, fill = Method)) +
 
 ggsave("box_prederr_micro_rnaseq.pdf", width = 7, height = 4)
 
+#### Comparison to Hu and Scymczak detected genes
+
+# get detected gene positions
+tcganames = colnames(rna_seq[, -1])
+hunames_network = (1:14167)[tcganames %in% c(
+  "EGFR",
+  
+)]
+hunames_standard = (1:14167)[tcganames %in% c(
+  "EGFR",
+  
+)]
+
+# identify modules containing the detected genes
+
 #### TCGA module selection results
 
 containing_modules = c()
@@ -382,6 +397,29 @@ vim[,1:(ncol(vim)/2)][,containing_modules]
 # b = 0
 ## PCA rnaseq
 # 12
+# b = 0
+
+#### resolution = 5
+
+## good module
+# 37, length 189
+## LDA micro
+# 30  34 117 121
+# b = 0
+## LDA rnaseq
+# -
+# b = 0
+## Ridge micro
+# -
+# b = 0
+## Ridge rnaseq
+# -
+# b = 0
+## PCA micro
+# 13  71 100 158 187
+# b = 0
+## PCA rnaseq
+# 59 142  77  80  42  30  53  41  72  55  18  17  16
 # b = 0
 
 #### resolution = 4

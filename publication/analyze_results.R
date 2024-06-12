@@ -21,27 +21,27 @@ setwd(getSrcDirectory(function(){})[1])
 # load(datroot)
 # print("load dat done")
 
-# summarize classification
-# num_classified_modules = c()
-# num_selected = c()
-# found_causal_modules = c()
+## summarize classification
+num_classified_modules = c()
+num_selected = c()
+found_causal_modules = c()
 
-# for (res in borutares) {
+for (res in borutares) {
   # grandsum = grandsum + sum(res$causalmodules %in% which(res$classification == 1))
   # print(sum(res$causalmodules %in% which(res$classification == 1)))
   # print(res$second_binomresults[res$causalmodules])
   # print(res$second_classification[res$causalmodules])
-  # num_classified_modules = c(num_classified_modules, match(1, res$second_classification))
-  # num_classified_modules = c(num_classified_modules, which(res$second_classification %in% c(1)))
-  # num_selected = rbind(num_selected, res$second_classification[res$causalmodules])
+  # num_classified_modules = c(num_classified_modules, match(1, res$aggregated_classification))
+  num_classified_modules = c(num_classified_modules, sum(res$aggregated_classification %in% c(1)))
+  num_selected = rbind(num_selected, res$second_classification[res$causalmodules])
   # print(which(res$second_classification %in% c(1)))
   # print(res$causalmodules)
   # print(res$second_classification[res$causalmodules])
   # print(sum(res$classification))
   # print(c(length(res$first_classification), length(which(res$first_classification %in% c(-1))), length(which(res$second_classification %in% c(1)))))
   # print(c(length(res$first_classification), length(which(res$first_classification %in% c(1))), length(which(res$second_classification %in% c(1)))))
-  # found_causal_modules = c(found_causal_modules, sum(which(res$aggregated_classifications %in% c(1)) %in% res$causalmodules))
-  
+  found_causal_modules = c(found_causal_modules, sum(which(res$aggregated_classifications %in% c(1)) %in% res$causalmodules))
+
   ## classify modules
   # alt_classification = rep(0, length(res$first_binomresults))
   # alt_classification[(res$first_classification != -1)] = NA
@@ -53,9 +53,10 @@ setwd(getSrcDirectory(function(){})[1])
   #   }
   # }
   # print(which(alt_classification %in% c(1)))
-  
-# }
-# print(colSums(num_selected, TRUE))
+
+}
+mean(num_classified_modules)
+print(colSums(num_selected, TRUE))
 
 # hist(num_classified_modules, 18)
 
@@ -263,7 +264,8 @@ ggplot(detectiondat, aes(x = Number, y = PercentWithinGroup, fill = Method)) +
   theme_bw() +
   scale_fill_discrete(name = "Method", labels = c("Group Lasso", "Group RF: LDA", "Group RF: Ridge", "Group RF: PCA")) +
   # legend(c("LDA", "Ridge", "PCA")) +
-  facet_grid(ndm_plot ~ ab_plot, scales = "free")#, labeller = label_parsed)
+  facet_grid(ab_plot ~ ndm_plot, scales = "free") +
+  ylim(0, 100)#, labeller = label_parsed)
              # labeller = label_parsed(ab = c("beta=0.5", "beta=1", "beta=2"), ndm = c("disease modules = 1", "disease modules = 2")))
 
 ggsave("bar_number_detected_modules.pdf", width = 7, height = 5)

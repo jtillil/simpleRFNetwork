@@ -28,7 +28,7 @@ scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0, 0.5))
 # scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0, 1))
 
 # go through scenarios
-for (i in 3:nrow(scenarios)) {
+for (i in nrow(scenarios)) {
   print(i)
   
   # read scenario
