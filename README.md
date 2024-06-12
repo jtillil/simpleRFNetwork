@@ -11,7 +11,7 @@ To just reproduce the figures, run "generate_figures.R" in the "/publication" fo
 
 ### Functions
 #### simpleRFNetwork
-Generates a RF object that can be used for prediction and data inference using the grouped variable random forest algorithm proposed in the master thesis of Johannes Tillil.
+Generates a group-based random forest object that can be used for prediction and data inference. The Boruta variable selection procedure can be used to detect influential groups of predictors for a certain phenotype.
 
 #### genGeneNetworkData
 Generates random networks with gene expression data and draws a binary label for each observation using a logistic regression model.
