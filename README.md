@@ -5,7 +5,7 @@ Johannes Tillil
 R package for the master thesis of Johannes Tillil. Based upon the package simpleRF by Marvin N. Wright. Contains an implementation of RF that handles node splitting with a linear combination of multiple variables instead of a single one. Find example code for usage in the descriptions of the functions exported by this package.
 
 ### Publication
-To reproduce the results of "Tillil, Hu: Group-based random forest for disease module detection", run "MAIN.R" in the "/publication" folder. Due to the nature of the Boruta variable selection methods of and the unoptimized implementation in R, executing the entire code will take months. Reproduction is recommended on a dedicated calculation server.
+To reproduce the results of "Tillil, Hu: Group-based random forest for disease module detection", run "MAIN.R" in the "/publication" folder. Due to the nature of the Boruta variable selection method to grow a larger number of forests and the unoptimized implementation in R, executing the entire code unparallelized will take months. Reproduction is recommended on a dedicated calculation server.
 
 To just reproduce the figures, run "generate_figures.R" in the "/publication" folder. All necessary output files are provided in "/publication/results".
 
