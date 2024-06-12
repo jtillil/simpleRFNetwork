@@ -56,4 +56,3 @@ source("./analyze_TCGA.R")
 source("./generate_figures_GIM.R")
 source("./generate_figures_simulations.R")
 source("./generate_figures_TCGA.R")
-
