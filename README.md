@@ -5,7 +5,7 @@ Johannes Tillil
 R package for the publication "Tillil, Hu: Group-based random forest for disease module detection". Based on the package simpleRF by Marvin N. Wright for implementing extensions to the random forest algorithm (https://github.com/mnwright/simpleRF). Contains a group-based implementation of random forest that handles oblique splitting rules with a linear combination of multiple variables instead of a single one. Find example code for usage in the descriptions of the functions exported by this package.
 
 ### Publication
-To reproduce the results of "Tillil, Hu: Group-based random forest for disease module detection", run "MAIN.R" in the "/publication" folder. Due to the nature of the Boruta variable selection method to grow a larger number of forests and the unoptimized implementation in R, executing the entire code unparallelized will take months. Reproduction is recommended on a dedicated calculation server.
+To reproduce the results of "Tillil, Hu: Group-based random forest for disease module detection", run "MAIN.R" in the "/publication" folder. Due to the nature of the Boruta variable selection method to grow a larger number of forests and the unoptimized implementation in R, executing the entire code unparallelized will take months. Reproduction is recommended on a dedicated computing server.
 
 To just reproduce the figures, run "generate_figures.R" in the "/publication" folder. All necessary output files are provided in "/publication/results".
 
