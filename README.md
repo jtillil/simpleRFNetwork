@@ -9,6 +9,8 @@ To reproduce the results of "Tillil, Hu: Group-based random forest for disease m
 
 To just reproduce the figures, run "generate_figures.R" in the "/publication" folder. All necessary output files are provided in "/publication/results".
 
+The figures used in the publication are provided in "/publication/figures".
+
 ### Functions
 #### simpleRFNetwork
 Generates a group-based random forest object that can be used for prediction and data inference. The Boruta variable selection procedure can be used to detect influential groups of predictors for a certain phenotype.
