@@ -7,7 +7,7 @@ R package for the publication "Tillil, Hu: Group-based random forest for disease
 ### Publication
 To install the package, use "devtools": "devtools::install_github("jtillil/simpleRFNetwork")".
 
-To reproduce the results of "Tillil, Hu: Group-based random forest for disease module detection", first clone the repository to your local computer. Then run "MAIN.R" in the "/publication" folder. However, due to the nature of the Boruta variable selection method to grow a larger number of forests, executing the entire code unparallelized will take months. Reproduction is recommended on a dedicated computing server.
+To reproduce the results of "Tillil, Hu: Group-based random forest for disease module detection", first clone the repository to your local computer. Then run "MAIN.R" in the "/publication" folder. However, due to the nature of the Boruta variable selection method to grow a large number of forests, executing the entire code unparallelized will take months. Reproduction is recommended on a dedicated computing server.
 
 To just reproduce the figures, run "generate_figures.R" in the "/publication" folder. All necessary output files are provided in "/publication/results".
 
