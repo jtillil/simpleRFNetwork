@@ -314,21 +314,56 @@ ggsave("box_prederr_micro_rnaseq.pdf", width = 7, height = 4)
 
 # get detected gene positions
 tcganames = colnames(rna_seq[, -1])
-hunames_network = (1:14167)[tcganames %in% c(
-  "EGFR",
-  
+hunames = (1:14167)[tcganames %in% c(
+  "PGR",
+  "AR",
+  "WDR19",
+  "GATA3",
+  "GREB1",
+  "ESR1",
+  "CA12",
+  "SLC39A6",
+  "SCUBE2",
+  "C6ORF97",
+  "DNALI1",
+  "SERPINA11",
+  "ZMYND10",
+  "FGD3",
+  "ABAT",
+  "IL6ST",
+  "PREX1",
+  "THSD4",
+  "B3GNT5",
+  "PSAT1",
+  "MAPT"
 )]
-hunames_standard = (1:14167)[tcganames %in% c(
-  "EGFR",
-  
-)]
+# hunames_network = (1:14167)[tcganames %in% c(
+#   
+# )]
+# hunames_standard = (1:14167)[tcganames %in% c(
+#   
+# )]
 
 # identify modules containing the detected genes
+
+containing_modules = c()
+for (i in 1:length(modules)) {
+  if (any(hunames %in% modules[[i]])) {
+    containing_modules = c(containing_modules, i)
+  }
+}
+containing_modules
+lengths(modules)[containing_modules]
+for (mod in containing_modules) {
+  print(mod)
+  print(sum(hunames %in% modules[[mod]]))
+  print("")
+}
 
 #### TCGA module selection results
 
 containing_modules = c()
-for (i in 1:66) {
+for (i in 1:length(modules)) {
   if (brca1 %in% modules[[i]] | brca2 %in% modules[[i]]) {
     containing_modules = c(containing_modules, i)
   }
@@ -352,6 +387,8 @@ vim[,1:(ncol(vim)/2)][,selected_modules]
 
 vimsum[1:(length(vim)/2)][containing_modules]
 vim[,1:(ncol(vim)/2)][,containing_modules]
+
+## REDO EVERYTHING WITH ACTUALLY ALL MODULES
 
 #### resolution = 15
 
