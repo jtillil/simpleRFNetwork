@@ -22,25 +22,27 @@ setwd(getSrcDirectory(function(){})[1])
 # print("load dat done")
 
 ## summarize classification
-num_classified_modules = c()
-num_selected = c()
-found_causal_modules = c()
+# num_classified_modules = c()
+# num_selected = c()
+# found_causal_modules = c()
 
-for (res in borutares) {
+# for (res in borutares) {
   # grandsum = grandsum + sum(res$causalmodules %in% which(res$classification == 1))
   # print(sum(res$causalmodules %in% which(res$classification == 1)))
   # print(res$second_binomresults[res$causalmodules])
   # print(res$second_classification[res$causalmodules])
   # num_classified_modules = c(num_classified_modules, match(1, res$aggregated_classification))
-  num_classified_modules = c(num_classified_modules, sum(res$aggregated_classification %in% c(1)))
-  num_selected = rbind(num_selected, res$second_classification[res$causalmodules])
+
+  # num_classified_modules = c(num_classified_modules, sum(res$aggregated_classification %in% c(1)))
+  # num_selected = rbind(num_selected, res$second_classification[res$causalmodules])
+
   # print(which(res$second_classification %in% c(1)))
   # print(res$causalmodules)
   # print(res$second_classification[res$causalmodules])
   # print(sum(res$classification))
   # print(c(length(res$first_classification), length(which(res$first_classification %in% c(-1))), length(which(res$second_classification %in% c(1)))))
   # print(c(length(res$first_classification), length(which(res$first_classification %in% c(1))), length(which(res$second_classification %in% c(1)))))
-  found_causal_modules = c(found_causal_modules, sum(which(res$aggregated_classifications %in% c(1)) %in% res$causalmodules))
+  # found_causal_modules = c(found_causal_modules, sum(which(res$aggregated_classifications %in% c(1)) %in% res$causalmodules))
 
   ## classify modules
   # alt_classification = rep(0, length(res$first_binomresults))
@@ -54,9 +56,9 @@ for (res in borutares) {
   # }
   # print(which(alt_classification %in% c(1)))
 
-}
-mean(num_classified_modules)
-print(colSums(num_selected, TRUE))
+# }
+# mean(num_classified_modules)
+# print(colSums(num_selected, TRUE))
 
 # hist(num_classified_modules, 18)
 
