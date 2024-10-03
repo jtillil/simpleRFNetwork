@@ -71,7 +71,7 @@ genGeneNetworkDataClassification <- function(
     main_disease_gene = F,
     prop_disease_genes = 1,
     average_beta = 1,
-    effect_intercept = -1,
+    effect_intercept = 0,
     num_threads = 1
 ) {
   ## Set up parallel reproducibility
@@ -228,7 +228,8 @@ genGeneNetworkDataClassification <- function(
       #   }
       # )))
       
-      probs <- 1/(1 + exp(-as.matrix(exprdat) %*% effects - effect_intercept))
+      # probs <- 1/(1 + exp(-as.matrix(exprdat) %*% effects - effect_intercept))
+      probs <- 1/(1 + exp(-(as.matrix(exprdat) %*% effects)))
       res <- data.frame(pheno = as.factor(sapply(
         1:n_samples,
         function(i) {

@@ -10,6 +10,9 @@ setwd(getSrcDirectory(function(){})[1])
 n_networks = c(100)
 n_genes = c(1000)
 n_samples = c(1000)
+# n_networks = c(1)
+# n_genes = c(100)
+# n_samples = c(1000)
 n_disease_modules = c(1, 2)
 main_disease_gene = c(F)
 # main_disease_gene = c(T, F)
@@ -32,6 +35,7 @@ scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0, 0.5))
 tic()
 # generate networks
 for (i in 1:nrow(scenarios)) {
+# for (i in 1) {
   print(i)
   
   # read scenario
