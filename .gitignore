@@ -6,3 +6,4 @@ simpleRFNetwork.Rproj
 .DS_Store
 /publication/data/*
 /publication/serverresults/*
+*/.Rdata
