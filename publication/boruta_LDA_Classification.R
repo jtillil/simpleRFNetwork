@@ -83,7 +83,7 @@ for (i in 1:nrow(scenarios)) {
       toc()
       return(res)
     },
-    mc.cores = 40
+    mc.cores = 60
   )
   
   # clear dat
