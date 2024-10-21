@@ -160,7 +160,7 @@ for (col in (((ncol(rfdat)-1)/2)+1):ncol(rfdat)) {
 # create model frame
 frame_data1 <- model.frame(pheno ~ ., rfdat[,1:15000])
 frame_data2 <- model.frame(pheno ~ ., rfdat[,c(1, 15001:ncol(rfdat))])
-
+frame_data <- cbind(frame_data1, frame_data2)
 # frame_data <- model.frame(pheno ~ ., dat$data)
 
 # run rf
