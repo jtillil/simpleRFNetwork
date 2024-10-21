@@ -99,6 +99,7 @@ for (resolution in c(5, 10, 15)) {
     "./results/tcga",
     "_", method,
     "_micro",
+    "_hunames",
     "_res", resolution,
     ".Rdata"
   )
@@ -110,6 +111,7 @@ for (resolution in c(5, 10, 15)) {
     "./results/tcga",
     "_", method,
     "_micro",
+    "_hunames",
     "_res", resolution,
     ".Rdata"
   )
