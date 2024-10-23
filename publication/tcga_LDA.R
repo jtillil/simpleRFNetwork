@@ -98,7 +98,7 @@ for (resolution in c(5, 10, 15)) {
   saveroot = paste0(
     "./results/tcga",
     "_", method,
-    "_micro",
+    "_rnaseq",
     "_hunames",
     "_res", resolution,
     ".Rdata"
