@@ -75,7 +75,7 @@ saveroot = paste0(
 )
 borutares = list()
 save(borutares, file = saveroot)
-boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 50, n_iterations, 1, saveroot)
+boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 30, n_iterations, 1, saveroot)
 
 # saveroot = paste0(
 #   "./results/tcga",

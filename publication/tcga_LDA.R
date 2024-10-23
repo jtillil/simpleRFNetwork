@@ -99,23 +99,25 @@ for (resolution in c(5, 10, 15)) {
     "./results/tcga",
     "_", method,
     "_micro",
+    "_hunames",
     "_res", resolution,
     ".Rdata"
   )
   borutares = list()
   save(borutares, file = saveroot)
-  boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 30, n_iterations, 1, saveroot)
+  boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
   
   saveroot = paste0(
     "./results/tcga",
     "_", method,
     "_micro",
+    "_hunames",
     "_res", resolution,
     ".Rdata"
   )
   borutares = list()
   save(borutares, file = saveroot)
-  boruta_TCGA(tcgadat_micro, 1, method, importance, 500, 30, n_iterations, 1, saveroot)
+  boruta_TCGA(tcgadat_micro, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
 }
 
 
