@@ -67,101 +67,102 @@ setwd(getSrcDirectory(function(){})[1])
 # hist(found_causal_modules)
 
 #### Null case ####
-# library(latex2exp)
-# library(ggplot2)
-# library(dplyr)
-# 
-# # modulecountdat <- data.frame(
-# #   Method = c(),
-# #   Size = c(),
-# #   Count = c()
-# # )
-# 
-# GIMdistributiondat <- data.frame(
-#   Method = character(),
-#   Size = double(),
-#   GIM = double()
+library(latex2exp)
+library(ggplot2)
+library(dplyr)
+
+# modulecountdat <- data.frame(
+#   Method = c(),
+#   Size = c(),
+#   Count = c()
 # )
-# 
-# for (method in c("LDA", "logridge1", "PCA")) {
-#   saveroot = paste0(
-#     # "./resclassif",
-#     "./serverresults/serverres_24_04_18/resclassif",
-#     "_", method,
-#     "_", "permutation",
-#     "_ni", 20,
-#     "_nn", 100,
-#     "_ng", 1000,
-#     "_ns", 1000,
-#     "_ndm", 0,
-#     "_mdg", 0,
-#     "_pdg", 0.5,
-#     "_ab", 0,
-#     ".Rdata"
-#   )
-#   datroot = paste0(
-#     # "./resclassif",
-#     "./data/ndclassif",
-#     "_nn", 100,
-#     "_ng", 1000,
-#     "_ns", 1000,
-#     "_ndm", 0,
-#     "_mdg", 0,
-#     "_pdg", 0.5,
-#     "_ab", 0,
-#     ".Rdata"
-#   )
-#   if (method != "logridge1") {
-#     if (file.exists(saveroot)) {
-#       print(c(method))
-#       load(saveroot)
-#       load(datroot)
-#       
-#       for (i in 1:length(borutares)) {
-#         print(i)
-#         res = borutares[[i]]
-#         if (!is.null(res)) {
-#           network = dat[[i]]
-#           for (j in 1:length(network$modules)) {
-#             for (k in 1:1) {
-#               GIMdistributiondat[nrow(GIMdistributiondat) + 1,] = c(method, as.numeric(lengths(network$modules)[j]), as.numeric(res$first_vim[k, j]))
-#             }
-#           }
-#         }
-#       }
-#     }
-#   } else {
-#     for (i in 1:length(borutares)) {
-#       print(i)
-#       imp = implist[[i]]
-#       if (!is.null(res)) {
-#         network = dat[[i]]
-#         for (j in 1:length(network$modules)) {
-#           for (k in 1:1) {
-#             GIMdistributiondat[nrow(GIMdistributiondat) + 1,] = c(method, as.numeric(lengths(network$modules)[j]), as.numeric(imp[j]))
-#           }
-#         }
-#       }
-#     }
-#   }
-# }
-# GIMdistributiondat$Method[GIMdistributiondat$Method == "logridge1"] = "Ridge"
-# GIMdistributiondat$Method = factor(GIMdistributiondat$Method, levels = c("LDA", "Ridge", "PCA"))
-# GIMdistributiondat$Size = as.numeric(GIMdistributiondat$Size)
-# GIMdistributiondat$GIM = as.numeric(GIMdistributiondat$GIM)
-# 
-# # LDAdat = GIMdistributiondat[GIMdistributiondat$Method == "LDA", ]
-# 
-# p = ggplot(GIMdistributiondat, aes(Size, GIM)) +
-#   geom_point() +
-#   scale_x_continuous(breaks = 25*(0:4)) +
-#   theme_bw() +
-#   xlab("Module size") +
-#   ylab("Group permutation importance") +
-#   facet_grid(rows = vars(Method), scales = "free")
-# plot(p)
-# 
-# ggsave("scatter_GIM_Size_Null.pdf", width = 7, height = 5)
+
+GIMdistributiondat <- data.frame(
+  Method = character(),
+  Size = double(),
+  GIM = double()
+)
+
+for (method in c("LDA", "logridge1", "PCA")) {
+  saveroot = paste0(
+    # "./resclassif",
+    "./serverresults/serverres_24_10_25/resclassif",
+    "_", method,
+    "_", "permutation",
+    "_ni", 20,
+    "_nn", 100,
+    "_ng", 1000,
+    "_ns", 1000,
+    "_ndm", 0,
+    "_mdg", 0,
+    "_pdg", 0.5,
+    "_ab", 0,
+    ".Rdata"
+  )
+  datroot = paste0(
+    # "./resclassif",
+    "./data/ndclassif",
+    "_nn", 100,
+    "_ng", 1000,
+    "_ns", 1000,
+    "_ndm", 0,
+    "_mdg", 0,
+    "_pdg", 0.5,
+    "_ab", 0,
+    ".Rdata"
+  )
+  # if (method != "logridge1") {
+  if (T) {
+    if (file.exists(saveroot)) {
+      print(c(method))
+      load(saveroot)
+      load(datroot)
+
+      for (i in 1:length(borutares)) {
+        print(i)
+        res = borutares[[i]]
+        if (!is.null(res)) {
+          network = dat[[i]]
+          for (j in 1:length(network$modules)) {
+            for (k in 1:1) {
+              GIMdistributiondat[nrow(GIMdistributiondat) + 1,] = c(method, as.numeric(lengths(network$modules)[j]), as.numeric(res$first_vim[k, j]))
+            }
+          }
+        }
+      }
+    }
+  } else {
+    # for (i in 1:length(borutares)) {
+    #   print(i)
+    #   imp = implist[[i]]
+    #   if (!is.null(res)) {
+    #     network = dat[[i]]
+    #     for (j in 1:length(network$modules)) {
+    #       for (k in 1:1) {
+    #         GIMdistributiondat[nrow(GIMdistributiondat) + 1,] = c(method, as.numeric(lengths(network$modules)[j]), as.numeric(imp[j]))
+    #       }
+    #     }
+    #   }
+    # }
+  }
+}
+GIMdistributiondat$Method[GIMdistributiondat$Method == "logridge1"] = "Ridge"
+GIMdistributiondat$Method = factor(GIMdistributiondat$Method, levels = c("LDA", "Ridge", "PCA"))
+GIMdistributiondat$Size = as.numeric(GIMdistributiondat$Size)
+GIMdistributiondat$GIM = as.numeric(GIMdistributiondat$GIM)
+
+# LDAdat = GIMdistributiondat[GIMdistributiondat$Method == "LDA", ]
+
+p = ggplot(GIMdistributiondat, aes(Size, GIM)) +
+  geom_point() +
+  scale_x_continuous(breaks = 25*(0:4)) +
+  theme_bw() +
+  xlab("Module size") +
+  ylab("Group permutation importance") +
+  facet_grid(rows = vars(Method), scales = "free")
+plot(p)
+
+ggsave("scatter_GIM_Size_Null.pdf", width = 7, height = 5)
 
 #### individual result ####
 
@@ -188,7 +189,7 @@ for (method in c("LDA", "PCA", "logridge1")) {
       # setwd(getSrcDirectory(function(){})[1])
       saveroot = paste0(
         # "./resclassif",
-        "./serverresults/serverres_24_04_18/resclassif",
+        "./serverresults/serverres_24_10_25/resclassif",
         "_", method,
         "_", "permutation",
         "_ni", 20,

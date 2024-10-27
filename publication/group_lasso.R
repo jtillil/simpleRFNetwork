@@ -2,7 +2,7 @@ setwd(getSrcDirectory(function(){})[1])
 source("./source_files.R")
 
 library(gglasso)
-# library(MLGL)
+library(MLGL)
 
 # set scenarios
 n_networks = c(100)
@@ -50,6 +50,7 @@ for (i in nrow(scenarios)) {
   print(getwd())
   print(datroot)
   load(datroot)
+  print(summary(as.factor(dat[[1]]$data[,1])))
   
   # save root
   saveroot = paste0(
@@ -71,7 +72,6 @@ for (i in nrow(scenarios)) {
     1:length(dat),
     function(i) {
       tic()
-      print(paste("GRP lasso for Network Nr", i, "started."))
       
       # read X and y
       X = as.matrix(dat[[i]]$data[, -1])
@@ -100,6 +100,7 @@ for (i in nrow(scenarios)) {
       Xb <- X[, varord]
       
       # optimize lambda
+      print(paste("GRP lasso for Network Nr", i, "optimize lambda."))
       gr_cv <- gglasso::cv.gglasso(x=Xb, y=y, group=groupb, 
                           pred.loss="L2", 
                           intercept = F, nfolds=5)
@@ -109,8 +110,11 @@ for (i in nrow(scenarios)) {
       # calc weight
       weight <- as.numeric(sqrt(table(groupb)))
       
+      browser()
+      
       # perform gglasso
-      # gr = gglasso(Xb, y, groupb, pf = weight, lambda = gr_cv$lambda.1se+0.1, intercept = F, loss = "logit")
+      # gr = gglasso(Xb, y, groupb, pf = weight, lambda = gr_cv$lambda.1se+0.1, intercept = F, loss = "logit"
+      print(paste("GRP lasso for Network Nr", i, "started."))
       gr = overlapgglasso(X = X,
             y = y,
             var = var_gglasso,
