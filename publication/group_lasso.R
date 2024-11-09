@@ -28,7 +28,7 @@ scenarios = rbind(scenarios, c(100, 1000, 1000, 0, F, 0, 0.5))
 # scenarios = rbind(scenarios, c(100, 3000, 1000, 0, F, 0, 1))
 
 # go through scenarios
-for (i in nrow(scenarios)) {
+for (i in 1:nrow(scenarios)) {
   print(i)
   
   # read scenario
@@ -103,32 +103,43 @@ for (i in nrow(scenarios)) {
       print(paste("GRP lasso for Network Nr", i, "optimize lambda."))
       gr_cv <- gglasso::cv.gglasso(x=Xb, y=y, group=groupb, 
                           pred.loss="L2", 
-                          intercept = F, nfolds=5)
+                          # intercept = F, 
+                          nfolds=5)
       # x11(); plot(gr_cv)
       # paste(gr_cv$lambda.min, gr_cv$lambda.1se)
       
       # calc weight
       weight <- as.numeric(sqrt(table(groupb)))
       
-      browser()
+      if (i %in% c(14, 15)) {
+        # browser()
+      }
       
       # perform gglasso
       # gr = gglasso(Xb, y, groupb, pf = weight, lambda = gr_cv$lambda.1se+0.1, intercept = F, loss = "logit"
       print(paste("GRP lasso for Network Nr", i, "started."))
-      gr = overlapgglasso(X = X,
-            y = y,
-            var = var_gglasso,
-            group = group_gglasso,
-            lambda = gr_cv$lambda.1se,
-            loss="logit",
-            intercept = F)
+      gr = gglasso::gglasso(x = Xb,
+                            y = y,
+                            # var = var_gglasso,
+                            group = groupb,
+                            lambda = gr_cv$lambda.min,
+                            # intercept = F,
+                            loss="logit")
+      # gr = MLGL::overlapgglasso(X = X,
+      #       y = y,
+      #       var = var_gglasso,
+      #       group = group_gglasso,
+      #       lambda = gr_cv$lambda.min,
+      #       loss="logit",
+      #       intercept = F)
       
       # print(gr$non0)
       
       print(paste("GRP lasso for Network Nr", i, "finished!"))
       toc()
       
-      selected = unique(unlist(gr$group))
+      # selected = unique(unlist(gr$group))
+      selected = unique(groupb[gr$beta != 0])
       # selected = unique(gr$group[[1]])
       
       return(list(

@@ -189,7 +189,7 @@ for (method in c("LDA", "PCA", "logridge1")) {
       # setwd(getSrcDirectory(function(){})[1])
       saveroot = paste0(
         # "./resclassif",
-        "./serverresults/serverres_24_10_25/resclassif",
+        "./serverresults/serverres_24_11_09/resclassif",
         "_", method,
         "_", "permutation",
         "_ni", 20,
