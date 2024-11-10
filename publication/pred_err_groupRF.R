@@ -116,8 +116,8 @@ for (i in 1:nrow(scenarios)) {
     
     splitmethod = method
     
-    prederr_res = lapply(dat, pred_err)
-    # prederr_res = mclapply(dat, pred_err, mc.cores = 60)
+    # prederr_res = lapply(dat, pred_err)
+    prederr_res = mclapply(dat, pred_err, mc.cores = 20)
     
     saveroot = paste0(
       "./results/prederrres_",
