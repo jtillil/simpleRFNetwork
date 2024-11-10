@@ -103,9 +103,8 @@ simpleRFNetwork <- function(
   seed = 1L
   ) {
   
-  
   d1 <- model.frame(formula, data[, 1:((ncol(data) - 1)/2 + 1)])
-  d2 <- model.frame(formula, data[, ((ncol(data) - 1)/2 + 2):ncol(data)])
+  d2 <- model.frame(data = data[, ((ncol(data) - 1)/2 + 2):ncol(data)])
   model.data <- cbind(d1, d2)
   
   ## Treetype
