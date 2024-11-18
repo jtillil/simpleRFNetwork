@@ -3,6 +3,7 @@ source("./source_files.R")
 
 library(gglasso)
 library(MLGL)
+library(parallel)
 
 # set scenarios
 n_networks = c(100)
