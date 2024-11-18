@@ -189,7 +189,7 @@ for (method in c("LDA", "PCA", "logridge1")) {
       # setwd(getSrcDirectory(function(){})[1])
       saveroot = paste0(
         # "./resclassif",
-        "./serverresults/serverres_24_11_09/resclassif",
+        "./serverresults/serverres_24_11_18/resclassif",
         "_", method,
         "_", "permutation",
         "_ni", 20,
@@ -271,4 +271,4 @@ ggplot(detectiondat, aes(x = Number, y = PercentWithinGroup, fill = Method)) +
   ylim(0, 100)#, labeller = label_parsed)
              # labeller = label_parsed(ab = c("beta=0.5", "beta=1", "beta=2"), ndm = c("disease modules = 1", "disease modules = 2")))
 
-ggsave("bar_number_detected_modules.pdf", width = 7, height = 5)
+ggsave("figures/bar_number_detected_modules.pdf", width = 7, height = 5)

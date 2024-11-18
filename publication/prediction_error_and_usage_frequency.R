@@ -179,6 +179,56 @@ for (i in 1:nrow(scenarios)) {
   }
 }
 
+#### calculate group lasso prediction errors
+
+for (i in 1:nrow(scenarios)) {
+  # read scenario
+  scenario = scenarios[i,]
+  print(scenario)
+  
+  for (method in c("grplasso")) {
+    print(method)
+    datroot = paste0(
+      "./data/ndclassif",
+      "_nn", 100,
+      "_ng", 1000,
+      "_ns", 1000,
+      "_ndm", scenario$n_disease_modules,
+      "_mdg", 0,
+      "_pdg", 0.5,
+      "_ab", scenario$average_beta,
+      ".Rdata"
+    )
+    load(datroot)
+    
+    prederr_res = list()
+    for (i in 1:100) {
+      print(i)
+      network = dat[[i]]
+      rangerrf = ranger(
+        dependent.variable.name = "pheno",
+        data = network$data[1:500, ],
+        num.trees = 500,
+        seed = i
+      )
+      pred = predict(rangerrf, network$data[501:1000, -1])$predictions
+      prederr = sum(pred != network$data[501:1000, 1]) / 500
+      res = list()
+      res$prederr = prederr
+      prederr_res[[i]] = res
+    }
+    
+    saveroot = paste0(
+      "./results/prederrres_",
+      method,
+      "_ndm", scenario$n_disease_modules,
+      "_ab", scenario$average_beta,
+      ".Rdata"
+    )
+    save(prederr_res, file = saveroot)
+  }
+}
+
 #### plot prediction errors
 
 predictiondat <- data.frame(
@@ -195,7 +245,7 @@ for (Method in c("ranger", "LDA", "logridge1", "PCA")) {
   for (ndm in c(1, 2)) {
     for (ab in c(0.5, 1, 2)) {
       if (file.exists(paste0(
-        "./results/prederrres_",
+        "./serverresults/serverres_24_11_18/prederrres_",
         Method,
         "_ndm", ndm,
         "_ab", ab,
@@ -203,19 +253,22 @@ for (Method in c("ranger", "LDA", "logridge1", "PCA")) {
       ))) {
         # load prederr_res
         load(paste0(
-          "./results/prederrres_",
+          "./serverresults/serverres_24_11_18/prederrres_",
           Method,
           "_ndm", ndm,
           "_ab", ab,
           ".Rdata"
         ))
+        print(Method)
         
         for (ID in 1:100) {
-          predictiondat[
-            predictiondat$Method == Method &
-            predictiondat$ab == ab &
-            predictiondat$ndm == ndm &
-            predictiondat$ID == ID, "Prederr"] = prederr_res[[ID]]$prederr
+          if (!is.na(prederr_res[[ID]][1])) {
+            predictiondat[
+              predictiondat$Method == Method &
+                predictiondat$ab == ab &
+                predictiondat$ndm == ndm &
+                predictiondat$ID == ID, "Prederr"] = prederr_res[[ID]]$prederr
+          }
         }
         
         # print(Method)
@@ -230,10 +283,10 @@ for (Method in c("ranger", "LDA", "logridge1", "PCA")) {
   }
 }
 predictiondat$Method[predictiondat$Method == "ranger"] = "RF"
-predictiondat$Method[predictiondat$Method == "logridge1"] = "Group Ridge"
-predictiondat$Method[predictiondat$Method == "LDA"] = "Group LDA"
-predictiondat$Method[predictiondat$Method == "PCA"] = "Group PCA"
-predictiondat$Method = factor(predictiondat$Method, levels = c("RF", "Group LDA", "Group Ridge", "Group PCA"), ordered = TRUE)
+predictiondat$Method[predictiondat$Method == "logridge1"] = "Group RF: Ridge"
+predictiondat$Method[predictiondat$Method == "LDA"] = "Group RF: LDA"
+predictiondat$Method[predictiondat$Method == "PCA"] = "Group RF: PCA"
+predictiondat$Method = factor(predictiondat$Method, levels = c("RF", "Group RF: LDA", "Group RF: Ridge", "Group RF: PCA"), ordered = TRUE)
 
 library(gridExtra)
 
@@ -251,7 +304,7 @@ ggplot(predictiondat, aes(x = Method, y = Prederr, fill = Method)) +
   # legend(c("LDA", "Ridge", "PCA")) +
   facet_grid(ndm_plot ~ ab_plot, scales = "free")
 
-ggsave("boxplot_Prediction_Error.pdf", width = 7, height = 5)
+ggsave("figures/boxplot_Prediction_Error.pdf", width = 7, height = 5)
 
 #### plot usage frequency by module size
 

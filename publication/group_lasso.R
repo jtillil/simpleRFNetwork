@@ -74,8 +74,8 @@ for (i in 1:nrow(scenarios)) {
       tic()
       
       # read X and y
-      X = as.matrix(dat[[i]]$data[, -1])
-      y = 2*as.numeric(dat[[i]]$data[, 1]) - 3
+      X = as.matrix(dat[[i]]$data[1:500, -1])
+      y = 2*as.numeric(dat[[i]]$data[1:500, 1]) - 3
       
       # create var and group vectors
       var_gglasso = c()
