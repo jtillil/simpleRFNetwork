@@ -61,11 +61,11 @@ for (resolution in c(5, 10, 15)) {
     membership = igraph_modules$membership[i]
     modules[[membership]] = c(modules[[membership]], i)
   }
-  # for (i in length(modules):1) {
-  #   if (length(modules[[i]]) < 10 ) {
-  #     modules = modules[-i]
-  #   }
-  # }
+  for (i in length(modules):1) {
+    if (length(modules[[i]]) < 2 ) {
+      modules = modules[-i]
+    }
+  }
   
   tcgadat_rnaseq = list()
   tcgadat_rnaseq$data = rna_seq
@@ -80,13 +80,13 @@ for (resolution in c(5, 10, 15)) {
     "./results/tcga",
     "_", method,
     "_rnaseq",
-    "_all_modules",
+    "_all_modulesgt1",
     "_res", resolution,
     ".Rdata"
   )
   borutares = list()
   save(borutares, file = saveroot)
-  boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 6, n_iterations, 1, saveroot)
+  boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
   
   #### build modules
   igraph_network = upgrade_graph(tcga_breast_pr$network)
@@ -102,11 +102,11 @@ for (resolution in c(5, 10, 15)) {
     membership = igraph_modules$membership[i]
     modules[[membership]] = c(modules[[membership]], i)
   }
-  # for (i in length(modules):1) {
-  #   if (length(modules[[i]]) < 10 ) {
-  #     modules = modules[-i]
-  #   }
-  # }
+  for (i in length(modules):1) {
+    if (length(modules[[i]]) < 2 ) {
+      modules = modules[-i]
+    }
+  }
   
   tcgadat_micro = list()
   tcgadat_micro$data = microarray
@@ -116,13 +116,13 @@ for (resolution in c(5, 10, 15)) {
     "./results/tcga",
     "_", method,
     "_micro",
-    "_all_modules",
+    "_all_modulesgt1",
     "_res", resolution,
     ".Rdata"
   )
   borutares = list()
   save(borutares, file = saveroot)
-  boruta_TCGA(tcgadat_micro, 1, method, importance, 500, 6, n_iterations, 1, saveroot)
+  boruta_TCGA(tcgadat_micro, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
 }
 
 
