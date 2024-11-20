@@ -37,7 +37,7 @@ tcganames = colnames(microarray[, -1])
 pvals_micro = numeric(length(tcganames))
 pvals_rna = numeric(length(tcganames))
 
-for (i in 1:length(pvals)) {
+for (i in 1:length(tcganames)) {
   print(i)
   pvals_micro[i] = summary(glm(pheno ~ ., data = microarray[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
   pvals_rna[i] = summary(glm(pheno ~ ., data = rna_seq[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
@@ -86,7 +86,7 @@ for (resolution in c(5, 10, 15)) {
   )
   borutares = list()
   save(borutares, file = saveroot)
-  boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
+  boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 6, n_iterations, 1, saveroot)
   
   #### build modules
   igraph_network = upgrade_graph(tcga_breast_pr$network)
@@ -122,7 +122,7 @@ for (resolution in c(5, 10, 15)) {
   )
   borutares = list()
   save(borutares, file = saveroot)
-  boruta_TCGA(tcgadat_micro, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
+  boruta_TCGA(tcgadat_micro, 1, method, importance, 500, 6, n_iterations, 1, saveroot)
 }
 
 
