@@ -84,7 +84,7 @@ rm(igncov2)
 
 ## HU genes
 # get detected gene positions
-tcganames = colnames(rna_seq[, -1])[comp$membership==1]
+tcganames = colnames(rna_seq[, -1]) # [comp$membership==1]
 hunames = (1:14157)[tcganames %in% c(
   "PGR",
   "AR",

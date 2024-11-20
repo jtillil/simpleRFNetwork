@@ -338,6 +338,7 @@ hunames = (1:14167)[tcganames %in% c(
   "PSAT1",
   "MAPT"
 )]
+tcganames[hunames]
 # hunames_network = (1:14167)[tcganames %in% c(
 #   
 # )]

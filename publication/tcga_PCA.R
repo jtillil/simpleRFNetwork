@@ -32,41 +32,27 @@ pheno = as.numeric(pheno)
 rna_seq = data.frame(pheno = as.factor(pheno))
 rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
 
-## generate hunames
-tcganames = colnames(rna_seq[, -1])
-hunames = (1:14167)[tcganames %in% c(
-  "PGR",
-  "AR",
-  "WDR19",
-  "GATA3",
-  "GREB1",
-  "ESR1",
-  "CA12",
-  "SLC39A6",
-  "SCUBE2",
-  "C6ORF97",
-  "DNALI1",
-  "SERPINA11",
-  "ZMYND10",
-  "FGD3",
-  "ABAT",
-  "IL6ST",
-  "PREX1",
-  "THSD4",
-  "B3GNT5",
-  "PSAT1",
-  "MAPT"
-)]
+#### select genes
+tcganames = colnames(microarray[, -1])
+pvals_micro = numeric(length(tcganames))
+pvals_rna = numeric(length(tcganames))
+
+for (i in 1:length(pvals)) {
+  print(i)
+  pvals_micro[i] = summary(glm(pheno ~ ., data = microarray[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
+  pvals_rna[i] = summary(glm(pheno ~ ., data = rna_seq[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
+}
+
+signif_micro = pvals_micro < 1e-5
+signif_rna = pvals_rna < 1e-5
 
 for (resolution in c(5, 10, 15)) {
-  ## build modules
-  igraph_network = tcga_breast_pr$network
+  #### build modules
+  igraph_network = upgrade_graph(tcga_breast_pr$network)
+  igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_rna])
   set.seed(1)
   igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = resolution)
-  igraph_modules$membership[hunames] = max(igraph_modules$membership) + 1
   sizes(igraph_modules)
-  # sum(sizes(igraph_modules) >= 10)
-  # mean(sizes(igraph_modules))
   modules = list()
   for (i in 1:max(igraph_modules$membership)) {
     modules[[i]] = numeric()
@@ -75,20 +61,15 @@ for (resolution in c(5, 10, 15)) {
     membership = igraph_modules$membership[i]
     modules[[membership]] = c(modules[[membership]], i)
   }
-  for (i in length(modules):1) {
-    if (length(modules[[i]]) < 10 ) {
-      modules = modules[-i]
-    }
-  }
-  lengths(modules)
+  # for (i in length(modules):1) {
+  #   if (length(modules[[i]]) < 10 ) {
+  #     modules = modules[-i]
+  #   }
+  # }
   
   tcgadat_rnaseq = list()
   tcgadat_rnaseq$data = rna_seq
   tcgadat_rnaseq$modules = modules
-  
-  tcgadat_micro = list()
-  tcgadat_micro$data = microarray
-  tcgadat_micro$modules = modules
   
   #### start calculations
   method = "PCA"
@@ -99,6 +80,7 @@ for (resolution in c(5, 10, 15)) {
     "./results/tcga",
     "_", method,
     "_rnaseq",
+    "_all_modules",
     "_res", resolution,
     ".Rdata"
   )
@@ -106,10 +88,35 @@ for (resolution in c(5, 10, 15)) {
   save(borutares, file = saveroot)
   boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
   
+  #### build modules
+  igraph_network = upgrade_graph(tcga_breast_pr$network)
+  igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_micro])
+  set.seed(1)
+  igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = resolution)
+  sizes(igraph_modules)
+  modules = list()
+  for (i in 1:max(igraph_modules$membership)) {
+    modules[[i]] = numeric()
+  }
+  for (i in 1:length(igraph_modules$membership)) {
+    membership = igraph_modules$membership[i]
+    modules[[membership]] = c(modules[[membership]], i)
+  }
+  # for (i in length(modules):1) {
+  #   if (length(modules[[i]]) < 10 ) {
+  #     modules = modules[-i]
+  #   }
+  # }
+  
+  tcgadat_micro = list()
+  tcgadat_micro$data = microarray
+  tcgadat_micro$modules = modules
+  
   saveroot = paste0(
     "./results/tcga",
     "_", method,
     "_micro",
+    "_all_modules",
     "_res", resolution,
     ".Rdata"
   )

@@ -103,18 +103,15 @@ for (i in 1:nrow(scenarios)) {
       # optimize lambda
       print(paste("GRP lasso for Network Nr", i, "optimize lambda."))
       gr_cv <- gglasso::cv.gglasso(x=Xb, y=y, group=groupb, 
-                          pred.loss="L2", 
+                          loss = "logit",
+                          pred.loss="loss", 
                           # intercept = F, 
                           nfolds=5)
       # x11(); plot(gr_cv)
       # paste(gr_cv$lambda.min, gr_cv$lambda.1se)
       
       # calc weight
-      weight <- as.numeric(sqrt(table(groupb)))
-      
-      if (i %in% c(14, 15)) {
-        # browser()
-      }
+      # weight <- as.numeric(sqrt(table(groupb)))
       
       # perform gglasso
       # gr = gglasso(Xb, y, groupb, pf = weight, lambda = gr_cv$lambda.1se+0.1, intercept = F, loss = "logit"

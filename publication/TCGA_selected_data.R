@@ -63,26 +63,35 @@ hunames = (1:14167)[tcganames %in% c(
 pvals = numeric(ncol(microarray) - 1)
 # alpha = 0.01
 
-for (i in 1:length(signif)) {
+for (i in 1:length(pvals)) {
   print(i)
-  pvals[i] = summary(glm(pheno ~ ., data = microarray[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
+  # pvals[i] = summary(glm(pheno ~ ., data = microarray[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
+  pvals[i] = summary(glm(pheno ~ ., data = rna_seq[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
 }
 
-signif = pvals < 5e-2
+signif = pvals < 1e-5
 sum(signif)
-sum(hunames %in% ((1:(ncol(microarray) - 1))[signif]))
+sum(hunames %in% ((1:(length(tcganames)))[signif]))
 
-sis_selected <- SIS(as.matrix(microarray[,-1]), as.numeric(microarray[,1])-1, family = "binomial")
-sel = c(sis_selected$sis.ix0, sis_selected$ix)
-sum(hunames %in% sel)
-hunames[hunames %in% sel]
+signif[hunames]
+pvals[hunames]
 
-hunames[hunames %in% (1:14167)[signif]]
+# sis_selected <- SIS(as.matrix(microarray[,-1]), as.numeric(microarray[,1])-1, family = "binomial")
+# sel = c(sis_selected$sis.ix0, sis_selected$ix)
+# sum(hunames %in% sel)
+# hunames[hunames %in% sel]
 
+hunames[hunames %in% (1:(length(tcganames)))[signif]]
 
 #### build modules
 igraph_network = upgrade_graph(tcga_breast_pr$network)
-igraph_network <- induced_subgraph(igraph_network, vids = (1:(ncol(microarray) - 1))[signif])
+full_vertices = V(igraph_network)
+full_vertex_names_hunames = names(full_vertices)[hunames]
+# idx = names(full_vertices) %in% 
+# igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[idx])
+igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif])
+red_vertices = V(igraph_network)
+red_huname_idx = (1:(length(tcganames)))[names(red_vertices) %in% full_vertex_names_hunames]
 set.seed(1)
 igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 5)
 sizes(igraph_modules)
@@ -109,7 +118,7 @@ length(modules)
 
 containing_modules = c()
 for (i in 1:length(modules)) {
-  if (any(hunames %in% modules[[i]])) {
+  if (any(red_huname_idx %in% modules[[i]])) {
     containing_modules = c(containing_modules, i)
   }
 }
@@ -117,6 +126,6 @@ containing_modules
 lengths(modules)[containing_modules]
 for (mod in containing_modules) {
   print(mod)
-  print(sum(hunames %in% modules[[mod]]))
-  print("")
+  print(sum(red_huname_idx %in% modules[[mod]]))
+  # print("")
 }

@@ -181,6 +181,8 @@ for (i in 1:nrow(scenarios)) {
 
 #### calculate group lasso prediction errors
 
+library(gglasso)
+
 for (i in 1:nrow(scenarios)) {
   # read scenario
   scenario = scenarios[i,]
@@ -204,15 +206,57 @@ for (i in 1:nrow(scenarios)) {
     prederr_res = list()
     for (i in 1:100) {
       print(i)
-      network = dat[[i]]
-      rangerrf = ranger(
-        dependent.variable.name = "pheno",
-        data = network$data[1:500, ],
-        num.trees = 500,
-        seed = i
-      )
-      pred = predict(rangerrf, network$data[501:1000, -1])$predictions
-      prederr = sum(pred != network$data[501:1000, 1]) / 500
+      
+      tic()
+      
+      # read X and y
+      X = as.matrix(dat[[i]]$data[1:500, -1])
+      y = 2*as.numeric(dat[[i]]$data[1:500, 1]) - 3
+      
+      preddat = as.matrix(dat[[i]]$data[501:1000, -1])
+      predlabels = 2*as.numeric(dat[[i]]$data[501:1000, 1]) - 3
+      
+      # create var and group vectors
+      var_gglasso = c()
+      group_gglasso = c()
+      for (nmodule in 1:length(dat[[i]]$modules)) {
+        for (variable in dat[[i]]$modules[[nmodule]]) {
+          var_gglasso = c(var_gglasso, variable)
+          group_gglasso = c(group_gglasso, nmodule)
+        }
+      }
+      
+      # order group (for gglasso)
+      ord <- order(group_gglasso)
+      groupord <- group_gglasso[ord]
+      # order var according to group
+      varord <- var_gglasso[ord]
+      
+      # transform group to have consecutive numbers (for gglasso)
+      groupb <- cumsum(!duplicated(groupord))
+      
+      # new data
+      Xb <- X[, varord]
+      preddatb = preddat[, varord]
+      
+      # optimize lambda
+      print(paste("GRP lasso for Network Nr", i, "optimize lambda."))
+      gr_cv <- gglasso::cv.gglasso(x=Xb, y=y, group=groupb, 
+                                   pred.loss="loss", 
+                                   loss = "logit",
+                                   # intercept = F, 
+                                   nfolds=5)
+      
+      # predict data
+      pred = predict(gr_cv$gglasso.fit, preddatb)
+      
+      # print(gr$non0)
+      
+      print(paste("GRP lasso for Network Nr", i, "finished!"))
+      toc()
+      
+      # pred = predict(rangerrf, network$data[501:1000, -1])$predictionss
+      prederr = sum(pred != predlabels) / 500
       res = list()
       res$prederr = prederr
       prederr_res[[i]] = res
@@ -232,16 +276,16 @@ for (i in 1:nrow(scenarios)) {
 #### plot prediction errors
 
 predictiondat <- data.frame(
-  Method = rep(rep(c("ranger", "LDA", "logridge1", "PCA"), each = 100), 6),
-  ID = rep(rep(1:100, times = 4), 6),
-  Prederr = rep(0, 2400),
-  ndm = c(rep(1, 1200), rep(2, 1200)),
-  ndm_plot = c(rep("1 disease module per network", 1200), rep("2 disease modules per network", 1200)),
-  ab = rep(c(rep(0.5, 400), rep(1, 400), rep(2, 400)), times = 2),
-  ab_plot = rep(c(rep("beta = 0.5", 400), rep("beta = 1", 400), rep("beta = 2", 400)), times = 2)
+  Method = rep(rep(c("grplasso", "ranger", "LDA", "logridge1", "PCA"), each = 100), 6),
+  ID = rep(rep(1:100, times = 5), 6),
+  Prederr = rep(0, 3000),
+  ndm = c(rep(1, 1500), rep(2, 1500)),
+  ndm_plot = c(rep("1 disease module per network", 1500), rep("2 disease modules per network", 1500)),
+  ab = rep(c(rep(0.5, 500), rep(1, 500), rep(2, 500)), times = 2),
+  ab_plot = rep(c(rep("beta = 0.5", 500), rep("beta = 1", 500), rep("beta = 2", 500)), times = 2)
 )
 
-for (Method in c("ranger", "LDA", "logridge1", "PCA")) {
+for (Method in c("grplasso", "ranger", "LDA", "logridge1", "PCA")) {
   for (ndm in c(1, 2)) {
     for (ab in c(0.5, 1, 2)) {
       if (file.exists(paste0(
@@ -282,11 +326,15 @@ for (Method in c("ranger", "LDA", "logridge1", "PCA")) {
     }
   }
 }
+
+predictiondat$Prederr[predictiondat$Method == "grplasso"] = predictiondat$Prederr[predictiondat$Method == "grplasso"]/100
+
+predictiondat$Method[predictiondat$Method == "grplasso"] = "Group Lasso"
 predictiondat$Method[predictiondat$Method == "ranger"] = "RF"
 predictiondat$Method[predictiondat$Method == "logridge1"] = "Group RF: Ridge"
 predictiondat$Method[predictiondat$Method == "LDA"] = "Group RF: LDA"
 predictiondat$Method[predictiondat$Method == "PCA"] = "Group RF: PCA"
-predictiondat$Method = factor(predictiondat$Method, levels = c("RF", "Group RF: LDA", "Group RF: Ridge", "Group RF: PCA"), ordered = TRUE)
+predictiondat$Method = factor(predictiondat$Method, levels = c("Group Lasso", "RF", "Group RF: LDA", "Group RF: Ridge", "Group RF: PCA"), ordered = TRUE)
 
 library(gridExtra)
 
