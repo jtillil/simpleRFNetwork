@@ -69,9 +69,9 @@ Forest <- setRefClass("Forest",
 
       # } else {
         ## Set up parallel reproducibility
-        RNGkind("L'Ecuyer-CMRG")
+        # RNGkind("L'Ecuyer-CMRG")
         set.seed(seed)
-        mc.reset.stream()
+        # mc.reset.stream()
         
         ## Grow trees
         if (Sys.info()["sysname"]=="Windows") {
@@ -94,7 +94,7 @@ Forest <- setRefClass("Forest",
       #   x$grow(replace)
       #   x
       # })
-
+        
       ## Stop timing for forest growth
       forest_time <- toc(quiet = TRUE)
       forest_time <<- as.numeric(forest_time$toc - forest_time$tic)
