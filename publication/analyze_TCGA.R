@@ -457,9 +457,9 @@ prederr_gglasso_rna = sum(pred != predlabels) / length(pred)
 library(ggplot2)
 
 tcgares_dat = data.frame(
-  evaldata = c(rep("Rna-Seq", 400), rep("Microarray", 400)),
-  prederr = c(prederr_rnaseq_ranger, tcgares_rnaseq$prederr_rnaseq_LDA, tcgares_rnaseq$prederr_rnaseq_Ridge, tcgares_rnaseq$prederr_rnaseq_PCA, prederr_micro_ranger, tcgares_micro$prederr_micro_LDA, tcgares_micro$prederr_micro_Ridge, tcgares_micro$prederr_micro_PCA),
-  method = factor(c(rep("RF", 100), rep("Group LDA", 100), rep("Group Ridge", 100), rep("Group PCA", 100), rep("RF", 100), rep("Group LDA", 100), rep("Group Ridge", 100), rep("Group PCA", 100)), levels = c("RF", "Group LDA", "Group Ridge", "Group PCA"), ordered = TRUE)
+  evaldata = c(rep("Rna-Seq", 402), rep("Microarray", 402)),
+  prederr = c(prederr_gglasso_micro, prederr_rnaseq_ranger, tcgares_rnaseq$prederr_rnaseq_LDA, tcgares_rnaseq$prederr_rnaseq_Ridge, tcgares_rnaseq$prederr_rnaseq_PCA, prederr_gglasso_rna, prederr_micro_ranger, tcgares_micro$prederr_micro_LDA, tcgares_micro$prederr_micro_Ridge, tcgares_micro$prederr_micro_PCA),
+  method = factor(c("Group Lasso", rep("RF", 100), rep("Group LDA", 100), rep("Group Ridge", 100), rep("Group PCA", 100), rep("RF", 100), rep("Group LDA", 100), rep("Group Ridge", 100), rep("Group PCA", 100)), levels = c("RF", "Group LDA", "Group Ridge", "Group PCA"), ordered = TRUE)
 )
 colnames(tcgares_dat) = c("evaldata", "prederr", "Method")
 
