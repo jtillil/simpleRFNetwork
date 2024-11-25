@@ -89,9 +89,9 @@ full_vertices = V(igraph_network)
 full_vertex_names_hunames = names(full_vertices)[hunames]
 # idx = names(full_vertices) %in% 
 # igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[idx])
-igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif])
+igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_micro])
 red_vertices = V(igraph_network)
-red_huname_idx = (1:(length(tcganames)))[names(red_vertices) %in% full_vertex_names_hunames]
+red_huname_idx = (1:(length(red_vertices)))[names(red_vertices) %in% full_vertex_names_hunames]
 set.seed(1)
 igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 5)
 sizes(igraph_modules)

@@ -32,13 +32,28 @@ pheno = as.numeric(pheno)
 rna_seq = data.frame(pheno = as.factor(pheno))
 rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
 
-## build modules
-igraph_network = tcga_breast_pr$network
+#### select genes
+tcganames = colnames(microarray[, -1])
+pvals_micro = numeric(length(tcganames))
+pvals_rna = numeric(length(tcganames))
+
+for (i in 1:length(tcganames)) {
+  print(i)
+  pvals_micro[i] = summary(glm(pheno ~ ., data = microarray[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
+  pvals_rna[i] = summary(glm(pheno ~ ., data = rna_seq[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
+}
+
+signif_micro = pvals_micro < 1e-5
+signif_rna = pvals_rna < 1e-5
+
+#### build modules
+resolution = 5
+
+igraph_network = upgrade_graph(tcga_breast_pr$network)
+igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_rna])
 set.seed(1)
-igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 15)
+igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = resolution)
 sizes(igraph_modules)
-# sum(sizes(igraph_modules) >= 10)
-# mean(sizes(igraph_modules))
 modules = list()
 for (i in 1:max(igraph_modules$membership)) {
   modules[[i]] = numeric()
@@ -48,93 +63,133 @@ for (i in 1:length(igraph_modules$membership)) {
   modules[[membership]] = c(modules[[membership]], i)
 }
 for (i in length(modules):1) {
-  if (length(modules[[i]]) < 10 ) {
+  if (length(modules[[i]]) < 2 ) {
     modules = modules[-i]
   }
 }
-sort(lengths(modules))
-length(modules)
+
+## build modules
+# igraph_network = tcga_breast_pr$network
+# set.seed(1)
+# igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = 15)
+# sizes(igraph_modules)
+# # sum(sizes(igraph_modules) >= 10)
+# # mean(sizes(igraph_modules))
+# modules = list()
+# for (i in 1:max(igraph_modules$membership)) {
+#   modules[[i]] = numeric()
+# }
+# for (i in 1:length(igraph_modules$membership)) {
+#   membership = igraph_modules$membership[i]
+#   modules[[membership]] = c(modules[[membership]], i)
+# }
+# for (i in length(modules):1) {
+#   if (length(modules[[i]]) < 10 ) {
+#     modules = modules[-i]
+#   }
+# }
+# sort(lengths(modules))
+# length(modules)
 
 tcgadat_rnaseq = list()
 tcgadat_rnaseq$dat = rna_seq
 tcgadat_rnaseq$modules = modules
+
+igraph_network = upgrade_graph(tcga_breast_pr$network)
+igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_micro])
+set.seed(1)
+igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = resolution)
+sizes(igraph_modules)
+modules = list()
+for (i in 1:max(igraph_modules$membership)) {
+  modules[[i]] = numeric()
+}
+for (i in 1:length(igraph_modules$membership)) {
+  membership = igraph_modules$membership[i]
+  modules[[membership]] = c(modules[[membership]], i)
+}
+for (i in length(modules):1) {
+  if (length(modules[[i]]) < 2 ) {
+    modules = modules[-i]
+  }
+}
 
 tcgadat_micro = list()
 tcgadat_micro$dat = microarray
 tcgadat_micro$modules = modules
 
 ## run rf on microarray data
-# predlabel_rnaseq = rna_seq$pheno
-# tcgares = list()
-# 
-# tcgares$prederr_rnaseq_LDA = c()
-# for (i in 1:100) {
-#   print("LDA")
-#   print(i)
-#   rf = simpleRFNetwork(
-#     pheno ~ .,
-#     data = microarray,
-#     num_trees=500,
-#     splitobject="module",
-#     splitmethod="LDA",
-#     varselection="none",
-#     mtry="root",
-#     varclusters = modules,
-#     seed = as.integer(i),
-#     num_threads = 2
-#   )
-#   pred_rnaseq_LDA = rf$predict(as.matrix(rna_seq[, -1]))
-#   prederr_rnaseq_LDA = sum(pred_rnaseq_LDA != predlabel_rnaseq) / 284
-#   tcgares$prederr_rnaseq_LDA = c(tcgares$prederr_rnaseq_LDA, prederr_rnaseq_LDA)
-# }
-# 
-# tcgares$prederr_rnaseq_Ridge = c()
-# for (i in 1:100) {
-#   print("Ridge")
-#   print(i)
-#   rf = simpleRFNetwork(
-#     pheno ~ .,
-#     data = microarray,
-#     num_trees=500,
-#     splitobject="module",
-#     splitmethod="logridge1",
-#     varselection="none",
-#     mtry="root",
-#     varclusters = modules,
-#     seed = as.integer(i),
-#     num_threads = 2
-#   )
-#   pred_rnaseq_Ridge = rf$predict(as.matrix(rna_seq[, -1]))
-#   prederr_rnaseq_Ridge = sum(pred_rnaseq_Ridge != predlabel_rnaseq) / 284
-#   tcgares$prederr_rnaseq_Ridge = c(tcgares$prederr_rnaseq_Ridge, prederr_rnaseq_Ridge)
-# }
-# 
-# tcgares$prederr_rnaseq_PCA = c()
-# for (i in 1:100) {
-#   print("PCA")
-#   print(i)
-#   rf = simpleRFNetwork(
-#     pheno ~ .,
-#     data = microarray,
-#     num_trees=500,
-#     splitobject="module",
-#     splitmethod="PCA",
-#     varselection="none",
-#     mtry="root",
-#     varclusters = modules,
-#     seed = as.integer(i),
-#     num_threads = 2
-#   )
-#   pred_rnaseq_PCA = rf$predict(as.matrix(rna_seq[, -1]))
-#   prederr_rnaseq_PCA = sum(pred_rnaseq_PCA != predlabel_rnaseq) / 284
-#   tcgares$prederr_rnaseq_PCA = c(tcgares$prederr_rnaseq_PCA, prederr_rnaseq_PCA)
-# }
-# 
-# saveroot = paste0(
-#   "./results/tcgares_rnaseq.Rdata"
-# )
-# tcgares_rnaseq = tcgares
-# save(tcgares_rnaseq, file = saveroot)
+predlabel_rnaseq = rna_seq$pheno
+tcgares = list()
+
+tcgares$prederr_rnaseq_LDA = c()
+for (i in 1:100) {
+  print("LDA")
+  print(i)
+  rf = simpleRFNetwork(
+    pheno ~ .,
+    data = microarray,
+    num_trees=500,
+    splitobject="module",
+    splitmethod="LDA",
+    varselection="none",
+    mtry="root",
+    varclusters = modules,
+    seed = as.integer(i),
+    num_threads = 2
+  )
+  pred_rnaseq_LDA = rf$predict(as.matrix(rna_seq[, -1]))
+  prederr_rnaseq_LDA = sum(pred_rnaseq_LDA != predlabel_rnaseq) / 284
+  tcgares$prederr_rnaseq_LDA = c(tcgares$prederr_rnaseq_LDA, prederr_rnaseq_LDA)
+}
+
+tcgares$prederr_rnaseq_Ridge = c()
+for (i in 1:100) {
+  print("Ridge")
+  print(i)
+  rf = simpleRFNetwork(
+    pheno ~ .,
+    data = microarray,
+    num_trees=500,
+    splitobject="module",
+    splitmethod="logridge1",
+    varselection="none",
+    mtry="root",
+    varclusters = modules,
+    seed = as.integer(i),
+    num_threads = 2
+  )
+  pred_rnaseq_Ridge = rf$predict(as.matrix(rna_seq[, -1]))
+  prederr_rnaseq_Ridge = sum(pred_rnaseq_Ridge != predlabel_rnaseq) / 284
+  tcgares$prederr_rnaseq_Ridge = c(tcgares$prederr_rnaseq_Ridge, prederr_rnaseq_Ridge)
+}
+
+tcgares$prederr_rnaseq_PCA = c()
+for (i in 1:100) {
+  print("PCA")
+  print(i)
+  rf = simpleRFNetwork(
+    pheno ~ .,
+    data = microarray,
+    num_trees=500,
+    splitobject="module",
+    splitmethod="PCA",
+    varselection="none",
+    mtry="root",
+    varclusters = modules,
+    seed = as.integer(i),
+    num_threads = 2
+  )
+  pred_rnaseq_PCA = rf$predict(as.matrix(rna_seq[, -1]))
+  prederr_rnaseq_PCA = sum(pred_rnaseq_PCA != predlabel_rnaseq) / 284
+  tcgares$prederr_rnaseq_PCA = c(tcgares$prederr_rnaseq_PCA, prederr_rnaseq_PCA)
+}
+
+saveroot = paste0(
+  "./results/tcgares_rnaseq.Rdata"
+)
+tcgares_rnaseq = tcgares
+save(tcgares_rnaseq, file = saveroot)
 
 # ## run rf on rna-seq data## run rf on rna-seq data
 # predlabel_micro = microarray$pheno
@@ -212,6 +267,7 @@ tcgadat_micro$modules = modules
 #### ranger
 
 devtools::install_github("silkeszy/Pomona")
+install.packages("ranger")
 
 library(ranger)
 library(Pomona)
@@ -287,6 +343,9 @@ for (i in 1:100) {
   prederr = sum(pred_rnaseq_ranger != predlabel_rnaseq) / 284
   prederr_rnaseq_ranger = c(prederr_rnaseq_ranger, prederr)
 }
+
+#### group lasso
+
 
 
 #### plotting
