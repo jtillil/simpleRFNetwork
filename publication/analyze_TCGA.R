@@ -34,6 +34,29 @@ rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
 
 #### select genes
 tcganames = colnames(microarray[, -1])
+hunames = (1:14167)[tcganames %in% c(
+  "PGR",
+  "AR",
+  "WDR19",
+  "GATA3",
+  "GREB1",
+  "ESR1",
+  "CA12",
+  "SLC39A6",
+  "SCUBE2",
+  "C6ORF97",
+  "DNALI1",
+  "SERPINA11",
+  "ZMYND10",
+  "FGD3",
+  "ABAT",
+  "IL6ST",
+  "PREX1",
+  "THSD4",
+  "B3GNT5",
+  "PSAT1",
+  "MAPT"
+)]
 pvals_micro = numeric(length(tcganames))
 pvals_rna = numeric(length(tcganames))
 
@@ -67,6 +90,7 @@ for (i in length(modules):1) {
     modules = modules[-i]
   }
 }
+modules_rna = modules
 
 ## build modules
 # igraph_network = tcga_breast_pr$network
@@ -93,7 +117,7 @@ for (i in length(modules):1) {
 
 tcgadat_rnaseq = list()
 tcgadat_rnaseq$dat = rna_seq
-tcgadat_rnaseq$modules = modules
+tcgadat_rnaseq$modules = modules_rna
 
 igraph_network = upgrade_graph(tcga_breast_pr$network)
 igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_micro])
@@ -113,10 +137,11 @@ for (i in length(modules):1) {
     modules = modules[-i]
   }
 }
+modules_micro = modules
 
 tcgadat_micro = list()
 tcgadat_micro$dat = microarray
-tcgadat_micro$modules = modules
+tcgadat_micro$modules = modules_micro
 
 ## run rf on microarray data
 predlabel_rnaseq = rna_seq$pheno
@@ -272,15 +297,17 @@ install.packages("ranger")
 library(ranger)
 library(Pomona)
 
-rangerrf = ranger(
-  dependent.variable.name = "pheno",
-  data = rna_seq,
-  num.trees = 500,
-  seed = 10
-)
-rangerrf$predict(as.matrix(microarray[, -1]))
+# rangerrf = ranger(
+#   dependent.variable.name = "pheno",
+#   data = rna_seq,
+#   num.trees = 500,
+#   seed = 10
+# )
+# rangerrf$predict(as.matrix(microarray[, -1]))
+# 
+# rangerpred = predict(rangerrf, microarray[,-1])$predictions
 
-rangerpred = predict(rangerrf, microarray[,-1])$predictions
+## vita selection
 
 set.seed(1)
 vita_rnaseq = var.sel.vita(
@@ -290,14 +317,7 @@ vita_rnaseq = var.sel.vita(
 )
 sum(vita_rnaseq$info$selected)
 length(vita_rnaseq$info$selected)
-
-tcganames = colnames(rna_seq[, -1])
-brca1 = (1:14167)[tcganames == "BRCA1"]
-brca2 = (1:14167)[tcganames == "BRCA2"]
-tcganames[brca1]
-vita_rnaseq$info$selected[brca1]
-tcganames[brca2]
-vita_rnaseq$info$selected[brca2]
+vita_rnaseq$info$selected[hunames]
 
 set.seed(1)
 vita_microarray = var.sel.vita(
@@ -306,11 +326,9 @@ vita_microarray = var.sel.vita(
   type = "classification"
 )
 sum(vita_microarray$info$selected)
+vita_microarray$info$selected[hunames]
 
-tcganames[12442]
-vita_microarray$info$selected[12442]
-tcganames[9898]
-vita_microarray$info$selected[9898]
+## network prediction
 
 prederr_micro_ranger = c()
 for (i in 1:100) {
@@ -346,7 +364,93 @@ for (i in 1:100) {
 
 #### group lasso
 
+## network prediction
 
+## Micro
+
+# read X and y
+X = as.matrix(microarray[, -1][, signif_micro])
+y = 2*as.numeric(microarray[, 1]) - 3
+
+preddat = as.matrix(rna_seq[, -1][, signif_micro])
+predlabels = 2*as.numeric(rna_seq[, 1]) - 3
+
+# create var and group vectors
+var_gglasso = c()
+group_gglasso = c()
+for (nmodule in 1:length(modules_micro)) {
+  for (variable in modules_micro[[nmodule]]) {
+    var_gglasso = c(var_gglasso, variable)
+    group_gglasso = c(group_gglasso, nmodule)
+  }
+}
+
+# order group (for gglasso)
+ord <- order(group_gglasso)
+groupord <- group_gglasso[ord]
+# order var according to group
+varord <- var_gglasso[ord]
+
+# transform group to have consecutive numbers (for gglasso)
+groupb <- cumsum(!duplicated(groupord))
+
+# new data
+Xb <- X[, varord]
+preddatb = preddat[, varord]
+
+# optimize lambda
+gr_cv <- gglasso::cv.gglasso(x=Xb, y=y, group=groupb, 
+                             pred.loss="loss", 
+                             loss = "logit",
+                             # intercept = F, 
+                             nfolds=5)
+
+# predict data
+pred = predict(gr_cv$gglasso.fit, preddatb, s=gr_cv$lambda.min)
+prederr_gglasso_micro = sum(pred != predlabels) / length(pred)
+
+## RNAseq
+
+# read X and y
+X = as.matrix(rna_seq[, -1][, signif_rna])
+y = 2*as.numeric(rna_seq[, 1]) - 3
+
+preddat = as.matrix(microarray[, -1][, signif_rna])
+predlabels = 2*as.numeric(microarray[, 1]) - 3
+
+# create var and group vectors
+var_gglasso = c()
+group_gglasso = c()
+for (nmodule in 1:length(modules_rna)) {
+  for (variable in modules_rna[[nmodule]]) {
+    var_gglasso = c(var_gglasso, variable)
+    group_gglasso = c(group_gglasso, nmodule)
+  }
+}
+
+# order group (for gglasso)
+ord <- order(group_gglasso)
+groupord <- group_gglasso[ord]
+# order var according to group
+varord <- var_gglasso[ord]
+
+# transform group to have consecutive numbers (for gglasso)
+groupb <- cumsum(!duplicated(groupord))
+
+# new data
+Xb <- X[, varord]
+preddatb = preddat[, varord]
+
+# optimize lambda
+gr_cv <- gglasso::cv.gglasso(x=Xb, y=y, group=groupb, 
+                             pred.loss="loss", 
+                             loss = "logit",
+                             # intercept = F, 
+                             nfolds=5)
+
+# predict data
+pred = predict(gr_cv$gglasso.fit, preddatb, s=gr_cv$lambda.1se)
+prederr_gglasso_rna = sum(pred != predlabels) / length(pred)
 
 #### plotting
 
