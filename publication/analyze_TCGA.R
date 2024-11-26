@@ -337,12 +337,12 @@ for (i in 1:100) {
   
   rangerrf = ranger(
     dependent.variable.name = "pheno",
-    data = rna_seq,
+    data = rna_seq[, c(T, signif_rna)],
     num.trees = 500,
     seed = i
   )
-  pred_micro_ranger = predict(rangerrf, microarray[, -1])$predictions
-  prederr = sum(pred_micro_ranger != predlabel_micro) / 283
+  pred_micro_ranger = predict(rangerrf, microarray[, -1][, signif_rna])$predictions
+  prederr = sum(pred_micro_ranger != microarray[, 1]) / 283
   prederr_micro_ranger = c(prederr_micro_ranger, prederr)
 }
 
@@ -353,12 +353,12 @@ for (i in 1:100) {
   
   rangerrf = ranger(
     dependent.variable.name = "pheno",
-    data = microarray,
+    data = microarray[, c(T, signif_micro)],
     num.trees = 500,
     seed = i
   )
-  pred_rnaseq_ranger = predict(rangerrf, rna_seq[, -1])$predictions
-  prederr = sum(pred_rnaseq_ranger != predlabel_rnaseq) / 284
+  pred_rnaseq_ranger = predict(rangerrf, rna_seq[, -1][, signif_micro])$predictions
+  prederr = sum(pred_rnaseq_ranger != rna_seq[, 1]) / 284
   prederr_rnaseq_ranger = c(prederr_rnaseq_ranger, prederr)
 }
 
@@ -366,7 +366,7 @@ for (i in 1:100) {
 
 ## network prediction
 
-## Micro
+## RNAseq evaluation dataset
 
 # read X and y
 X = as.matrix(microarray[, -1][, signif_micro])
@@ -407,9 +407,9 @@ gr_cv <- gglasso::cv.gglasso(x=Xb, y=y, group=groupb,
 
 # predict data
 pred = predict(gr_cv$gglasso.fit, preddatb, s=gr_cv$lambda.min)
-prederr_gglasso_micro = sum(pred != predlabels) / length(pred)
+prederr_gglasso_rna = sum(pred != predlabels) / length(pred)
 
-## RNAseq
+## Microarray evaluation dataset
 
 # read X and y
 X = as.matrix(rna_seq[, -1][, signif_rna])
@@ -450,7 +450,7 @@ gr_cv <- gglasso::cv.gglasso(x=Xb, y=y, group=groupb,
 
 # predict data
 pred = predict(gr_cv$gglasso.fit, preddatb, s=gr_cv$lambda.1se)
-prederr_gglasso_rna = sum(pred != predlabels) / length(pred)
+prederr_gglasso_micro = sum(pred != predlabels) / length(pred)
 
 #### plotting
 
@@ -458,7 +458,7 @@ library(ggplot2)
 
 tcgares_dat = data.frame(
   evaldata = c(rep("Rna-Seq", 402), rep("Microarray", 402)),
-  prederr = c(prederr_gglasso_micro, prederr_rnaseq_ranger, tcgares_rnaseq$prederr_rnaseq_LDA, tcgares_rnaseq$prederr_rnaseq_Ridge, tcgares_rnaseq$prederr_rnaseq_PCA, prederr_gglasso_rna, prederr_micro_ranger, tcgares_micro$prederr_micro_LDA, tcgares_micro$prederr_micro_Ridge, tcgares_micro$prederr_micro_PCA),
+  prederr = c(prederr_gglasso_rna, prederr_rnaseq_ranger, tcgares_rnaseq$prederr_rnaseq_LDA, tcgares_rnaseq$prederr_rnaseq_Ridge, tcgares_rnaseq$prederr_rnaseq_PCA, prederr_gglasso_micro, prederr_micro_ranger, tcgares_micro$prederr_micro_LDA, tcgares_micro$prederr_micro_Ridge, tcgares_micro$prederr_micro_PCA),
   method = factor(c("Group Lasso", rep("RF", 100), rep("Group LDA", 100), rep("Group Ridge", 100), rep("Group PCA", 100), rep("RF", 100), rep("Group LDA", 100), rep("Group Ridge", 100), rep("Group PCA", 100)), levels = c("RF", "Group LDA", "Group Ridge", "Group PCA"), ordered = TRUE)
 )
 colnames(tcgares_dat) = c("evaldata", "prederr", "Method")
