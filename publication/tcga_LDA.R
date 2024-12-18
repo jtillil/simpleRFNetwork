@@ -90,7 +90,7 @@ for (resolution in c(5)) {
   )
   borutares = list()
   save(borutares, file = saveroot)
-  boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
+  boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 30, n_iterations, 1, saveroot)
   
   # #### build modules
   # igraph_network = upgrade_graph(tcga_breast_pr$network)
@@ -129,7 +129,7 @@ for (resolution in c(5)) {
   )
   borutares = list()
   save(borutares, file = saveroot)
-  boruta_TCGA(tcgadat_micro, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
+  boruta_TCGA(tcgadat_micro, 1, method, importance, 500, 30, n_iterations, 1, saveroot)
 }
 
 
