@@ -14,37 +14,37 @@ library(matrixcalc)
 library(ridge)
 library(glmnet)
 
-## load and extract tcga data
-datroot = "./data/tcga_breast_pr.rdata"
-load(datroot)
-
-pheno = tcga_breast_pr$microarray$pheno
-pheno[pheno == "Positive"] = 1
-pheno[pheno == "Negative"] = 0
-pheno = as.numeric(pheno)
-microarray = data.frame(pheno = as.factor(pheno))
-microarray = cbind(microarray, tcga_breast_pr$microarray$geno)
-
-pheno = tcga_breast_pr$rna_seq$pheno
-pheno[pheno == "Positive"] = 1
-pheno[pheno == "Negative"] = 0
-pheno = as.numeric(pheno)
-rna_seq = data.frame(pheno = as.factor(pheno))
-rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
-
-#### select genes
-tcganames = colnames(microarray[, -1])
-pvals_micro = numeric(length(tcganames))
-pvals_rna = numeric(length(tcganames))
-
-for (i in 1:length(tcganames)) {
-  print(i)
-  pvals_micro[i] = summary(glm(pheno ~ ., data = microarray[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
-  pvals_rna[i] = summary(glm(pheno ~ ., data = rna_seq[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
-}
-
-signif_micro = pvals_micro < 1e-5
-signif_rna = pvals_rna < 1e-5
+# ## load and extract tcga data
+# datroot = "./data/tcga_breast_pr.rdata"
+# load(datroot)
+# 
+# pheno = tcga_breast_pr$microarray$pheno
+# pheno[pheno == "Positive"] = 1
+# pheno[pheno == "Negative"] = 0
+# pheno = as.numeric(pheno)
+# microarray = data.frame(pheno = as.factor(pheno))
+# microarray = cbind(microarray, tcga_breast_pr$microarray$geno)
+# 
+# pheno = tcga_breast_pr$rna_seq$pheno
+# pheno[pheno == "Positive"] = 1
+# pheno[pheno == "Negative"] = 0
+# pheno = as.numeric(pheno)
+# rna_seq = data.frame(pheno = as.factor(pheno))
+# rna_seq = cbind(rna_seq, tcga_breast_pr$rna_seq$geno)
+#
+# #### select genes
+# tcganames = colnames(microarray[, -1])
+# pvals_micro = numeric(length(tcganames))
+# pvals_rna = numeric(length(tcganames))
+# 
+# for (i in 1:length(tcganames)) {
+#   print(i)
+#   pvals_micro[i] = summary(glm(pheno ~ ., data = microarray[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
+#   pvals_rna[i] = summary(glm(pheno ~ ., data = rna_seq[, c(1, i+1)], family = "binomial"))$coefficients[2, "Pr(>|z|)"]
+# }
+# 
+# signif_micro = pvals_micro < 1e-5
+# signif_rna = pvals_rna < 1e-5
 
 # for (resolution in c(5, 10, 15)) {
 for (resolution in c(5)) {
