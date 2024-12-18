@@ -14,6 +14,8 @@ library(matrixcalc)
 library(ridge)
 library(glmnet)
 
+set.seed(1)
+
 ## load and extract tcga data
 datroot = "./data/tcga_breast_pr.rdata"
 load(datroot)
