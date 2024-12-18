@@ -76,7 +76,7 @@ for (resolution in c(5, 10, 15)) {
   
   #### save
   saveroot = paste0(
-    "./results/tcga_modules_rnaseq",
+    "./data/tcga_modules_rnaseq",
     "_res", resolution,
     ".Rdata"
   )
@@ -109,7 +109,7 @@ for (resolution in c(5, 10, 15)) {
   
   #### save
   saveroot = paste0(
-    "./results/tcga_modules_micro",
+    "./data/tcga_modules_micro",
     "_res", resolution,
     ".Rdata"
   )

@@ -73,7 +73,7 @@ for (resolution in c(5)) {
   # tcgadat_rnaseq$modules = modules
   
   #### load modules
-  load(paste0("./tcga_modules_rnaseq_res", resolution, ".Rdata"))
+  load(paste0("./data/tcga_modules_rnaseq_res", resolution, ".Rdata"))
   
   #### start calculations
   method = "LDA"
@@ -92,29 +92,32 @@ for (resolution in c(5)) {
   save(borutares, file = saveroot)
   boruta_TCGA(tcgadat_rnaseq, 1, method, importance, 500, 60, n_iterations, 1, saveroot)
   
-  #### build modules
-  igraph_network = upgrade_graph(tcga_breast_pr$network)
-  igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_micro])
-  set.seed(1)
-  igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = resolution)
-  sizes(igraph_modules)
-  modules = list()
-  for (i in 1:max(igraph_modules$membership)) {
-    modules[[i]] = numeric()
-  }
-  for (i in 1:length(igraph_modules$membership)) {
-    membership = igraph_modules$membership[i]
-    modules[[membership]] = c(modules[[membership]], i)
-  }
-  for (i in length(modules):1) {
-    if (length(modules[[i]]) < 2 ) {
-      modules = modules[-i]
-    }
-  }
+  # #### build modules
+  # igraph_network = upgrade_graph(tcga_breast_pr$network)
+  # igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_micro])
+  # set.seed(1)
+  # igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = resolution)
+  # sizes(igraph_modules)
+  # modules = list()
+  # for (i in 1:max(igraph_modules$membership)) {
+  #   modules[[i]] = numeric()
+  # }
+  # for (i in 1:length(igraph_modules$membership)) {
+  #   membership = igraph_modules$membership[i]
+  #   modules[[membership]] = c(modules[[membership]], i)
+  # }
+  # for (i in length(modules):1) {
+  #   if (length(modules[[i]]) < 2 ) {
+  #     modules = modules[-i]
+  #   }
+  # }
+  # 
+  # tcgadat_micro = list()
+  # tcgadat_micro$data = microarray
+  # tcgadat_micro$modules = modules
   
-  tcgadat_micro = list()
-  tcgadat_micro$data = microarray
-  tcgadat_micro$modules = modules
+  #### load modules
+  load(paste0("./data/tcga_modules_micro_res", resolution, ".Rdata"))
   
   saveroot = paste0(
     "./results/tcga",
