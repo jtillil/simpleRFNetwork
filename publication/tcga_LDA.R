@@ -46,30 +46,34 @@ for (i in 1:length(tcganames)) {
 signif_micro = pvals_micro < 1e-5
 signif_rna = pvals_rna < 1e-5
 
-for (resolution in c(5, 10, 15)) {
-  #### build modules
-  igraph_network = upgrade_graph(tcga_breast_pr$network)
-  igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_rna])
-  set.seed(1)
-  igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = resolution)
-  sizes(igraph_modules)
-  modules = list()
-  for (i in 1:max(igraph_modules$membership)) {
-    modules[[i]] = numeric()
-  }
-  for (i in 1:length(igraph_modules$membership)) {
-    membership = igraph_modules$membership[i]
-    modules[[membership]] = c(modules[[membership]], i)
-  }
-  for (i in length(modules):1) {
-    if (length(modules[[i]]) < 2 ) {
-      modules = modules[-i]
-    }
-  }
+# for (resolution in c(5, 10, 15)) {
+for (resolution in c(5)) {
+  # #### build modules
+  # igraph_network = upgrade_graph(tcga_breast_pr$network)
+  # igraph_network <- induced_subgraph(igraph_network, vids = (1:(length(tcganames)))[signif_rna])
+  # set.seed(1)
+  # igraph_modules = cluster_louvain(igraph_network, weights = NULL, resolution = resolution)
+  # sizes(igraph_modules)
+  # modules = list()
+  # for (i in 1:max(igraph_modules$membership)) {
+  #   modules[[i]] = numeric()
+  # }
+  # for (i in 1:length(igraph_modules$membership)) {
+  #   membership = igraph_modules$membership[i]
+  #   modules[[membership]] = c(modules[[membership]], i)
+  # }
+  # for (i in length(modules):1) {
+  #   if (length(modules[[i]]) < 2 ) {
+  #     modules = modules[-i]
+  #   }
+  # }
+  # 
+  # tcgadat_rnaseq = list()
+  # tcgadat_rnaseq$data = rna_seq
+  # tcgadat_rnaseq$modules = modules
   
-  tcgadat_rnaseq = list()
-  tcgadat_rnaseq$data = rna_seq
-  tcgadat_rnaseq$modules = modules
+  #### load modules
+  load(paste0("./tcga_modules_rnaseq_res", resolution, ".Rdata"))
   
   #### start calculations
   method = "LDA"
